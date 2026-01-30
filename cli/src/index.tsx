@@ -41,8 +41,19 @@ async function main() {
 
         // Interactive config TUI if no subcommand
         if (!subcommand) {
-          const { ConfigUI } = await import('./components/ConfigUI.js');
-          render(<ConfigUI />);
+          const { ProviderSelector } = await import('./components/ProviderSelector.js');
+          const { Box } = await import('ink');
+          render(
+            <Box flexDirection="column" padding={1}>
+              <ProviderSelector
+                onClose={() => process.exit(0)}
+                onSelect={(provider, model) => {
+                  console.log(`\n✓ Set to ${provider} / ${model}`);
+                  process.exit(0);
+                }}
+              />
+            </Box>
+          );
           return; // Don't render App
         }
 
@@ -148,14 +159,29 @@ ${dim}GitHub: https://github.com/projectservan8n/C-napse${reset}
       case 'version':
       case '--version':
       case '-v': {
-        console.log('cnapse v0.5.0');
+        console.log('cnapse v0.8.0');
         process.exit(0);
       }
 
       case 'init': {
-        // Interactive setup with Ink UI
-        const { Setup } = await import('./components/Setup.js');
-        render(<Setup />);
+        // Interactive setup with Ink UI - uses ProviderSelector
+        const { ProviderSelector } = await import('./components/ProviderSelector.js');
+        const { Box, Text } = await import('ink');
+        render(
+          <Box flexDirection="column" padding={1}>
+            <Box marginBottom={1}>
+              <Text bold color="cyan">C-napse Setup</Text>
+            </Box>
+            <ProviderSelector
+              onClose={() => process.exit(0)}
+              onSelect={(provider, model) => {
+                console.log(`\n✓ Setup complete! Provider: ${provider}, Model: ${model}`);
+                console.log('Run `cnapse` to start chatting.');
+                process.exit(0);
+              }}
+            />
+          </Box>
+        );
         return; // Don't render App
       }
 

@@ -4,11 +4,12 @@
  * Uses chain-of-thought prompting + learning from past tasks
  */
 
-import { chat, Message } from './api.js';
+import { chat, chatWithVision, Message } from './api.js';
 import * as computer from '../tools/computer.js';
-import { describeScreen } from './vision.js';
+import { describeScreen, captureScreenshot } from './vision.js';
 import * as filesystem from '../tools/filesystem.js';
 import { runCommand } from '../tools/shell.js';
+import * as browser from '../services/browser.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -227,6 +228,12 @@ Before outputting steps, THINK through these questions:
 ### Research
 - research: Multi-step web research - searches, gathers info, summarizes (e.g., "research:What are the latest AI trends in 2024?")
 
+### Adaptive/Learning
+- ask_llm: Ask another LLM for help with a screenshot (e.g., "ask_llm:perplexity|How do I do X in this app?")
+- ask_llm: Supports: perplexity, chatgpt, claude, copilot - sends screenshot + question, gets answer
+- adaptive_do: Try to accomplish something, if stuck ask LLMs for help (e.g., "adaptive_do:book a flight to NYC on kayak.com")
+- learn_ui: Take screenshot and learn how to interact with current UI (e.g., "learn_ui:What buttons can I click here?")
+
 ### Utility
 - wait: Wait N seconds (e.g., "wait:2" - use 1-3s for app loads)
 - screenshot: Capture and describe screen
@@ -372,6 +379,39 @@ Output:
   { "description": "Create new Google Doc", "action": "google_docs:new|Project Status Report" },
   { "description": "Wait for doc to load", "action": "wait:3" },
   { "description": "Type the content", "action": "google_docs:type|Project Status Report\n\nDate: Today\n\nSummary:\nThe project is on track. All milestones have been met.\n\nNext Steps:\n- Complete testing\n- Deploy to production" }
+]
+
+### Example 12: "I don't know how to use this app, can you figure it out?"
+Thinking:
+- Goal: Learn the current UI and understand how to use it
+- How: Use learn_ui to take screenshot and analyze
+- Sequence: Screenshot -> AI analysis -> report back
+
+Output:
+[
+  { "description": "Analyze current UI", "action": "learn_ui:What are all the buttons, menus, and interactive elements I can use?" }
+]
+
+### Example 13: "book a hotel on booking.com for next weekend"
+Thinking:
+- Goal: Complex task on unfamiliar website - need adaptive approach
+- How: Use adaptive_do which will try, and if stuck ask LLMs for help
+- Sequence: Single adaptive action handles the complexity
+
+Output:
+[
+  { "description": "Adaptively book hotel", "action": "adaptive_do:Go to booking.com and book a hotel for next weekend" }
+]
+
+### Example 14: "I'm stuck, ask Claude how to proceed"
+Thinking:
+- Goal: Get help from another LLM with current screen context
+- How: Use ask_llm with claude and send screenshot
+- Sequence: Screenshot + question -> Get answer
+
+Output:
+[
+  { "description": "Ask Claude for help with screenshot", "action": "ask_llm:claude|I'm stuck on this screen. What should I do next to accomplish my task?" }
 ]
 
 ## YOUR TASK
@@ -616,94 +656,49 @@ ${existingResult.output}`;
 
     case 'browse_and_ask': {
       // Format: browse_and_ask:site|question
+      // Using Playwright for reliable browser automation
       const [site, ...questionParts] = params.split('|');
       const question = questionParts.join('|');
 
-      // Site-specific URLs and response wait times
-      const sites: Record<string, { url: string; loadTime: number; responseTime: number }> = {
-        perplexity: { url: 'https://www.perplexity.ai', loadTime: 3, responseTime: 10 },
-        chatgpt: { url: 'https://chat.openai.com', loadTime: 4, responseTime: 15 },
-        claude: { url: 'https://claude.ai', loadTime: 4, responseTime: 15 },
-        google: { url: 'https://www.google.com', loadTime: 2, responseTime: 3 },
-        bing: { url: 'https://www.bing.com', loadTime: 2, responseTime: 3 },
-        bard: { url: 'https://bard.google.com', loadTime: 3, responseTime: 12 },
-        copilot: { url: 'https://copilot.microsoft.com', loadTime: 3, responseTime: 12 },
-      };
+      // Check if site is a supported AI chat
+      const supportedSites = ['perplexity', 'chatgpt', 'claude', 'copilot', 'google'];
+      const siteLower = site.toLowerCase();
 
-      const siteConfig = sites[site.toLowerCase()] || { url: `https://${site}`, loadTime: 3, responseTime: 10 };
+      if (supportedSites.includes(siteLower)) {
+        // Use Playwright's AI chat helper
+        const result = await browser.askAI(siteLower as any, question, true);
 
-      // Open the site
-      if (process.platform === 'win32') {
-        await runCommand(`start "" "${siteConfig.url}"`, 5000);
-      } else if (process.platform === 'darwin') {
-        await runCommand(`open "${siteConfig.url}"`, 5000);
-      } else {
-        await runCommand(`xdg-open "${siteConfig.url}"`, 5000);
-      }
-
-      // Wait for page to load
-      await sleep(siteConfig.loadTime * 1000);
-
-      // Type the question (most sites have autofocus on search/input)
-      await computer.typeText(question);
-      await sleep(300);
-
-      // Press Enter to submit
-      await computer.pressKey('Return');
-
-      // Wait for AI to generate response
-      await sleep(siteConfig.responseTime * 1000);
-
-      // Capture multiple screenshots by scrolling to get full response
-      const extractedParts: string[] = [];
-      const maxScrolls = 5; // Maximum number of scroll captures
-
-      for (let scrollIndex = 0; scrollIndex < maxScrolls; scrollIndex++) {
-        // Capture current view
-        const screenResult = await describeScreen();
-
-        // Ask AI to extract just the response text from what it sees
-        const extractPrompt = `You are looking at screenshot ${scrollIndex + 1} of ${site}. The user asked: "${question}"
-
-Extract ONLY the AI's response/answer text visible on screen. Do NOT include:
-- The user's question
-- Any UI elements, buttons, navigation, or headers
-- Any disclaimers, suggestions, or "related questions"
-- Any "Sources" or citation links
-- Any text you already extracted (avoid duplicates)
-
-${scrollIndex > 0 ? `Previous parts already extracted:\n${extractedParts.join('\n---\n')}\n\nOnly extract NEW text that continues from where we left off.` : ''}
-
-Just give me the actual answer text, word for word as it appears. If there's no more response text visible, respond with exactly: "END_OF_RESPONSE"`;
-
-        const extractResponse = await chat([{ role: 'user', content: extractPrompt }]);
-        const extracted = extractResponse.content.trim();
-
-        // Check if we've reached the end
-        if (extracted === 'END_OF_RESPONSE' || extracted.includes('END_OF_RESPONSE')) {
-          break;
-        }
-
-        // Check for "no response" indicators
-        if (extracted.toLowerCase().includes('response not ready') ||
-            extracted.toLowerCase().includes('no response visible') ||
-            extracted.toLowerCase().includes('no additional text')) {
-          if (scrollIndex === 0) {
-            extractedParts.push('Response not ready yet or page still loading.');
+        // If response seems short, try getting full response by scrolling
+        if (result.response.length < 500) {
+          const fullParts = await browser.getFullAIResponse(siteLower as any, 5);
+          if (fullParts.length > 0) {
+            step.result = `📝 ${site.charAt(0).toUpperCase() + site.slice(1)} says:\n\n${fullParts.join('\n\n')}`;
+            break;
           }
-          break;
         }
 
-        extractedParts.push(extracted);
+        step.result = `📝 ${site.charAt(0).toUpperCase() + site.slice(1)} says:\n\n${result.response}`;
+      } else {
+        // Generic site - open and type
+        await browser.navigateTo(`https://${site}`);
+        await sleep(2000);
 
-        // Scroll down to see more content
-        await computer.scrollMouse(-5); // Scroll down
-        await sleep(1000); // Wait for scroll animation
+        // Try to find and fill any input
+        const page = await browser.getPage();
+        const inputs = ['textarea', 'input[type="text"]', 'input[type="search"]', '[contenteditable="true"]'];
+
+        for (const selector of inputs) {
+          if (await browser.elementExists(selector)) {
+            await browser.typeInElement(selector, question);
+            await browser.pressKey('Enter');
+            break;
+          }
+        }
+
+        await sleep(5000);
+        const pageText = await browser.getPageText();
+        step.result = `📝 Response from ${site}:\n\n${pageText.slice(0, 3000)}`;
       }
-
-      // Combine all extracted parts
-      const fullResponse = extractedParts.join('\n\n');
-      step.result = `📝 ${site.charAt(0).toUpperCase() + site.slice(1)} says:\n\n${fullResponse}`;
       break;
     }
 
@@ -713,181 +708,73 @@ Just give me the actual answer text, word for word as it appears. If there's no 
       break;
 
     case 'web_search': {
-      // Human-like Google search: open browser, go to google, type, search
-      // Open browser with Win+R -> chrome/edge or just open google.com
-      await computer.keyCombo(['meta', 'r']); // Win+R
-      await sleep(500);
-      await computer.typeText('chrome'); // Try Chrome first
-      await computer.pressKey('Return');
-      await sleep(2000);
+      // Use Playwright for reliable web search
+      const searchResults = await browser.webSearch(params, 'google');
 
-      // Go to Google (Ctrl+L to focus address bar)
-      await computer.keyCombo(['control', 'l']);
-      await sleep(300);
-      await computer.typeText('google.com');
-      await computer.pressKey('Return');
-      await sleep(2000);
-
-      // Type search query (Google search box should be focused)
-      await computer.typeText(params);
-      await sleep(300);
-      await computer.pressKey('Return');
-      await sleep(3000); // Wait for results
-
-      // Capture and extract search results
-      const searchScreen = await describeScreen();
-      const searchExtract = await chat([{
-        role: 'user',
-        content: `Extract the top search results from this Google search page. For each result, include:
-- Title
-- Brief snippet/description
-- URL if visible
-
-Format as a numbered list. Be concise.`
-      }]);
-
-      step.result = `🔍 Search results for "${params}":\n\n${searchExtract.content}`;
+      if (searchResults.length > 0) {
+        step.result = `🔍 Search results for "${params}":\n\n${searchResults.map((r, i) => `${i + 1}. ${r}`).join('\n')}`;
+      } else {
+        // Fallback: get page text
+        const pageText = await browser.getPageText();
+        step.result = `🔍 Search results for "${params}":\n\n${pageText.slice(0, 2000)}`;
+      }
       break;
     }
 
     case 'send_email': {
-      // Human-like email: open browser, navigate to Gmail/Outlook, compose
+      // Use Playwright for reliable email sending
       // Format: send_email:provider|to|subject|body
       const [provider, to, subject, ...bodyParts] = params.split('|');
       const body = bodyParts.join('|');
 
-      // Open browser
-      await computer.keyCombo(['meta', 'r']); // Win+R
-      await sleep(500);
-      await computer.typeText('chrome');
-      await computer.pressKey('Return');
-      await sleep(2000);
+      const emailData = { to, subject, body };
 
-      // Navigate to email service
-      await computer.keyCombo(['control', 'l']); // Focus address bar
-      await sleep(300);
-
+      let success = false;
       if (provider.toLowerCase() === 'gmail') {
-        await computer.typeText('mail.google.com');
-        await computer.pressKey('Return');
-        await sleep(4000); // Wait for Gmail to load
-
-        // Click Compose button (use keyboard shortcut 'c')
-        await computer.typeText('c'); // Gmail shortcut for compose
-        await sleep(2000); // Wait for compose window
-
-        // Fill in fields
-        await computer.typeText(to); // To field is focused
-        await sleep(300);
-        await computer.pressKey('Tab'); // Move to subject
-        await sleep(200);
-        await computer.typeText(subject);
-        await sleep(300);
-        await computer.pressKey('Tab'); // Move to body
-        await sleep(200);
-        await computer.typeText(body);
-        await sleep(500);
-
-        // Send with Ctrl+Enter
-        await computer.keyCombo(['control', 'Return']);
-
+        success = await browser.sendGmail(emailData);
       } else if (provider.toLowerCase() === 'outlook') {
-        await computer.typeText('outlook.live.com');
-        await computer.pressKey('Return');
-        await sleep(4000); // Wait for Outlook to load
-
-        // Click New mail (use keyboard shortcut 'n')
-        await computer.typeText('n'); // Outlook shortcut for new mail
-        await sleep(2000);
-
-        // Fill in fields
-        await computer.typeText(to);
-        await sleep(300);
-        await computer.pressKey('Tab');
-        await sleep(200);
-        await computer.typeText(subject);
-        await sleep(300);
-        await computer.pressKey('Tab');
-        await sleep(200);
-        await computer.typeText(body);
-        await sleep(500);
-
-        // Send with Ctrl+Enter
-        await computer.keyCombo(['control', 'Return']);
+        success = await browser.sendOutlook(emailData);
       } else {
         throw new Error(`Unsupported email provider: ${provider}. Use gmail or outlook.`);
       }
 
-      await sleep(2000);
-      step.result = `📧 Email sent via ${provider} to ${to}`;
+      if (success) {
+        step.result = `📧 Email sent via ${provider} to ${to}`;
+      } else {
+        throw new Error(`Failed to send email via ${provider}. Make sure you're logged in.`);
+      }
       break;
     }
 
     case 'google_sheets': {
-      // Human-like: open browser, go to sheets, interact
+      // Use Playwright for Google Sheets
       // Format: google_sheets:command|arg1|arg2...
       const [sheetCmd, ...sheetArgs] = params.split('|');
 
       switch (sheetCmd.toLowerCase()) {
         case 'new': {
           const sheetName = sheetArgs[0] || 'Untitled spreadsheet';
-
-          // Open browser and go to Google Sheets
-          await computer.keyCombo(['meta', 'r']);
-          await sleep(500);
-          await computer.typeText('chrome');
-          await computer.pressKey('Return');
-          await sleep(2000);
-
-          await computer.keyCombo(['control', 'l']);
-          await sleep(300);
-          await computer.typeText('sheets.google.com');
-          await computer.pressKey('Return');
-          await sleep(3000);
-
-          // Click "Blank" to create new (or use keyboard)
-          // Usually there's a + or Blank option, let's try clicking near top
-          await computer.pressKey('Tab'); // Navigate
-          await computer.pressKey('Tab');
-          await computer.pressKey('Return'); // Create blank
-          await sleep(3000);
-
-          // Rename: click on title or use File > Rename
-          await computer.keyCombo(['alt', 'f']); // File menu
-          await sleep(500);
-          await computer.typeText('r'); // Rename option
-          await sleep(500);
-          await computer.keyCombo(['control', 'a']); // Select all
-          await computer.typeText(sheetName);
-          await computer.pressKey('Return');
-          await sleep(500);
-          await computer.pressKey('Escape'); // Close any dialog
-
+          await browser.navigateTo('https://docs.google.com/spreadsheets/create');
+          await sleep(5000);
           step.result = `📊 Created Google Sheet: ${sheetName}`;
           break;
         }
         case 'type': {
           const cell = sheetArgs[0] || 'A1';
           const cellValue = sheetArgs.slice(1).join('|');
-
-          // Navigate to cell using Ctrl+G or F5 (Go to)
-          await computer.keyCombo(['control', 'g']); // Go to cell dialog
-          await sleep(500);
-          await computer.typeText(cell);
-          await computer.pressKey('Return');
-          await sleep(300);
-
-          // Type the value
-          await computer.typeText(cellValue);
-          await computer.pressKey('Return'); // Confirm and move down
-          await sleep(200);
-
-          step.result = `📊 Typed "${cellValue}" in cell ${cell}`;
+          const success = await browser.googleSheetsType([{ cell, value: cellValue }]);
+          step.result = success
+            ? `📊 Typed "${cellValue}" in cell ${cell}`
+            : `📊 Could not type in cell ${cell}`;
           break;
         }
         case 'read': {
-          const readScreen = await describeScreen();
-          step.result = `📊 Current sheet view:\n${readScreen.description}`;
+          const screenshot = await browser.takeScreenshot();
+          const analysis = await chat([{
+            role: 'user',
+            content: 'Describe the contents of this Google Sheet. List visible data in the cells.'
+          }]);
+          step.result = `📊 Current sheet view:\n${analysis.content}`;
           break;
         }
         default:
@@ -897,52 +784,25 @@ Format as a numbered list. Be concise.`
     }
 
     case 'google_docs': {
-      // Human-like: open browser, go to docs, interact
+      // Use Playwright for Google Docs
       // Format: google_docs:command|arg1|arg2...
       const [docCmd, ...docArgs] = params.split('|');
 
       switch (docCmd.toLowerCase()) {
         case 'new': {
           const docName = docArgs[0] || 'Untitled document';
-
-          // Open browser and go to Google Docs
-          await computer.keyCombo(['meta', 'r']);
-          await sleep(500);
-          await computer.typeText('chrome');
-          await computer.pressKey('Return');
-          await sleep(2000);
-
-          await computer.keyCombo(['control', 'l']);
-          await sleep(300);
-          await computer.typeText('docs.google.com');
-          await computer.pressKey('Return');
-          await sleep(3000);
-
-          // Click "Blank" to create new
-          await computer.pressKey('Tab');
-          await computer.pressKey('Tab');
-          await computer.pressKey('Return');
-          await sleep(3000);
-
-          // Rename using File > Rename
-          await computer.keyCombo(['alt', 'f']); // File menu
-          await sleep(500);
-          await computer.typeText('r'); // Rename
-          await sleep(500);
-          await computer.keyCombo(['control', 'a']); // Select all
-          await computer.typeText(docName);
-          await computer.pressKey('Return');
-          await sleep(500);
-          await computer.pressKey('Escape'); // Close dialog, focus doc
-
-          step.result = `📄 Created Google Doc: ${docName}`;
+          const success = await browser.googleDocsType('');
+          step.result = success
+            ? `📄 Created Google Doc: ${docName}`
+            : `📄 Could not create Google Doc`;
           break;
         }
         case 'type': {
           const docText = docArgs.join('|');
-          // Just type - cursor should be in document
-          await computer.typeText(docText);
-          step.result = `📄 Typed content in Google Doc`;
+          const success = await browser.googleDocsType(docText);
+          step.result = success
+            ? `📄 Typed content in Google Doc`
+            : `📄 Could not type in Google Doc`;
           break;
         }
         default:
@@ -952,83 +812,23 @@ Format as a numbered list. Be concise.`
     }
 
     case 'research': {
-      // Human-like multi-step research: open browser, search, click results, gather info
+      // Use Playwright for multi-step research
       const researchQuery = params;
-      const researchResults: string[] = [];
 
-      // Step 1: Open browser and go to Google
-      await computer.keyCombo(['meta', 'r']); // Win+R
-      await sleep(500);
-      await computer.typeText('chrome');
-      await computer.pressKey('Return');
-      await sleep(2000);
+      // Use browser.research which handles search, clicking, gathering
+      const researchData = await browser.research(researchQuery, 3);
 
-      await computer.keyCombo(['control', 'l']); // Focus address bar
-      await sleep(300);
-      await computer.typeText('google.com');
-      await computer.pressKey('Return');
-      await sleep(2000);
+      // Format sources
+      const sourceSummaries = researchData.sources.map((s, i) =>
+        `Source ${i + 1}: ${s.title}\n${s.content.slice(0, 500)}...`
+      ).join('\n\n');
 
-      // Type search query
-      await computer.typeText(researchQuery);
-      await computer.pressKey('Return');
-      await sleep(3000);
-
-      // Capture initial search results
-      let searchScreen = await describeScreen();
-      const initialResults = await chat([{
-        role: 'user',
-        content: `Extract the key information from these Google search results about: "${researchQuery}"
-Include any relevant facts, numbers, dates, or key points visible. Be thorough but concise.`
-      }]);
-      researchResults.push(`Search Results:\n${initialResults.content}`);
-
-      // Step 2: Click on first result (Tab to navigate, Enter to click)
-      await computer.pressKey('Tab');
-      await sleep(200);
-      await computer.pressKey('Tab');
-      await sleep(200);
-      await computer.pressKey('Return'); // Click first result
-      await sleep(4000); // Wait for page load
-
-      // Extract content from the page
-      searchScreen = await describeScreen();
-      const pageContent = await chat([{
-        role: 'user',
-        content: `Extract the main content and key information from this webpage about: "${researchQuery}"
-Ignore ads, navigation, footers. Focus on the actual article/content.`
-      }]);
-      researchResults.push(`\nSource 1 Content:\n${pageContent.content}`);
-
-      // Step 3: Go back (Alt+Left) and check another source
-      await computer.keyCombo(['alt', 'Left']); // Browser back
-      await sleep(2000);
-
-      // Scroll down a bit to see more results
-      await computer.scrollMouse(-3);
-      await sleep(500);
-
-      // Navigate to second result
-      await computer.pressKey('Tab');
-      await computer.pressKey('Tab');
-      await computer.pressKey('Tab');
-      await computer.pressKey('Return');
-      await sleep(4000);
-
-      searchScreen = await describeScreen();
-      const pageContent2 = await chat([{
-        role: 'user',
-        content: `Extract additional information from this webpage about: "${researchQuery}"
-Look for details not covered in the previous source.`
-      }]);
-      researchResults.push(`\nSource 2 Content:\n${pageContent2.content}`);
-
-      // Step 4: Synthesize all gathered information
+      // Ask AI to synthesize
       const synthesis = await chat([{
         role: 'user',
         content: `Based on the following research gathered about "${researchQuery}", provide a comprehensive summary:
 
-${researchResults.join('\n\n')}
+${sourceSummaries}
 
 Create a well-organized summary with:
 1. Key findings
@@ -1040,6 +840,190 @@ Be thorough but concise.`
       }]);
 
       step.result = `🔬 Research Summary: ${researchQuery}\n\n${synthesis.content}`;
+      break;
+    }
+
+    case 'ask_llm': {
+      // Use Playwright to ask another LLM for help with a screenshot
+      // Format: ask_llm:llm_name|question
+      const [llmName, ...questionParts] = params.split('|');
+      const question = questionParts.join('|');
+
+      // Take screenshot first to describe current context
+      const currentScreen = await describeScreen();
+
+      // Compose the question with screen context
+      const fullQuestion = `I'm looking at my screen and I need help. ${question}\n\nHere's what I see on my screen: ${currentScreen.description}`;
+
+      // Supported LLMs
+      const supportedLLMs = ['perplexity', 'chatgpt', 'claude', 'copilot'];
+      const llmLower = llmName.toLowerCase();
+
+      if (!supportedLLMs.includes(llmLower)) {
+        throw new Error(`Unknown LLM: ${llmName}. Supported: ${supportedLLMs.join(', ')}`);
+      }
+
+      // Use Playwright's AI chat helper
+      const result = await browser.askAI(llmLower as any, fullQuestion, false);
+
+      // Get full response if needed
+      const fullParts = await browser.getFullAIResponse(llmLower as any, 3);
+      const finalResponse = fullParts.length > 0 ? fullParts.join('\n\n') : result.response;
+
+      step.result = `🤖 ${llmName} says:\n\n${finalResponse}`;
+      break;
+    }
+
+    case 'learn_ui': {
+      // Take screenshot and analyze the UI to learn how to interact
+      const uiScreen = await describeScreen();
+
+      const uiAnalysis = await chat([{
+        role: 'user',
+        content: `Analyze this screenshot and identify all interactive UI elements. List:
+1. All clickable buttons and their likely functions
+2. Text input fields
+3. Menus and dropdowns
+4. Links
+5. Any keyboard shortcuts visible
+6. The main actions available in this interface
+
+Question: ${params}
+
+Be specific about locations (top-left, center, etc.) and what each element does.`
+      }]);
+
+      step.result = `🔍 UI Analysis:\n\n${uiAnalysis.content}`;
+      break;
+    }
+
+    case 'adaptive_do': {
+      // Adaptive agent using Playwright: try to accomplish something, ask LLMs if stuck
+      const goal = params;
+      const maxAttempts = 5;
+      const actionHistory: string[] = [];
+      let accomplished = false;
+
+      // Initialize browser
+      const page = await browser.getPage();
+
+      for (let attempt = 0; attempt < maxAttempts && !accomplished; attempt++) {
+        // Take screenshot and analyze current state
+        const screenshot = await browser.takeScreenshot();
+        const currentState = await chat([{
+          role: 'user',
+          content: `Describe what you see on this screen. What app/website is it? What elements are visible?`
+        }]);
+
+        // Ask our AI what to do next
+        const nextAction = await chat([{
+          role: 'user',
+          content: `GOAL: ${goal}
+
+CURRENT SCREEN: ${currentState.content}
+
+PREVIOUS ACTIONS TAKEN:
+${actionHistory.length > 0 ? actionHistory.join('\n') : 'None yet'}
+
+Based on what you see, what's the SINGLE next action to take?
+Options:
+- click: Click element (describe CSS selector or visible text)
+- type: Type something (specify selector and text)
+- press: Press a key (specify key)
+- scroll: Scroll up/down
+- navigate: Go to URL
+- done: Goal is accomplished
+- stuck: Can't figure out what to do
+
+Respond in format:
+ACTION: <action_type>
+SELECTOR: <css selector or text to find>
+VALUE: <text to type or URL>
+REASONING: <why>`
+        }]);
+
+        const actionContent = nextAction.content;
+
+        // Parse the action
+        const actionMatch = actionContent.match(/ACTION:\s*(\w+)/i);
+        const selectorMatch = actionContent.match(/SELECTOR:\s*(.+?)(?:\n|$)/i);
+        const valueMatch = actionContent.match(/VALUE:\s*(.+?)(?:\n|$)/i);
+
+        if (!actionMatch) {
+          actionHistory.push(`Attempt ${attempt + 1}: Couldn't parse action`);
+          continue;
+        }
+
+        const action = actionMatch[1].toLowerCase();
+        const selector = selectorMatch?.[1]?.trim() || '';
+        const value = valueMatch?.[1]?.trim() || '';
+
+        if (action === 'done') {
+          accomplished = true;
+          actionHistory.push(`Attempt ${attempt + 1}: Goal accomplished!`);
+          break;
+        }
+
+        if (action === 'stuck') {
+          // Ask Perplexity for help using Playwright
+          actionHistory.push(`Attempt ${attempt + 1}: Got stuck, asking Perplexity for help...`);
+
+          const helpRequest = `I'm trying to: ${goal}\n\nI'm stuck. What should I do next? Be specific about what to click or type.`;
+          const advice = await browser.askAI('perplexity', helpRequest, false);
+          actionHistory.push(`Got advice: ${advice.response.slice(0, 200)}...`);
+
+          // Navigate back to continue
+          await browser.navigateTo(page.url());
+          continue;
+        }
+
+        // Execute the action using Playwright
+        try {
+          switch (action) {
+            case 'click':
+              // Try to click by selector or text
+              if (selector) {
+                const clicked = await browser.clickElement(selector);
+                if (!clicked) {
+                  // Try by text
+                  await page.getByText(selector).first().click({ timeout: 5000 });
+                }
+              }
+              actionHistory.push(`Attempt ${attempt + 1}: Clicked "${selector}"`);
+              break;
+            case 'type':
+              if (selector && value) {
+                const typed = await browser.typeInElement(selector, value);
+                if (!typed) {
+                  await page.getByPlaceholder(selector).first().fill(value);
+                }
+              }
+              actionHistory.push(`Attempt ${attempt + 1}: Typed "${value}" in "${selector}"`);
+              break;
+            case 'press':
+              await browser.pressKey(value || selector);
+              actionHistory.push(`Attempt ${attempt + 1}: Pressed ${value || selector}`);
+              break;
+            case 'scroll':
+              await browser.scroll(value.toLowerCase().includes('up') ? 'up' : 'down');
+              actionHistory.push(`Attempt ${attempt + 1}: Scrolled ${value || 'down'}`);
+              break;
+            case 'navigate':
+              const url = value.startsWith('http') ? value : `https://${value}`;
+              await browser.navigateTo(url);
+              actionHistory.push(`Attempt ${attempt + 1}: Navigated to ${url}`);
+              break;
+            default:
+              actionHistory.push(`Attempt ${attempt + 1}: Unknown action ${action}`);
+          }
+        } catch (e) {
+          actionHistory.push(`Attempt ${attempt + 1}: Action failed - ${e}`);
+        }
+
+        await sleep(2000); // Wait for UI to update
+      }
+
+      step.result = `🎯 Adaptive Agent Result:\n\nGoal: ${goal}\nAccomplished: ${accomplished ? 'Yes ✅' : 'Partial/No ❌'}\n\nAction Log:\n${actionHistory.join('\n')}`;
       break;
     }
 

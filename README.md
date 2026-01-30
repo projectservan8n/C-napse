@@ -10,11 +10,23 @@
                     agents in sync
 ```
 
-> **Small models. Fast signals.**
+> **Autonomous PC Intelligence - AI that sees your screen, controls your computer, and learns as it goes.**
 
-C-napse is a modular, agentic CLI that orchestrates specialized AI agents to control and automate your PC. Like Claude Code, but lightweight and provider-agnostic.
+C-napse is an agentic CLI that orchestrates specialized AI agents to control and automate your PC. Think Claude Code meets desktop automation - with vision, browser control, and the ability to ask other AIs for help when stuck.
 
 [![npm version](https://badge.fury.io/js/%40projectservan8n%2Fcnapse.svg)](https://www.npmjs.com/package/@projectservan8n/cnapse)
+
+## What Can It Do?
+
+- **See your screen** - Takes screenshots, AI describes what's visible
+- **Control your computer** - Mouse, keyboard, windows, like a human would
+- **Browse the web** - Opens browser, searches, interacts with websites (Playwright)
+- **Ask other AIs** - Gets stuck? Asks Perplexity/ChatGPT/Claude for help
+- **Send emails** - Gmail, Outlook via browser automation
+- **Use Google apps** - Sheets, Docs via browser
+- **Research topics** - Multi-step web research with source gathering
+- **Learn from experience** - Remembers successful task patterns
+- **Remote control** - Control your PC from Telegram
 
 ## Installation
 
@@ -25,251 +37,175 @@ C-napse is a modular, agentic CLI that orchestrates specialized AI agents to con
 irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex
 ```
 
-**macOS / Linux:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash
-```
+**macOS / Linux:** *Coming soon — Windows-first for now*
 
 ### Or via npm
 
 ```bash
 npm install -g @projectservan8n/cnapse
+npx playwright install chromium  # For browser features
 ```
 
 ## Quick Start
 
 ```bash
-# Interactive setup wizard (recommended)
+# Interactive setup wizard
 cnapse init
 
 # Or configure manually
 cnapse auth openrouter YOUR_API_KEY
 cnapse config set provider openrouter
 
-# Launch the TUI
+# Launch
 cnapse
 ```
 
 ## Features
 
-- **Interactive Help Menu** - Arrow-key navigation for commands and settings (Ctrl+H)
-- **Vision Capability** - AI can see and describe your screen (`/screen`)
-- **Computer Control** - Mouse, keyboard, and window automation
-- **Multi-Step Tasks** - Automated task sequences (`/task open notepad and type hello`)
-- **Telegram Bot** - Remote PC control via Telegram (`/telegram`)
-- **Screen Watching** - AI context from your desktop (Ctrl+W)
-- **Multi-Agent System** - Specialized agents for shell, code, files, and computer control
-- **Multiple Providers** - Ollama (local), OpenRouter, Anthropic, OpenAI
+### Vision & Screen Analysis
+```bash
+/screen                    # Take screenshot + AI description
+/watch                     # Enable continuous screen watching
+```
+
+### Multi-Step Task Automation
+```bash
+/task open notepad and type hello
+/task open vscode, go to folder E:\Projects
+/task minimize chrome
+/task close notepad
+```
+
+### Web Automation (Playwright-powered)
+```bash
+/task ask perplexity what is the capital of France
+/task search google for best restaurants NYC
+/task send email via gmail to john@example.com about meeting
+/task create google sheet called Sales Report
+```
+
+### Adaptive Agent (asks for help when stuck)
+```bash
+/task book a hotel on booking.com        # Will ask Perplexity if stuck
+/task I don't know how to use this app   # Analyzes UI, suggests actions
+```
+
+### Telegram Remote Control
+```bash
+cnapse auth telegram YOUR_BOT_TOKEN
+
+# In Telegram:
+/start              # Connect
+/screen             # Get screenshot
+/describe           # Screenshot + AI description
+minimize chrome     # Control windows
+type "hello"        # Type text
+```
 
 ## Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
-| `Enter` | Send message |
-| `Ctrl+C` | Exit |
-| `Ctrl+H` | Open help menu |
-| `Ctrl+W` | Toggle screen watching |
+| `Ctrl+H` | Help menu |
+| `Ctrl+P` | Change provider/model |
+| `Ctrl+E` | Toggle screen watching |
 | `Ctrl+T` | Toggle Telegram bot |
-| `Ctrl+L` | Clear screen |
+| `Ctrl+L` | Clear chat |
+| `Ctrl+C` | Exit |
 
 ## Slash Commands
 
 ```
 /help      - Interactive help menu
-/screen    - Take screenshot + AI description
+/screen    - Screenshot + AI description
 /task      - Execute multi-step automation
 /telegram  - Toggle Telegram bot
 /watch     - Toggle screen watching
-/clear     - Clear chat
+/memory    - View learned task patterns
+/provider  - Change AI provider/model
 /config    - Show configuration
+/clear     - Clear chat
 /quit      - Exit
 ```
 
-## Vision & Screen Analysis
+## Task Actions
 
-C-napse can see your screen and describe what's visible:
+C-napse understands these action types:
 
-```bash
-# Take screenshot and get AI description
-/screen
+**Apps & Windows:**
+- `open_app` - Open via Run dialog
+- `focus_window`, `minimize_window`, `maximize_window`, `close_window`, `restore_window`
 
-# Enable continuous screen watching
-/watch
-```
+**Input:**
+- `type_text`, `press_key`, `key_combo`, `click`
 
-Supports vision models from:
-- **Ollama**: llava, llama3.2-vision, bakllava
-- **OpenRouter**: claude-3-5-sonnet, gpt-4-vision
-- **Anthropic**: claude-3-5-sonnet
-- **OpenAI**: gpt-4-vision-preview
+**Files:**
+- `read_file`, `write_file`, `list_files`
+- `generate_code`, `edit_code` - AI-powered
 
-## Multi-Step Task Automation
+**Web (Playwright):**
+- `open_url`, `web_search`, `browse_and_ask`
+- `send_email` (gmail, outlook)
+- `google_sheets`, `google_docs`
+- `research` - Multi-step research
 
-Natural language task automation:
-
-```bash
-/task open notepad and type hello world
-/task open vscode, go to folder E:\Projects, then open terminal
-/task take a screenshot and describe what you see
-```
-
-The AI parses your request into steps and executes them sequentially.
-
-## Telegram Bot Control
-
-Control your PC remotely via Telegram:
-
-```bash
-# Set your Telegram bot token
-cnapse auth telegram YOUR_BOT_TOKEN
-
-# Start the bot (or use /telegram in the TUI)
-```
-
-**Telegram Commands:**
-- `/start` - Connect to C-napse
-- `/screen` - Receive screenshot
-- `/describe` - Screenshot + AI description
-- `/run <cmd>` - Execute shell command
-- `/status` - System status
-
-## Computer Control Tools
-
-C-napse can control your mouse, keyboard, and windows:
-
-**Mouse:**
-- `moveMouse(x, y)` - Move to coordinates
-- `clickMouse(button)` - Click left/right/middle
-- `doubleClick()` - Double click
-- `scrollMouse(amount)` - Scroll up/down
-- `dragMouse(x1, y1, x2, y2)` - Drag and drop
-
-**Keyboard:**
-- `typeText(text)` - Type text
-- `pressKey(key)` - Press single key
-- `keyCombo(keys)` - Key combination (e.g., Ctrl+C)
-
-**Windows:**
-- `getActiveWindow()` - Get focused window
-- `listWindows()` - List all windows
-- `focusWindow(title)` - Focus by title
+**Adaptive:**
+- `ask_llm` - Ask Perplexity/ChatGPT/Claude with screenshot
+- `learn_ui` - Analyze current screen
+- `adaptive_do` - Try task, ask for help if stuck
 
 ## Providers
 
 | Provider | Setup | Best For |
 |----------|-------|----------|
-| **Ollama** | `cnapse config set provider ollama` | Free, local, privacy |
-| **OpenRouter** | `cnapse auth openrouter KEY` | Many models, pay-per-use |
-| **Anthropic** | `cnapse auth anthropic KEY` | Claude models |
-| **OpenAI** | `cnapse auth openai KEY` | GPT models |
+| **Ollama** | Local, free | Privacy, offline |
+| **OpenRouter** | `cnapse auth openrouter KEY` | Budget, many models |
+| **Anthropic** | `cnapse auth anthropic KEY` | Best reasoning |
+| **OpenAI** | `cnapse auth openai KEY` | Reliable |
 
-### Default Models
+## Self-Learning
 
-| Provider | Default Model |
-|----------|---------------|
-| Ollama | `qwen2.5:0.5b` |
-| OpenRouter | `qwen/qwen-2.5-coder-32b-instruct` |
-| Anthropic | `claude-3-5-sonnet-20241022` |
-| OpenAI | `gpt-4o` |
+C-napse learns from successful tasks:
 
-## Agent Architecture
+```bash
+/memory              # View learned patterns
+/memory clear        # Reset memory
+```
 
-| Agent | Purpose |
-|-------|---------|
-| **Router** | Intent classification and query routing |
-| **Shell** | Shell commands, process management |
-| **Coder** | Code generation, editing, debugging |
-| **Filer** | File operations, search, organization |
-| **Computer** | Mouse, keyboard, window control |
-| **Vision** | Screen capture and analysis |
-
-## Available Tools
-
-**Shell Tools:**
-- `run_command` - Execute shell commands
-- `get_env` / `set_env` - Environment variables
-- `get_cwd` / `set_cwd` - Working directory
-
-**File Tools:**
-- `read_file` / `write_file` - File I/O
-- `list_dir` - Directory listing (recursive support)
-- `copy_file` / `move_path` / `delete_path` - File operations
-- `file_info` - File metadata
-- `find_files` - Glob pattern search
-
-**Process Tools:**
-- `list_processes` - List running processes
-- `process_info` - Get process details
-- `kill_process` - Terminate process
-- `find_process` - Search by name
-- `system_info` - System information
-
-**Network Tools:**
-- `check_port` - Port availability
-- `find_available_port` - Find free port in range
-- `check_connection` - Test host connectivity
-- `get_local_ip` - Local IP addresses
-- `list_interfaces` - Network interfaces
-- `fetch_url` - HTTP requests
-
-**Clipboard Tools:**
-- `get_clipboard` / `set_clipboard` - Clipboard access
-
-**Vision Tools:**
-- `takeScreenshot` - Capture screen
-- `describeCurrentScreen` - Screenshot + AI analysis
+The more you use `/task`, the smarter it gets - it remembers what worked.
 
 ## Configuration
 
-Config stored via [conf](https://github.com/sindresorhus/conf):
+```bash
+cnapse config              # Interactive config UI
+cnapse config show         # Show current config
+cnapse config set provider openrouter
+cnapse config set model gpt-4o
+cnapse auth telegram BOT_TOKEN
+```
 
+Config location:
 - **Windows:** `%APPDATA%\cnapse-nodejs\Config\config.json`
 - **macOS:** `~/Library/Preferences/cnapse-nodejs/config.json`
 - **Linux:** `~/.config/cnapse-nodejs/config.json`
 
-### CLI Configuration
-
-```bash
-# Set provider
-cnapse config set provider openrouter
-
-# Set model
-cnapse config set model gpt-4o
-
-# Set API key
-cnapse auth anthropic sk-ant-...
-
-# Set Telegram bot token
-cnapse auth telegram YOUR_BOT_TOKEN
-
-# View config
-cnapse config
-```
-
 ## System Requirements
 
 - **Node.js:** 18+
-- **OS:** Windows 10+, macOS, Linux
-- **RAM:** 4GB minimum (for local Ollama models)
+- **OS:** Windows 10+ (macOS/Linux coming soon)
+- **RAM:** 4GB+ (for local Ollama models)
+- **Chromium:** Installed via `npx playwright install chromium`
 
 ## Development
 
 ```bash
-# Clone the repo
 git clone https://github.com/projectservan8n/C-napse.git
 cd C-napse/cli
 
-# Install dependencies
 npm install
-
-# Run in development
-npm run dev
-
-# Build
-npm run build
-
-# Type check
-npm run typecheck
+npm run dev       # Development
+npm run build     # Build
+npm run typecheck # Type check
 ```
 
 ## License

@@ -776,9 +776,9 @@
                         <span class="gradient">C-napse</span>
                     </h1>
                     <p class="hero-subtitle">
-                        Autonomous PC intelligence. A neural agentic system that observes,
-                        reasons, and acts — transforming natural language into executed actions
-                        across your entire system.
+                        AI that sees your screen, controls your computer, and learns as it goes.
+                        Think Claude Code meets desktop automation — with vision, browser control,
+                        and the ability to ask other AIs for help when stuck.
                     </p>
 
                     <div class="install-section">
@@ -794,13 +794,13 @@
                         </div>
 
                         <div class="install-box" id="macos">
-                            <code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code>
-                            <button class="copy-btn" onclick="copyInstall('macos')">Copy</button>
+                            <code style="color: var(--text-muted);">Coming soon — Windows-first for now</code>
+                            <button class="copy-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Soon</button>
                         </div>
 
                         <div class="install-box" id="linux">
-                            <code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code>
-                            <button class="copy-btn" onclick="copyInstall('linux')">Copy</button>
+                            <code style="color: var(--text-muted);">Coming soon — Windows-first for now</code>
+                            <button class="copy-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Soon</button>
                         </div>
                     </div>
                 </div>
@@ -849,23 +849,25 @@
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                         </div>
-                        <h3>Screen Perception</h3>
+                        <h3>Vision & Screen Analysis</h3>
                         <p>
-                            Real-time visual context through screen capture and analysis.
-                            Understands what you're working on without explicit context.
+                            Takes screenshots and AI describes what's visible.
+                            Real-time visual context for smarter automation decisions.
                         </p>
                     </div>
 
                     <div class="feature-card animate-on-scroll delay-3">
                         <div class="feature-icon">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M2 12h20"></path>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                             </svg>
                         </div>
-                        <h3>Local Execution</h3>
+                        <h3>Web Automation</h3>
                         <p>
-                            Zero-latency tool execution with direct system access.
-                            Files, processes, shell commands — all native, all instant.
+                            Playwright-powered browser control. Search Google, send Gmail,
+                            create Google Sheets, research topics — all automated.
                         </p>
                     </div>
 
@@ -877,40 +879,42 @@
                                 <line x1="12" y1="22.08" x2="12" y2="12"></line>
                             </svg>
                         </div>
-                        <h3>Adaptive Memory</h3>
+                        <h3>Self-Learning</h3>
                         <p>
-                            Persistent context through vector embeddings. Learns your
-                            codebase patterns and retrieves relevant context semantically.
+                            Remembers successful task patterns. The more you use it,
+                            the smarter it gets at completing similar tasks.
                         </p>
                     </div>
 
                     <div class="feature-card animate-on-scroll delay-5">
                         <div class="feature-icon">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                <path d="M12 8V4H8"></path>
+                                <path d="M16 8V4h-4"></path>
+                                <path d="M8 8a4 4 0 1 0 0 8"></path>
+                                <path d="M16 8a4 4 0 1 1 0 8"></path>
+                                <path d="M8 16v4h4"></path>
+                                <path d="M16 16v4h-4"></path>
                             </svg>
                         </div>
-                        <h3>Cross-Device Sync</h3>
+                        <h3>Adaptive Agent</h3>
                         <p>
-                            Seamless continuity between desktop and mobile via Telegram
-                            integration. Your AI assistant, everywhere.
+                            Gets stuck? Asks Perplexity, ChatGPT, or Claude for help.
+                            Analyzes the current screen and suggests next actions.
                         </p>
                     </div>
 
                     <div class="feature-card animate-on-scroll delay-6">
                         <div class="feature-icon">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-                                <path d="m2 12 5 3 2-6 6 2 3-5"></path>
-                                <path d="m2 12 10 10"></path>
-                                <path d="m12 22 3-11 7 5"></path>
+                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                <line x1="12" y1="18" x2="12.01" y2="18"></line>
                             </svg>
                         </div>
-                        <h3>Provider Agnostic</h3>
+                        <h3>Telegram Remote</h3>
                         <p>
-                            Ollama for local inference, or connect to Anthropic, OpenAI,
-                            and more. Your models, your choice.
+                            Control your PC from Telegram. Send screenshots, execute commands,
+                            and automate tasks — all from your phone.
                         </p>
                     </div>
                 </div>
@@ -931,7 +935,7 @@
                 <div class="status-section animate-on-scroll delay-1">
                     <div class="status-header">
                         <h3>Components</h3>
-                        <span class="status-version">v0.1.0</span>
+                        <span class="status-version">v0.8.0</span>
                     </div>
                     <div class="status-table">
                         <div class="status-row">
@@ -939,40 +943,40 @@
                                 <div class="status-name">CLI Runtime</div>
                                 <div class="status-desc">Core TUI interface and command execution</div>
                             </div>
-                            <span class="status-badge alpha">Alpha</span>
+                            <span class="status-badge stable">Stable</span>
                         </div>
                         <div class="status-row">
                             <div>
-                                <div class="status-name">Agent Router</div>
-                                <div class="status-desc">Multi-agent orchestration and routing</div>
-                            </div>
-                            <span class="status-badge preview">Preview</span>
-                        </div>
-                        <div class="status-row">
-                            <div>
-                                <div class="status-name">Tool System</div>
-                                <div class="status-desc">File, process, and shell operations</div>
+                                <div class="status-name">Task Automation</div>
+                                <div class="status-desc">Multi-step task parsing and execution</div>
                             </div>
                             <span class="status-badge stable">Stable</span>
                         </div>
                         <div class="status-row">
                             <div>
-                                <div class="status-name">Screen Watcher</div>
-                                <div class="status-desc">Visual context capture and analysis</div>
+                                <div class="status-name">Web Automation</div>
+                                <div class="status-desc">Playwright-powered browser control</div>
                             </div>
-                            <span class="status-badge preview">Preview</span>
+                            <span class="status-badge stable">Stable</span>
                         </div>
                         <div class="status-row">
                             <div>
-                                <div class="status-name">Memory System</div>
-                                <div class="status-desc">Vector embeddings and semantic retrieval</div>
+                                <div class="status-name">Vision System</div>
+                                <div class="status-desc">Screenshot capture and AI analysis</div>
+                            </div>
+                            <span class="status-badge stable">Stable</span>
+                        </div>
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">Self-Learning</div>
+                                <div class="status-desc">Task pattern memory and learning</div>
                             </div>
                             <span class="status-badge alpha">Alpha</span>
                         </div>
                         <div class="status-row">
                             <div>
                                 <div class="status-name">Telegram Bot</div>
-                                <div class="status-desc">Mobile interface and notifications</div>
+                                <div class="status-desc">Remote PC control from mobile</div>
                             </div>
                             <span class="status-badge stable">Stable</span>
                         </div>

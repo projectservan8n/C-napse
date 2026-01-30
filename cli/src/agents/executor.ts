@@ -12,7 +12,7 @@ import * as clipboard from '../tools/clipboard.js';
 import * as network from '../tools/network.js';
 import * as processTools from '../tools/process.js';
 import * as computer from '../tools/computer.js';
-import * as vision from '../tools/vision.js';
+import { describeScreen, captureScreenshot } from '../lib/vision.js';
 
 /**
  * Execute a tool call and return the result
@@ -136,19 +136,26 @@ export async function executeTool(call: ToolCall): Promise<ToolResult> {
 
       // Vision tools
       case 'takeScreenshot':
-        const screenshotResult = await vision.takeScreenshot();
-        return {
-          success: screenshotResult.success,
-          output: screenshotResult.screenshot || '',
-          error: screenshotResult.error,
-        };
+        try {
+          const screenshot = await captureScreenshot();
+          return {
+            success: !!screenshot,
+            output: screenshot || '',
+            error: screenshot ? undefined : 'Failed to capture screenshot',
+          };
+        } catch (e) {
+          return { success: false, output: '', error: e instanceof Error ? e.message : 'Screenshot failed' };
+        }
       case 'describeCurrentScreen':
-        const visionResult = await vision.describeCurrentScreen();
-        return {
-          success: visionResult.success,
-          output: visionResult.description || '',
-          error: visionResult.error,
-        };
+        try {
+          const visionResult = await describeScreen();
+          return {
+            success: true,
+            output: visionResult.description,
+          };
+        } catch (e) {
+          return { success: false, output: '', error: e instanceof Error ? e.message : 'Vision failed' };
+        }
 
       default:
         return { success: false, output: '', error: `Unknown tool: ${name}` };
