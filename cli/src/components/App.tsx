@@ -18,6 +18,7 @@ export function App() {
   const [overlay, setOverlay] = useState<OverlayType>('none');
   const [screenWatch, setScreenWatch] = useState(false);
   const [status, setStatus] = useState('Ready');
+  const [inputValue, setInputValue] = useState('');
 
   // Feature hooks
   const chat = useChat(screenWatch);
@@ -204,6 +205,7 @@ export function App() {
   // Submit handler
   const handleSubmit = useCallback(async (value: string) => {
     if (!value.trim()) return;
+    setInputValue(''); // Clear input immediately
 
     if (value.startsWith('/')) {
       await handleCommand(value);
@@ -270,8 +272,8 @@ export function App() {
       )}
 
       <ChatInput
-        value=""
-        onChange={() => {}}
+        value={inputValue}
+        onChange={setInputValue}
         onSubmit={handleSubmit}
         isProcessing={isProcessing}
       />
