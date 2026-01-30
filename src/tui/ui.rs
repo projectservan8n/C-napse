@@ -140,9 +140,7 @@ fn draw_messages(frame: &mut Frame, area: Rect, app: &TuiApp) {
                 while !remaining.is_empty() {
                     let (chunk, rest) = if remaining.len() > max_width {
                         // Try to break at word boundary
-                        let break_at = remaining[..max_width]
-                            .rfind(' ')
-                            .unwrap_or(max_width);
+                        let break_at = remaining[..max_width].rfind(' ').unwrap_or(max_width);
                         let break_at = if break_at == 0 { max_width } else { break_at };
                         (&remaining[..break_at], remaining[break_at..].trim_start())
                     } else {
@@ -205,7 +203,8 @@ fn draw_messages(frame: &mut Frame, area: Rect, app: &TuiApp) {
 
     // Skip items based on scroll offset to show latest messages
     let visible_items: Vec<ListItem> = items.into_iter().skip(scroll_offset).collect();
-    let list = List::new(visible_items).highlight_style(Style::default().add_modifier(Modifier::BOLD));
+    let list =
+        List::new(visible_items).highlight_style(Style::default().add_modifier(Modifier::BOLD));
 
     frame.render_widget(list, inner);
 
