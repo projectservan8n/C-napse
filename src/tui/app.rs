@@ -465,7 +465,7 @@ impl TuiApp {
 
     async fn handle_command(&mut self, cmd: &str) -> Result<()> {
         let parts: Vec<&str> = cmd.split_whitespace().collect();
-        let command = parts.first().map(|s| *s).unwrap_or("");
+        let command = parts.first().copied().unwrap_or("");
 
         match command {
             "/help" => {

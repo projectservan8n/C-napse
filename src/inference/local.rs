@@ -5,6 +5,7 @@ use crate::config::Settings;
 use crate::error::CnapseError;
 use async_trait::async_trait;
 
+#[allow(dead_code)]
 pub struct LocalBackend {
     settings: Settings,
 }
@@ -31,7 +32,7 @@ impl InferenceBackend for LocalBackend {
         paths.list_models().map(|m| !m.is_empty()).unwrap_or(false)
     }
 
-    async fn infer(&self, request: InferenceRequest) -> Result<InferenceResponse, CnapseError> {
+    async fn infer(&self, _request: InferenceRequest) -> Result<InferenceResponse, CnapseError> {
         // TODO: Implement actual llama.cpp inference
         // This is a placeholder that returns an error
 

@@ -209,6 +209,7 @@ impl ScreenWatcher {
 }
 
 /// Screen region for partial captures
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct ScreenRegion {
     pub x: i32,

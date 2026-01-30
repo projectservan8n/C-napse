@@ -42,7 +42,7 @@ pub async fn start_server(
     Ok(())
 }
 
-fn create_router(no_web: bool, no_auth: bool, settings: Settings) -> Result<Router> {
+fn create_router(no_web: bool, _no_auth: bool, _settings: Settings) -> Result<Router> {
     // API routes
     let api_routes = Router::new()
         .route("/health", get(api::health))

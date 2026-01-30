@@ -63,7 +63,7 @@ impl PhoneSync {
     }
 
     /// Send a message to phone
-    pub async fn send(&self, msg: SyncMessage) -> Result<()> {
+    pub async fn send(&self, _msg: SyncMessage) -> Result<()> {
         // TODO: Implement send
         Err(CnapseError::network("Phone sync not yet implemented"))
     }

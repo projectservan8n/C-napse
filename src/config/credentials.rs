@@ -106,7 +106,7 @@ impl Credentials {
             _ => None,
         };
 
-        key.map(|k| SecretString::new(k.clone().into()))
+        key.map(|k| SecretString::new(k.clone()))
     }
 
     /// Set API key for a provider
@@ -189,6 +189,7 @@ impl Credentials {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use secrecy::ExposeSecret;
     use tempfile::TempDir;
 
     #[test]

@@ -5,6 +5,7 @@ use std::time::Duration;
 use tokio::sync::mpsc;
 
 /// Application events
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum AppEvent {
     /// Key press
@@ -28,6 +29,7 @@ pub enum AppEvent {
 }
 
 /// Event handler for async event processing
+#[allow(dead_code)]
 pub struct EventHandler {
     rx: mpsc::UnboundedReceiver<AppEvent>,
     _tx: mpsc::UnboundedSender<AppEvent>,
@@ -81,6 +83,7 @@ impl EventHandler {
 }
 
 /// Key binding configuration
+#[allow(dead_code)]
 pub struct KeyBindings {
     pub exit: (KeyCode, KeyModifiers),
     pub clear: (KeyCode, KeyModifiers),

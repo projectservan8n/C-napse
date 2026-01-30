@@ -136,7 +136,7 @@ async fn pull(model: &str, file: Option<&str>) -> Result<()> {
             // Try to guess the GGUF file
             if model.to_lowercase().contains("gguf") {
                 // Already specifies GGUF
-                model.split('/').last().unwrap_or(model)
+                model.split('/').next_back().unwrap_or(model)
             } else {
                 // Default to Q4_K_M quantization
                 ""
@@ -145,7 +145,7 @@ async fn pull(model: &str, file: Option<&str>) -> Result<()> {
         (model.to_string(), filename.to_string())
     } else if model.starts_with("http") {
         // Direct URL
-        let filename = model.split('/').last().unwrap_or("model.gguf");
+        let filename = model.split('/').next_back().unwrap_or("model.gguf");
         (model.to_string(), filename.to_string())
     } else {
         // Just a filename - assume it's a known model
@@ -180,11 +180,9 @@ async fn pull(model: &str, file: Option<&str>) -> Result<()> {
     // Download the file
     let dest_path = paths.models.join(&filename);
 
-    if dest_path.exists() {
-        if !ui::confirm(&format!("{} already exists. Overwrite?", filename)) {
-            ui::info("Cancelled.");
-            return Ok(());
-        }
+    if dest_path.exists() && !ui::confirm(&format!("{} already exists. Overwrite?", filename)) {
+        ui::info("Cancelled.");
+        return Ok(());
     }
 
     ui::info(&format!("Downloading to: {}", dest_path.display()));

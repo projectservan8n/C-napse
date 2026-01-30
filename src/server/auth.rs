@@ -70,6 +70,7 @@ pub fn generate_api_key() -> String {
 }
 
 // Add rand dependency for key generation
+#[allow(dead_code)]
 fn rand_bytes() -> [u8; 32] {
     let mut bytes = [0u8; 32];
     // Use system time as entropy source (not cryptographically secure, but ok for API keys)

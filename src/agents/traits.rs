@@ -74,7 +74,7 @@ pub struct ToolCall {
 }
 
 /// Context provided to an agent for execution
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct AgentContext {
     /// Conversation messages
     pub messages: Vec<AgentMessage>,
@@ -86,18 +86,6 @@ pub struct AgentContext {
     pub provider_override: Option<String>,
     /// Current working directory
     pub cwd: Option<String>,
-}
-
-impl Default for AgentContext {
-    fn default() -> Self {
-        Self {
-            messages: Vec::new(),
-            tools: Vec::new(),
-            memory: None,
-            provider_override: None,
-            cwd: None,
-        }
-    }
 }
 
 /// Response from an agent

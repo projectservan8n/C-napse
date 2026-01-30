@@ -36,6 +36,7 @@ pub struct OllamaBackend {
     settings: Settings,
 }
 
+#[allow(dead_code)]
 #[derive(Serialize)]
 struct OllamaGenerateRequest {
     model: String,
@@ -82,6 +83,7 @@ struct OllamaOptions {
     num_thread: Option<usize>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize)]
 struct OllamaChatResponse {
     message: OllamaMessage,
@@ -102,6 +104,7 @@ struct OllamaTagsResponse {
     models: Vec<OllamaModelInfo>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize)]
 struct OllamaModelInfo {
     name: String,
@@ -110,6 +113,7 @@ struct OllamaModelInfo {
     details: OllamaModelDetails,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Default)]
 struct OllamaModelDetails {
     #[serde(default)]

@@ -37,7 +37,7 @@ pub async fn create_backend(
             let backend = openrouter::OpenRouterBackend::new(settings.clone())?;
             Ok(Arc::new(backend))
         }
-        "local" | _ => {
+        _ => {
             // Default to Ollama for local
             let backend = OllamaBackend::new(settings.clone());
             Ok(Arc::new(backend))

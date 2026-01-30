@@ -45,7 +45,7 @@ pub async fn execute_query(
     provider: Option<&str>,
     agent: Option<&str>,
     output_format: Option<&str>,
-    use_memory: bool,
+    _use_memory: bool,
     settings: Option<Settings>,
 ) -> Result<()> {
     let settings = settings
@@ -112,7 +112,7 @@ async fn process_query(
     Ok((agent, response))
 }
 
-async fn route_query(query: &str, provider: &str, settings: &Settings) -> Result<String> {
+async fn route_query(query: &str, _provider: &str, _settings: &Settings) -> Result<String> {
     // Simple keyword-based routing for now
     // In full implementation, this would use the router agent
     let query_lower = query.to_lowercase();

@@ -48,7 +48,7 @@ pub async fn run_bot(token: String, settings: Settings) -> Result<()> {
 async fn handle_command(text: &str) -> String {
     let parts: Vec<&str> = text.splitn(2, ' ').collect();
     let command = parts[0].trim_start_matches('/');
-    let args = parts.get(1).map(|s| *s).unwrap_or("");
+    let args = parts.get(1).copied().unwrap_or("");
 
     match command {
         "start" => r#"🤖 Welcome to C-napse!

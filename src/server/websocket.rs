@@ -102,7 +102,7 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
                     code: "PARSE_ERROR".to_string(),
                 };
                 let _ = sender
-                    .send(Message::Text(serde_json::to_string(&error).unwrap().into()))
+                    .send(Message::Text(serde_json::to_string(&error).unwrap()))
                     .await;
                 continue;
             }
@@ -110,7 +110,7 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
 
         // Handle message
         match client_msg {
-            ClientMessage::Auth { key } => {
+            ClientMessage::Auth { key: _ } => {
                 // TODO: Validate key against credentials
                 authenticated = true;
                 let response = ServerMessage::Response {
@@ -130,9 +130,9 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
             ClientMessage::Chat {
                 id,
                 content,
-                provider,
+                provider: _,
                 agent,
-                stream,
+                stream: _,
             } => {
                 if !authenticated {
                     let error = ServerMessage::Error {
@@ -141,7 +141,7 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
                         code: "AUTH_REQUIRED".to_string(),
                     };
                     let _ = sender
-                        .send(Message::Text(serde_json::to_string(&error).unwrap().into()))
+                        .send(Message::Text(serde_json::to_string(&error).unwrap()))
                         .await;
                     continue;
                 }

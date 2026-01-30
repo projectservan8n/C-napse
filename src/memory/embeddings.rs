@@ -17,7 +17,7 @@ impl EmbeddingsManager {
     }
 
     /// Generate embedding for text
-    pub fn embed(&self, text: &str) -> Result<Embedding> {
+    pub fn embed(&self, _text: &str) -> Result<Embedding> {
         // TODO: Implement using fastembed
         // For now, return a placeholder
 
@@ -67,6 +67,7 @@ impl EmbeddingsManager {
     }
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for EmbeddingsManager {
     fn default() -> Self {
         Self {}

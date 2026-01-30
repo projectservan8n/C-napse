@@ -9,6 +9,7 @@ use secrecy::ExposeSecret;
 const API_URL: &str = "https://api.anthropic.com/v1/messages";
 const API_VERSION: &str = "2023-06-01";
 
+#[allow(dead_code)]
 pub struct AnthropicBackend {
     client: reqwest::Client,
     settings: Settings,

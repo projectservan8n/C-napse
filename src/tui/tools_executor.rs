@@ -23,6 +23,7 @@ pub struct ToolResult {
 }
 
 /// Tool executor for running tools within the TUI
+#[derive(Default)]
 pub struct ToolExecutor {
     /// Whether to show verbose output
     verbose: bool,
@@ -30,7 +31,7 @@ pub struct ToolExecutor {
 
 impl ToolExecutor {
     pub fn new() -> Self {
-        Self { verbose: false }
+        Self::default()
     }
 
     pub fn verbose(mut self, verbose: bool) -> Self {

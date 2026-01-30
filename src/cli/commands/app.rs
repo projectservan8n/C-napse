@@ -159,7 +159,7 @@ async fn create(name: &str, framework: &str, _settings: Option<Settings>) -> Res
     Ok(())
 }
 
-fn create_vue_template(app_dir: &PathBuf, name: &str) -> Result<()> {
+fn create_vue_template(app_dir: &std::path::Path, name: &str) -> Result<()> {
     let index_html = format!(
         r#"<!DOCTYPE html>
 <html lang="en">
@@ -259,7 +259,7 @@ button:hover {
     Ok(())
 }
 
-fn create_react_template(app_dir: &PathBuf, name: &str) -> Result<()> {
+fn create_react_template(app_dir: &std::path::Path, name: &str) -> Result<()> {
     let index_html = format!(
         r#"<!DOCTYPE html>
 <html lang="en">
@@ -349,7 +349,7 @@ button:hover {
     Ok(())
 }
 
-fn create_svelte_template(app_dir: &PathBuf, name: &str) -> Result<()> {
+fn create_svelte_template(app_dir: &std::path::Path, name: &str) -> Result<()> {
     // Svelte needs a build step, so we'll use a simple standalone version
     let index_html = format!(
         r#"<!DOCTYPE html>
@@ -433,7 +433,7 @@ button:hover {
     Ok(())
 }
 
-fn create_vanilla_template(app_dir: &PathBuf, name: &str) -> Result<()> {
+fn create_vanilla_template(app_dir: &std::path::Path, name: &str) -> Result<()> {
     let index_html = format!(
         r#"<!DOCTYPE html>
 <html lang="en">
@@ -657,7 +657,7 @@ async fn export(app_id: &str, output: Option<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-async fn import(path: &PathBuf) -> Result<()> {
+async fn import(path: &std::path::Path) -> Result<()> {
     if !path.exists() {
         return Err(CnapseError::not_found(format!(
             "File not found: {}",

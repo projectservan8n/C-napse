@@ -69,7 +69,7 @@ impl InferenceBackend for OpenRouterBackend {
             body["stop"] = serde_json::json!(request.stop);
         }
 
-        let mut req = self
+        let req = self
             .client
             .post(API_URL)
             .header(

@@ -165,9 +165,9 @@ pub fn file_info(path: &str) -> ToolResult {
             let modified = meta
                 .modified()
                 .ok()
-                .and_then(|t| {
+                .map(|t| {
                     let datetime: chrono::DateTime<chrono::Local> = t.into();
-                    Some(datetime.format("%Y-%m-%d %H:%M:%S").to_string())
+                    datetime.format("%Y-%m-%d %H:%M:%S").to_string()
                 })
                 .unwrap_or_else(|| "unknown".to_string());
 

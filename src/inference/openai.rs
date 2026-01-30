@@ -8,6 +8,7 @@ use secrecy::ExposeSecret;
 
 const API_URL: &str = "https://api.openai.com/v1/chat/completions";
 
+#[allow(dead_code)]
 pub struct OpenAIBackend {
     client: reqwest::Client,
     settings: Settings,

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 /// Main settings structure
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Settings {
     #[serde(default)]
     pub general: GeneralConfig,
@@ -238,7 +238,7 @@ pub struct ServerConfig {
 }
 
 /// Telegram bot settings
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct TelegramConfig {
     #[serde(default)]
     pub enabled: bool,
@@ -543,16 +543,6 @@ impl Default for ServerConfig {
     }
 }
 
-impl Default for TelegramConfig {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            allowed_users: Vec::new(),
-            webhook_url: String::new(),
-        }
-    }
-}
-
 impl Default for SyncConfig {
     fn default() -> Self {
         Self {
@@ -569,24 +559,6 @@ impl Default for AppsConfig {
             storage_dir: default_apps_dir(),
             max_apps: default_max_apps(),
             default_framework: default_framework(),
-        }
-    }
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            general: GeneralConfig::default(),
-            local: LocalConfig::default(),
-            ollama: OllamaConfig::default(),
-            anthropic: AnthropicConfig::default(),
-            openai: OpenAIConfig::default(),
-            openrouter: OpenRouterConfig::default(),
-            memory: MemoryConfig::default(),
-            server: ServerConfig::default(),
-            telegram: TelegramConfig::default(),
-            sync: SyncConfig::default(),
-            apps: AppsConfig::default(),
         }
     }
 }
@@ -721,7 +693,7 @@ impl Settings {
             "openai" => self.openai.model.clone(),
             "openrouter" => self.openrouter.model.clone(),
             "ollama" => self.ollama.agents.router.clone(),
-            "local" | _ => self.local.agents.router.clone(),
+            _ => self.local.agents.router.clone(),
         }
     }
 }

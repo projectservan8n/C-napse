@@ -211,7 +211,7 @@ async fn print_status(settings: &Settings) {
 async fn handle_slash_command(input: &str, settings: &Settings) -> Result<()> {
     let parts: Vec<&str> = input.splitn(2, ' ').collect();
     let command = parts[0].trim_start_matches('/');
-    let args = parts.get(1).map(|s| *s).unwrap_or("");
+    let args = parts.get(1).copied().unwrap_or("");
 
     match command {
         "shell" | "sh" => {

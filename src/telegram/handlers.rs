@@ -8,7 +8,7 @@ pub fn is_authorized(user_id: i64, allowed_users: &[i64]) -> bool {
 }
 
 /// Handle text message (natural language query)
-pub async fn handle_text_message(text: &str, settings: &Settings) -> String {
+pub async fn handle_text_message(text: &str, _settings: &Settings) -> String {
     // Route the query through the agent system
     // For now, return a placeholder
     format!(
