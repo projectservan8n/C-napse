@@ -7,12 +7,22 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap, Scrollbar, ScrollbarOrientation, ScrollbarState},
 };
 
+/// ASCII banner for the header
+const ASCII_BANNER: &[&str] = &[
+    r"  ██████╗      ███╗   ██╗ █████╗ ██████╗ ███████╗███████╗",
+    r" ██╔════╝      ████╗  ██║██╔══██╗██╔══██╗██╔════╝██╔════╝",
+    r" ██║     █████╗██╔██╗ ██║███████║██████╔╝███████╗█████╗  ",
+    r" ██║     ╚════╝██║╚██╗██║██╔══██║██╔═══╝ ╚════██║██╔══╝  ",
+    r" ╚██████╗      ██║ ╚████║██║  ██║██║     ███████║███████╗",
+    r"  ╚═════╝      ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝     ╚══════╝╚══════╝",
+];
+
 /// Draw the entire UI
 pub fn draw(frame: &mut Frame, app: &TuiApp) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1),  // Header
+            Constraint::Length(8),  // ASCII Header
             Constraint::Min(5),     // Messages
             Constraint::Length(3),  // Input
             Constraint::Length(1),  // Status bar
@@ -26,17 +36,39 @@ pub fn draw(frame: &mut Frame, app: &TuiApp) {
 }
 
 fn draw_header(frame: &mut Frame, area: Rect, app: &TuiApp) {
-    let header_text = format!(
-        " C-napse │ {} │ {} {}",
+    let block = Block::default()
+        .borders(Borders::BOTTOM)
+        .border_style(Style::default().fg(Color::DarkGray));
+
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    // Build the banner lines
+    let mut lines: Vec<Line> = Vec::new();
+
+    for banner_line in ASCII_BANNER {
+        lines.push(Line::from(Span::styled(
+            *banner_line,
+            Style::default().fg(Color::Cyan).bold(),
+        )));
+    }
+
+    // Add status line below banner
+    let status_line = format!(
+        "                    {} │ {} {}",
         app.settings.get_default_provider(),
         app.settings.get_default_model(),
-        if app.screen_watching { "│ 🖥️ Watching" } else { "" }
+        if app.screen_watching { "│ 🖥️ Screen Watch ON" } else { "" }
     );
+    lines.push(Line::from(Span::styled(
+        status_line,
+        Style::default().fg(Color::DarkGray),
+    )));
 
-    let header = Paragraph::new(header_text)
-        .style(Style::default().bg(Color::Blue).fg(Color::White).bold());
+    let banner = Paragraph::new(lines)
+        .alignment(Alignment::Center);
 
-    frame.render_widget(header, area);
+    frame.render_widget(banner, inner);
 }
 
 fn draw_messages(frame: &mut Frame, area: Rect, app: &TuiApp) {
