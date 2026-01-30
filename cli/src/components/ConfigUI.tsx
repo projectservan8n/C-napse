@@ -122,8 +122,13 @@ export function ConfigUI() {
         const recommendedIdx = provider.models.findIndex(m => m.recommended);
         setModelIndex(recommendedIdx >= 0 ? recommendedIdx : 0);
 
-        if (provider.needsApiKey && !config.apiKeys[provider.id]) {
-          setStep('apiKey');
+        if (provider.needsApiKey) {
+          const apiKeyProvider = provider.id as 'openrouter' | 'anthropic' | 'openai';
+          if (!config.apiKeys[apiKeyProvider]) {
+            setStep('apiKey');
+          } else {
+            setStep('model');
+          }
         } else {
           setStep('model');
         }
@@ -234,7 +239,7 @@ export function ConfigUI() {
                     {isSelected ? '❯ ' : '  '}
                     <Text bold={isSelected}>{p.name}</Text>
                     {isCurrent && <Text color="green"> (current)</Text>}
-                    {p.needsApiKey && config.apiKeys[p.id] && <Text color="yellow"> (key saved)</Text>}
+                    {p.needsApiKey && p.id !== 'ollama' && config.apiKeys[p.id as 'openrouter' | 'anthropic' | 'openai'] && <Text color="yellow"> (key saved)</Text>}
                   </Text>
                   {isSelected && (
                     <Text color="gray">    {p.description}</Text>

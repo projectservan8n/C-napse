@@ -139,8 +139,13 @@ export function ProviderSelector({ onClose, onSelect }: ProviderSelectorProps) {
         setModelIndex(currentIdx >= 0 ? currentIdx : (recommendedIdx >= 0 ? recommendedIdx : 0));
 
         // Check if we need API key
-        if (provider.needsApiKey && !config.apiKeys[provider.id]) {
-          setStep('apiKey');
+        if (provider.needsApiKey) {
+          const apiKeyProvider = provider.id as 'openrouter' | 'anthropic' | 'openai';
+          if (!config.apiKeys[apiKeyProvider]) {
+            setStep('apiKey');
+          } else {
+            setStep('model');
+          }
         } else {
           setStep('model');
         }
@@ -198,7 +203,9 @@ export function ProviderSelector({ onClose, onSelect }: ProviderSelectorProps) {
         {PROVIDERS.map((provider, index) => {
           const isSelected = index === providerIndex;
           const isCurrent = provider.id === config.provider;
-          const hasKey = provider.needsApiKey ? !!config.apiKeys[provider.id] : true;
+          const hasKey = provider.needsApiKey && provider.id !== 'ollama'
+            ? !!config.apiKeys[provider.id as 'openrouter' | 'anthropic' | 'openai']
+            : true;
 
           return (
             <Box key={provider.id} flexDirection="column">
