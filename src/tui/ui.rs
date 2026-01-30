@@ -122,7 +122,15 @@ fn draw_messages(frame: &mut Frame, area: Rect, app: &TuiApp) {
         };
 
         // Split content into lines and add wrapping
-        for line in msg.content.lines() {
+        let content = if msg.content.is_empty() && msg.is_streaming {
+            "Thinking..."
+        } else if msg.content.is_empty() {
+            "(no response)"
+        } else {
+            &msg.content
+        };
+
+        for line in content.lines() {
             items.push(ListItem::new(Line::from(Span::styled(
                 format!("  {}", line),
                 content_style,

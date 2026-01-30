@@ -437,7 +437,13 @@ impl TuiApp {
         };
 
         let response = backend.infer(request).await?;
-        Ok(response.content)
+
+        // Ensure we don't return empty content
+        if response.content.trim().is_empty() {
+            Ok("I received your message but got an empty response. This might be a temporary API issue.".to_string())
+        } else {
+            Ok(response.content)
+        }
     }
 
 
