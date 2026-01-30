@@ -1,4 +1,5 @@
 import { getConfig, getApiKey } from './config.js';
+import { getSystemContext, getCwd } from './system.js';
 
 export interface Message {
   role: 'system' | 'user' | 'assistant';
@@ -10,19 +11,36 @@ export interface ChatResponse {
   model: string;
 }
 
-const SYSTEM_PROMPT = `You are C-napse, a helpful AI assistant for PC automation running on the user's desktop.
-You can help with coding, file management, shell commands, and more. Be concise and helpful.
+const BASE_PROMPT = `You are C-napse, an AI assistant for PC automation running on the user's desktop.
+You have access to their system and can help with coding, file management, shell commands, and more.
 
 When responding:
 - Be direct and practical
 - Use markdown formatting for code blocks
-- If asked to do something, explain what you'll do first`;
+- If asked to do something, explain what you'll do first
+- Give commands specific to the user's OS (use the system info below)
+- Be aware of the user's current working directory`;
+
+// Cache system context to avoid repeated calls
+let systemContextCache: string | null = null;
+
+async function getSystemPrompt(): Promise<string> {
+  if (!systemContextCache) {
+    systemContextCache = await getSystemContext();
+  }
+  const cwd = getCwd();
+  return `${BASE_PROMPT}
+
+${systemContextCache}
+- Current directory: ${cwd}`;
+}
 
 export async function chat(messages: Message[], systemPrompt?: string): Promise<ChatResponse> {
   const config = getConfig();
+  const finalPrompt = systemPrompt || await getSystemPrompt();
 
   const allMessages: Message[] = [
-    { role: 'system', content: systemPrompt || SYSTEM_PROMPT },
+    { role: 'system', content: finalPrompt },
     ...messages,
   ];
 
