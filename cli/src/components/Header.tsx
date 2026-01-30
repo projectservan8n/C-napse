@@ -11,7 +11,11 @@ const ASCII_BANNER = `
   ╚═════╝      ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝     ╚══════╝╚══════╝
 `.trim();
 
-export function Header() {
+interface HeaderProps {
+  screenWatch?: boolean;
+}
+
+export function Header({ screenWatch = false }: HeaderProps) {
   const config = getConfig();
 
   return (
@@ -20,6 +24,7 @@ export function Header() {
       <Box justifyContent="center">
         <Text color="gray">
           {config.provider} │ {config.model}
+          {screenWatch && <Text color="yellow"> │ 🖥️ Screen Watch ON</Text>}
         </Text>
       </Box>
     </Box>

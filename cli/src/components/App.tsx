@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
 import { Header } from './Header.js';
 import { ChatMessage } from './ChatMessage.js';
 import { ChatInput } from './ChatInput.js';
 import { StatusBar } from './StatusBar.js';
 import { chat, Message } from '../lib/api.js';
+import { getScreenDescription } from '../lib/screen.js';
 
 interface ChatMsg {
   id: string;
@@ -20,7 +21,7 @@ export function App() {
     {
       id: '0',
       role: 'system',
-      content: 'Welcome to C-napse! Type your message and press Enter.\n\nShortcuts:\n  Ctrl+C - Exit\n  /clear - Clear chat\n  /help  - Show help',
+      content: 'Welcome to C-napse! Type your message and press Enter.\n\nShortcuts:\n  Ctrl+C - Exit\n  Ctrl+W - Toggle screen watch\n  /clear - Clear chat\n  /help  - Show help',
       timestamp: new Date(),
     },
   ]);
@@ -28,6 +29,28 @@ export function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState('Ready');
   const [error, setError] = useState<string | null>(null);
+  const [screenWatch, setScreenWatch] = useState(false);
+  const screenContextRef = useRef<string | null>(null);
+
+  // Screen watching effect
+  useEffect(() => {
+    if (!screenWatch) {
+      screenContextRef.current = null;
+      return;
+    }
+
+    const checkScreen = async () => {
+      const desc = await getScreenDescription();
+      if (desc) {
+        screenContextRef.current = desc;
+      }
+    };
+
+    checkScreen();
+    const interval = setInterval(checkScreen, 5000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [screenWatch]);
 
   useInput((inputChar, key) => {
     if (key.ctrl && inputChar === 'c') {
@@ -36,6 +59,17 @@ export function App() {
     if (key.ctrl && inputChar === 'l') {
       setMessages([messages[0]!]); // Keep welcome message
       setError(null);
+    }
+    if (key.ctrl && inputChar === 'w') {
+      setScreenWatch((prev) => {
+        const newState = !prev;
+        addSystemMessage(
+          newState
+            ? '🖥️ Screen watching enabled. AI will have context of your screen.'
+            : '🖥️ Screen watching disabled.'
+        );
+        return newState;
+      });
     }
   });
 
@@ -84,7 +118,13 @@ export function App() {
         .slice(-10)
         .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-      apiMessages.push({ role: 'user', content: userInput });
+      // Add screen context if watching
+      let finalInput = userInput;
+      if (screenWatch && screenContextRef.current) {
+        finalInput = `[Screen context: ${screenContextRef.current}]\n\n${userInput}`;
+      }
+
+      apiMessages.push({ role: 'user', content: finalInput });
 
       const response = await chat(apiMessages);
 
@@ -149,7 +189,7 @@ export function App() {
 
   return (
     <Box flexDirection="column" height="100%">
-      <Header />
+      <Header screenWatch={screenWatch} />
 
       <Box flexDirection="column" flexGrow={1} borderStyle="round" borderColor="gray" padding={1}>
         <Text bold color="gray"> Chat </Text>
