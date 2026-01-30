@@ -13,9 +13,10 @@ const ASCII_BANNER = `
 
 interface HeaderProps {
   screenWatch?: boolean;
+  telegramEnabled?: boolean;
 }
 
-export function Header({ screenWatch = false }: HeaderProps) {
+export function Header({ screenWatch = false, telegramEnabled = false }: HeaderProps) {
   const config = getConfig();
 
   return (
@@ -24,8 +25,12 @@ export function Header({ screenWatch = false }: HeaderProps) {
       <Box justifyContent="center">
         <Text color="gray">
           {config.provider} │ {config.model}
-          {screenWatch && <Text color="yellow"> │ 🖥️ Screen Watch ON</Text>}
+          {screenWatch && <Text color="yellow"> │ 🖥️ Screen</Text>}
+          {telegramEnabled && <Text color="blue"> │ 📱 Telegram</Text>}
         </Text>
+      </Box>
+      <Box justifyContent="center">
+        <Text color="gray" dimColor>Press Ctrl+H for help</Text>
       </Box>
     </Box>
   );

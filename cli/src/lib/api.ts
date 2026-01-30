@@ -18,11 +18,11 @@ When responding:
 - Use markdown formatting for code blocks
 - If asked to do something, explain what you'll do first`;
 
-export async function chat(messages: Message[]): Promise<ChatResponse> {
+export async function chat(messages: Message[], systemPrompt?: string): Promise<ChatResponse> {
   const config = getConfig();
 
   const allMessages: Message[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: systemPrompt || SYSTEM_PROMPT },
     ...messages,
   ];
 

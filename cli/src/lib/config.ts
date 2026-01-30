@@ -7,11 +7,16 @@ interface ConfigSchema {
     openrouter?: string;
     anthropic?: string;
     openai?: string;
+    telegram?: string;
   };
   ollamaHost: string;
   openrouter: {
     siteUrl: string;
     appName: string;
+  };
+  telegram: {
+    chatId?: number;
+    enabled: boolean;
   };
 }
 
@@ -26,6 +31,9 @@ const config = new Conf<ConfigSchema>({
       siteUrl: 'https://github.com/projectservan8n/C-napse',
       appName: 'C-napse',
     },
+    telegram: {
+      enabled: false,
+    },
   },
 });
 
@@ -36,6 +44,7 @@ export function getConfig() {
     apiKeys: config.get('apiKeys'),
     ollamaHost: config.get('ollamaHost'),
     openrouter: config.get('openrouter'),
+    telegram: config.get('telegram'),
   };
 }
 
@@ -55,6 +64,18 @@ export function setApiKey(provider: keyof ConfigSchema['apiKeys'], key: string) 
 
 export function getApiKey(provider: keyof ConfigSchema['apiKeys']): string | undefined {
   return config.get('apiKeys')[provider];
+}
+
+export function setTelegramChatId(chatId: number) {
+  const telegram = config.get('telegram');
+  telegram.chatId = chatId;
+  config.set('telegram', telegram);
+}
+
+export function setTelegramEnabled(enabled: boolean) {
+  const telegram = config.get('telegram');
+  telegram.enabled = enabled;
+  config.set('telegram', telegram);
 }
 
 export { config };

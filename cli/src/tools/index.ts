@@ -7,6 +7,8 @@ export * from './filesystem.js';
 export * from './clipboard.js';
 export * from './network.js';
 export * from './process.js';
+export * from './computer.js';
+export * from './vision.js';
 
 export interface ToolResult {
   success: boolean;

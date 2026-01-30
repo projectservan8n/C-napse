@@ -4,7 +4,7 @@
 
 import type { Agent } from './types.js';
 
-export type AgentType = 'CODER' | 'FILER' | 'SHELL' | 'MEMORY' | 'GENERAL';
+export type AgentType = 'CODER' | 'FILER' | 'SHELL' | 'MEMORY' | 'COMPUTER' | 'VISION' | 'GENERAL';
 
 export const routerAgent: Agent = {
   name: 'router',
@@ -16,6 +16,8 @@ Available agents:
 - FILER: File operations (read, write, search, organize)
 - SHELL: Shell commands, system operations, process management
 - MEMORY: Context recall, summarization, search history
+- COMPUTER: Mouse, keyboard, window control, desktop automation
+- VISION: Screen capture, describe what's on screen
 - GENERAL: General conversation and questions
 
 Respond with ONLY the agent name, nothing else.
@@ -34,7 +36,19 @@ User: "What did we talk about yesterday?"
 MEMORY
 
 User: "How does React work?"
-GENERAL`,
+GENERAL
+
+User: "Click on the Start button"
+COMPUTER
+
+User: "Open notepad and type hello"
+COMPUTER
+
+User: "What's on my screen?"
+VISION
+
+User: "Take a screenshot"
+VISION`,
   tools: [],
   canHandle: () => 1.0,
 };
@@ -109,6 +123,37 @@ export function routeByKeywords(query: string): AgentType {
     q.includes('previous')
   ) {
     return 'MEMORY';
+  }
+
+  // Computer control keywords
+  if (
+    q.includes('click') ||
+    q.includes('mouse') ||
+    q.includes('type') ||
+    q.includes('keyboard') ||
+    q.includes('window') ||
+    q.includes('open ') ||
+    q.includes('close ') ||
+    q.includes('minimize') ||
+    q.includes('maximize') ||
+    q.includes('press') ||
+    q.includes('scroll') ||
+    q.includes('drag')
+  ) {
+    return 'COMPUTER';
+  }
+
+  // Vision keywords
+  if (
+    q.includes('screen') ||
+    q.includes('screenshot') ||
+    q.includes('see') ||
+    q.includes('look') ||
+    q.includes('what') && q.includes('visible') ||
+    q.includes('describe') && q.includes('screen') ||
+    q.includes('capture')
+  ) {
+    return 'VISION';
   }
 
   return 'GENERAL';

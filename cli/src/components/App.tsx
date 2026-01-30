@@ -4,8 +4,12 @@ import { Header } from './Header.js';
 import { ChatMessage } from './ChatMessage.js';
 import { ChatInput } from './ChatInput.js';
 import { StatusBar } from './StatusBar.js';
+import { HelpMenu } from './HelpMenu.js';
 import { chat, Message } from '../lib/api.js';
 import { getScreenDescription } from '../lib/screen.js';
+import { describeScreen } from '../lib/vision.js';
+import { getTelegramBot, TelegramMessage } from '../services/telegram.js';
+import { parseTask, executeTask, formatTask, Task } from '../lib/tasks.js';
 
 interface ChatMsg {
   id: string;
@@ -30,6 +34,8 @@ export function App() {
   const [status, setStatus] = useState('Ready');
   const [error, setError] = useState<string | null>(null);
   const [screenWatch, setScreenWatch] = useState(false);
+  const [showHelpMenu, setShowHelpMenu] = useState(false);
+  const [telegramEnabled, setTelegramEnabled] = useState(false);
   const screenContextRef = useRef<string | null>(null);
 
   // Screen watching effect
@@ -53,6 +59,11 @@ export function App() {
   }, [screenWatch]);
 
   useInput((inputChar, key) => {
+    // If help menu is open, don't process other shortcuts
+    if (showHelpMenu) {
+      return;
+    }
+
     if (key.ctrl && inputChar === 'c') {
       exit();
     }
@@ -67,6 +78,20 @@ export function App() {
           newState
             ? '🖥️ Screen watching enabled. AI will have context of your screen.'
             : '🖥️ Screen watching disabled.'
+        );
+        return newState;
+      });
+    }
+    if (key.ctrl && inputChar === 'h') {
+      setShowHelpMenu(true);
+    }
+    if (key.ctrl && inputChar === 't') {
+      setTelegramEnabled((prev) => {
+        const newState = !prev;
+        addSystemMessage(
+          newState
+            ? '📱 Telegram bot enabled.'
+            : '📱 Telegram bot disabled.'
         );
         return newState;
       });
@@ -156,6 +181,7 @@ export function App() {
   const handleCommand = (cmd: string) => {
     const parts = cmd.slice(1).split(' ');
     const command = parts[0];
+    const args = parts.slice(1).join(' ');
 
     switch (command) {
       case 'clear':
@@ -163,12 +189,151 @@ export function App() {
         addSystemMessage('Chat cleared.');
         break;
       case 'help':
-        addSystemMessage(
-          'Commands:\n  /clear - Clear chat history\n  /help  - Show this help\n\nJust type naturally to chat with the AI!'
-        );
+        setShowHelpMenu(true);
+        break;
+      case 'watch':
+        setScreenWatch((prev) => {
+          const newState = !prev;
+          addSystemMessage(
+            newState
+              ? '🖥️ Screen watching enabled.'
+              : '🖥️ Screen watching disabled.'
+          );
+          return newState;
+        });
+        break;
+      case 'telegram':
+        handleTelegramToggle();
+        break;
+      case 'screen':
+        handleScreenCommand();
+        break;
+      case 'task':
+        if (args) {
+          handleTaskCommand(args);
+        } else {
+          addSystemMessage('Usage: /task <description>\nExample: /task open notepad and type hello');
+        }
+        break;
+      case 'config':
+        addSystemMessage('⚙️ Configuration:\n  Provider: Use cnapse config\n  Model: Use cnapse config set model <name>');
+        break;
+      case 'model':
+        addSystemMessage('🤖 Model selection coming soon.\nUse: cnapse config set model <name>');
+        break;
+      case 'provider':
+        addSystemMessage('🔌 Provider selection coming soon.\nUse: cnapse config set provider <name>');
+        break;
+      case 'quit':
+      case 'exit':
+        exit();
         break;
       default:
-        addSystemMessage(`Unknown command: ${command}`);
+        addSystemMessage(`Unknown command: ${command}\nType /help to see available commands.`);
+    }
+  };
+
+  const handleHelpMenuSelect = (command: string) => {
+    // Execute the selected command
+    handleCommand(command);
+  };
+
+  const handleScreenCommand = async () => {
+    addSystemMessage('📸 Taking screenshot and analyzing...');
+    setStatus('Analyzing screen...');
+    setIsProcessing(true);
+
+    try {
+      const result = await describeScreen();
+      addSystemMessage(`🖥️ Screen Analysis:\n\n${result.description}`);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Vision analysis failed';
+      addSystemMessage(`❌ Screen capture failed: ${errorMsg}`);
+    } finally {
+      setIsProcessing(false);
+      setStatus('Ready');
+    }
+  };
+
+  const handleTaskCommand = async (taskDescription: string) => {
+    addSystemMessage(`📋 Parsing task: ${taskDescription}`);
+    setStatus('Parsing task...');
+    setIsProcessing(true);
+
+    try {
+      // Parse the task into steps
+      const task = await parseTask(taskDescription);
+      addSystemMessage(`📋 Task planned (${task.steps.length} steps):\n${formatTask(task)}`);
+
+      // Execute the task
+      addSystemMessage('🚀 Executing task...');
+      setStatus('Executing task...');
+
+      await executeTask(task, (updatedTask, currentStep) => {
+        // Update progress
+        if (currentStep.status === 'running') {
+          setStatus(`Running: ${currentStep.description}`);
+        }
+      });
+
+      // Show final result
+      addSystemMessage(`\n${formatTask(task)}`);
+
+      if (task.status === 'completed') {
+        addSystemMessage('✅ Task completed successfully!');
+      } else {
+        addSystemMessage('❌ Task failed. Check the steps above for errors.');
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Task failed';
+      addSystemMessage(`❌ Task error: ${errorMsg}`);
+    } finally {
+      setIsProcessing(false);
+      setStatus('Ready');
+    }
+  };
+
+  const handleTelegramToggle = async () => {
+    const bot = getTelegramBot();
+
+    if (telegramEnabled) {
+      // Stop the bot
+      try {
+        await bot.stop();
+        setTelegramEnabled(false);
+        addSystemMessage('📱 Telegram bot stopped.');
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Failed to stop bot';
+        addSystemMessage(`❌ Error stopping bot: ${errorMsg}`);
+      }
+    } else {
+      // Start the bot
+      addSystemMessage('📱 Starting Telegram bot...');
+      setStatus('Starting Telegram...');
+
+      try {
+        // Setup event handlers
+        bot.on('message', (msg: TelegramMessage) => {
+          addSystemMessage(`📱 Telegram [${msg.from}]: ${msg.text}`);
+        });
+
+        bot.on('error', (error: Error) => {
+          addSystemMessage(`📱 Telegram error: ${error.message}`);
+        });
+
+        await bot.start();
+        setTelegramEnabled(true);
+        addSystemMessage(
+          '📱 Telegram bot started!\n\n' +
+          'Open Telegram and send /start to your bot to connect.\n' +
+          'Commands: /screen, /describe, /run <cmd>, /status'
+        );
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Failed to start bot';
+        addSystemMessage(`❌ Telegram error: ${errorMsg}`);
+      } finally {
+        setStatus('Ready');
+      }
     }
   };
 
@@ -187,9 +352,21 @@ export function App() {
   // Only show last N messages that fit
   const visibleMessages = messages.slice(-20);
 
+  // If help menu is open, show it as overlay
+  if (showHelpMenu) {
+    return (
+      <Box flexDirection="column" height="100%" alignItems="center" justifyContent="center">
+        <HelpMenu
+          onClose={() => setShowHelpMenu(false)}
+          onSelect={handleHelpMenuSelect}
+        />
+      </Box>
+    );
+  }
+
   return (
     <Box flexDirection="column" height="100%">
-      <Header screenWatch={screenWatch} />
+      <Header screenWatch={screenWatch} telegramEnabled={telegramEnabled} />
 
       <Box flexDirection="column" flexGrow={1} borderStyle="round" borderColor="gray" padding={1}>
         <Text bold color="gray"> Chat </Text>

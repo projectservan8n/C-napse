@@ -115,7 +115,7 @@ Manual Setup:
       // Interactive setup with Ink UI
       const { Setup } = await import('./components/Setup.js');
       render(<Setup />);
-      return;
+      process.exit(0);
     }
 
     default: {

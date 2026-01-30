@@ -11,6 +11,8 @@ import * as filesystem from '../tools/filesystem.js';
 import * as clipboard from '../tools/clipboard.js';
 import * as network from '../tools/network.js';
 import * as processTools from '../tools/process.js';
+import * as computer from '../tools/computer.js';
+import * as vision from '../tools/vision.js';
 
 /**
  * Execute a tool call and return the result
@@ -92,6 +94,53 @@ export async function executeTool(call: ToolCall): Promise<ToolResult> {
         return await processTools.findProcess(args.name as string);
       case 'system_info':
         return processTools.systemInfo();
+
+      // Computer control tools
+      case 'moveMouse':
+        return await computer.moveMouse(args.x as number, args.y as number);
+      case 'clickMouse':
+        return await computer.clickMouse(args.button as 'left' | 'right' | 'middle');
+      case 'doubleClick':
+        return await computer.doubleClick();
+      case 'typeText':
+        return await computer.typeText(args.text as string);
+      case 'pressKey':
+        return await computer.pressKey(args.key as string);
+      case 'keyCombo':
+        return await computer.keyCombo(args.keys as string[]);
+      case 'getActiveWindow':
+        return await computer.getActiveWindow();
+      case 'listWindows':
+        return await computer.listWindows();
+      case 'focusWindow':
+        return await computer.focusWindow(args.title as string);
+      case 'scrollMouse':
+        return await computer.scrollMouse(args.amount as number);
+      case 'dragMouse':
+        return await computer.dragMouse(
+          args.startX as number,
+          args.startY as number,
+          args.endX as number,
+          args.endY as number
+        );
+      case 'getMousePosition':
+        return await computer.getMousePosition();
+
+      // Vision tools
+      case 'takeScreenshot':
+        const screenshotResult = await vision.takeScreenshot();
+        return {
+          success: screenshotResult.success,
+          output: screenshotResult.screenshot || '',
+          error: screenshotResult.error,
+        };
+      case 'describeCurrentScreen':
+        const visionResult = await vision.describeCurrentScreen();
+        return {
+          success: visionResult.success,
+          output: visionResult.description || '',
+          error: visionResult.error,
+        };
 
       default:
         return { success: false, output: '', error: `Unknown tool: ${name}` };

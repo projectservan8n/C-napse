@@ -50,26 +50,16 @@ cnapse config set provider openrouter
 cnapse
 ```
 
-You'll see:
-```
-  ██████╗      ███╗   ██╗ █████╗ ██████╗ ███████╗███████╗
- ██╔════╝      ████╗  ██║██╔══██╗██╔══██╗██╔════╝██╔════╝
- ██║     █████╗██╔██╗ ██║███████║██████╔╝███████╗█████╗
- ██║     ╚════╝██║╚██╗██║██╔══██║██╔═══╝ ╚════██║██╔══╝
- ╚██████╗      ██║ ╚████║██║  ██║██║     ███████║███████╗
-  ╚═════╝      ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝     ╚══════╝╚══════╝
-                    openrouter │ qwen/qwen-2.5-coder-32b-instruct
-─────────────────────────────────────────────────────────
-```
-
 ## Features
 
-- **TUI Chat Interface** - Interactive terminal UI built with Ink (React for CLI)
-- **Screen Watching** - AI can see your desktop for context (Ctrl+W to toggle)
-- **Multi-Agent System** - Specialized agents for shell, code, and file operations
-- **Tool Execution** - File ops, shell commands, clipboard, processes, network
+- **Interactive Help Menu** - Arrow-key navigation for commands and settings (Ctrl+H)
+- **Vision Capability** - AI can see and describe your screen (`/screen`)
+- **Computer Control** - Mouse, keyboard, and window automation
+- **Multi-Step Tasks** - Automated task sequences (`/task open notepad and type hello`)
+- **Telegram Bot** - Remote PC control via Telegram (`/telegram`)
+- **Screen Watching** - AI context from your desktop (Ctrl+W)
+- **Multi-Agent System** - Specialized agents for shell, code, files, and computer control
 - **Multiple Providers** - Ollama (local), OpenRouter, Anthropic, OpenAI
-- **Interactive Setup** - Arrow-key navigation for easy configuration
 
 ## Keyboard Shortcuts
 
@@ -77,15 +67,92 @@ You'll see:
 |-----|--------|
 | `Enter` | Send message |
 | `Ctrl+C` | Exit |
-| `Ctrl+L` | Clear screen |
+| `Ctrl+H` | Open help menu |
 | `Ctrl+W` | Toggle screen watching |
+| `Ctrl+T` | Toggle Telegram bot |
+| `Ctrl+L` | Clear screen |
 
 ## Slash Commands
 
 ```
-/help   - Show help
-/clear  - Clear chat
+/help      - Interactive help menu
+/screen    - Take screenshot + AI description
+/task      - Execute multi-step automation
+/telegram  - Toggle Telegram bot
+/watch     - Toggle screen watching
+/clear     - Clear chat
+/config    - Show configuration
+/quit      - Exit
 ```
+
+## Vision & Screen Analysis
+
+C-napse can see your screen and describe what's visible:
+
+```bash
+# Take screenshot and get AI description
+/screen
+
+# Enable continuous screen watching
+/watch
+```
+
+Supports vision models from:
+- **Ollama**: llava, llama3.2-vision, bakllava
+- **OpenRouter**: claude-3-5-sonnet, gpt-4-vision
+- **Anthropic**: claude-3-5-sonnet
+- **OpenAI**: gpt-4-vision-preview
+
+## Multi-Step Task Automation
+
+Natural language task automation:
+
+```bash
+/task open notepad and type hello world
+/task open vscode, go to folder E:\Projects, then open terminal
+/task take a screenshot and describe what you see
+```
+
+The AI parses your request into steps and executes them sequentially.
+
+## Telegram Bot Control
+
+Control your PC remotely via Telegram:
+
+```bash
+# Set your Telegram bot token
+cnapse auth telegram YOUR_BOT_TOKEN
+
+# Start the bot (or use /telegram in the TUI)
+```
+
+**Telegram Commands:**
+- `/start` - Connect to C-napse
+- `/screen` - Receive screenshot
+- `/describe` - Screenshot + AI description
+- `/run <cmd>` - Execute shell command
+- `/status` - System status
+
+## Computer Control Tools
+
+C-napse can control your mouse, keyboard, and windows:
+
+**Mouse:**
+- `moveMouse(x, y)` - Move to coordinates
+- `clickMouse(button)` - Click left/right/middle
+- `doubleClick()` - Double click
+- `scrollMouse(amount)` - Scroll up/down
+- `dragMouse(x1, y1, x2, y2)` - Drag and drop
+
+**Keyboard:**
+- `typeText(text)` - Type text
+- `pressKey(key)` - Press single key
+- `keyCombo(keys)` - Key combination (e.g., Ctrl+C)
+
+**Windows:**
+- `getActiveWindow()` - Get focused window
+- `listWindows()` - List all windows
+- `focusWindow(title)` - Focus by title
 
 ## Providers
 
@@ -113,6 +180,8 @@ You'll see:
 | **Shell** | Shell commands, process management |
 | **Coder** | Code generation, editing, debugging |
 | **Filer** | File operations, search, organization |
+| **Computer** | Mouse, keyboard, window control |
+| **Vision** | Screen capture and analysis |
 
 ## Available Tools
 
@@ -146,6 +215,10 @@ You'll see:
 **Clipboard Tools:**
 - `get_clipboard` / `set_clipboard` - Clipboard access
 
+**Vision Tools:**
+- `takeScreenshot` - Capture screen
+- `describeCurrentScreen` - Screenshot + AI analysis
+
 ## Configuration
 
 Config stored via [conf](https://github.com/sindresorhus/conf):
@@ -165,6 +238,9 @@ cnapse config set model gpt-4o
 
 # Set API key
 cnapse auth anthropic sk-ant-...
+
+# Set Telegram bot token
+cnapse auth telegram YOUR_BOT_TOKEN
 
 # View config
 cnapse config
