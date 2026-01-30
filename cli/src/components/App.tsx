@@ -202,6 +202,21 @@ export function App() {
     }
   }, [chat, tasks]);
 
+  // Check if message looks like a computer control request
+  const isComputerControlRequest = useCallback((text: string): boolean => {
+    const lower = text.toLowerCase();
+    const patterns = [
+      /^(can you |please |)?(open|close|minimize|maximize|restore|focus|click|type|press|scroll|move|drag)/i,
+      /^(can you |please |)?move (the |my |)mouse/i,
+      /^(can you |please |)?(start|launch|run) [a-z]/i,
+      /(open|close|minimize|maximize) (the |my |)?[a-z]/i,
+      /click (on |the |)/i,
+      /type ["'].+["']/i,
+      /press (enter|escape|tab|ctrl|alt|shift|space|backspace|delete|f\d+)/i,
+    ];
+    return patterns.some(p => p.test(lower));
+  }, []);
+
   // Submit handler
   const handleSubmit = useCallback(async (value: string) => {
     if (!value.trim()) return;
@@ -209,12 +224,16 @@ export function App() {
 
     if (value.startsWith('/')) {
       await handleCommand(value);
+    } else if (isComputerControlRequest(value)) {
+      // Auto-route to task system for computer control
+      chat.addSystemMessage(`🤖 Executing: ${value}`);
+      await handleTaskCommand(value);
     } else {
       setStatus('Thinking...');
       await chat.sendMessage(value);
       setStatus('Ready');
     }
-  }, [chat, handleCommand]);
+  }, [chat, handleCommand, handleTaskCommand, isComputerControlRequest]);
 
   // Provider selection callback
   const handleProviderSelect = useCallback((provider: string, model: string) => {

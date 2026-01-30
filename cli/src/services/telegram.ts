@@ -7,6 +7,7 @@ import { getConfig, getApiKey } from '../lib/config.js';
 import { describeScreen, captureScreenshot } from '../lib/vision.js';
 import { runCommand } from '../tools/shell.js';
 import { chat as chatWithAI, chatWithVision, Message } from '../lib/api.js';
+import * as computer from '../tools/computer.js';
 
 export interface TelegramMessage {
   chatId: number;
@@ -248,6 +249,14 @@ export class TelegramBotService extends EventEmitter {
         // Send typing indicator
         await ctx.sendChatAction('typing');
 
+        // Check if this looks like a computer control request
+        const computerControlResult = await this.tryComputerControl(userText);
+        if (computerControlResult) {
+          await ctx.reply(computerControlResult);
+          history.push({ role: 'assistant', content: computerControlResult });
+          return;
+        }
+
         // Check if this looks like a screen/vision request
         const isVisionRequest = /screen|see|look|what('?s| is) (on|visible)|show me|screenshot/i.test(userText);
 
@@ -300,6 +309,117 @@ export class TelegramBotService extends EventEmitter {
       return true;
     }
     return this.allowedChatIds.has(chatId);
+  }
+
+  /**
+   * Try to execute computer control commands directly
+   * Returns response string if handled, null if not a computer command
+   */
+  private async tryComputerControl(text: string): Promise<string | null> {
+    const lower = text.toLowerCase();
+
+    // Minimize window
+    let match = lower.match(/minimize\s+(?:the\s+)?(.+)/i);
+    if (match) {
+      const result = await computer.minimizeWindow(match[1].trim());
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Maximize window
+    match = lower.match(/maximize\s+(?:the\s+)?(.+)/i);
+    if (match) {
+      const result = await computer.maximizeWindow(match[1].trim());
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Close window
+    match = lower.match(/close\s+(?:the\s+)?(.+)/i);
+    if (match) {
+      const result = await computer.closeWindow(match[1].trim());
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Restore window
+    match = lower.match(/restore\s+(?:the\s+)?(.+)/i);
+    if (match) {
+      const result = await computer.restoreWindow(match[1].trim());
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Focus/open window
+    match = lower.match(/(?:focus|open|switch to)\s+(?:the\s+)?(.+)/i);
+    if (match) {
+      const result = await computer.focusWindow(match[1].trim());
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Type text
+    match = text.match(/type\s+["'](.+)["']/i);
+    if (match) {
+      const result = await computer.typeText(match[1]);
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Press key
+    match = lower.match(/press\s+(?:the\s+)?(\w+)/i);
+    if (match) {
+      const result = await computer.pressKey(match[1]);
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Click
+    if (/^click$/i.test(lower) || /click\s+(?:the\s+)?mouse/i.test(lower)) {
+      const result = await computer.clickMouse('left');
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Right click
+    if (/right\s*click/i.test(lower)) {
+      const result = await computer.clickMouse('right');
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Double click
+    if (/double\s*click/i.test(lower)) {
+      const result = await computer.doubleClick();
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Move mouse to coordinates
+    match = lower.match(/move\s+(?:the\s+)?mouse\s+(?:to\s+)?(\d+)[,\s]+(\d+)/i);
+    if (match) {
+      const result = await computer.moveMouse(parseInt(match[1]), parseInt(match[2]));
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Scroll
+    match = lower.match(/scroll\s+(up|down)(?:\s+(\d+))?/i);
+    if (match) {
+      const amount = match[1] === 'up' ? (parseInt(match[2]) || 3) : -(parseInt(match[2]) || 3);
+      const result = await computer.scrollMouse(amount);
+      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // List windows
+    if (/list\s+(?:all\s+)?windows/i.test(lower) || /what\s+windows/i.test(lower)) {
+      const result = await computer.listWindows();
+      return result.success ? `📋 Open Windows:\n${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Get active window
+    if (/(?:active|current|focused)\s+window/i.test(lower) || /what\s+(?:window|app)/i.test(lower)) {
+      const result = await computer.getActiveWindow();
+      return result.success ? `🪟 Active: ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Mouse position
+    if (/mouse\s+position/i.test(lower) || /where.*mouse/i.test(lower)) {
+      const result = await computer.getMousePosition();
+      return result.success ? `🖱️ ${result.output}` : `❌ ${result.error}`;
+    }
+
+    // Not a computer control command
+    return null;
   }
 
   /**
