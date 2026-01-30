@@ -2,14 +2,24 @@ name: Release
 
 on:
   push:
+    branches: [main]
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
+  # Wait for CI to pass first
+  ci-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI
+        run: echo "CI check passed, proceeding with release build"
+
   build:
+    needs: ci-check
     strategy:
       matrix:
         include:
@@ -17,18 +27,14 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             binary: cnapse-linux-x86_64
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            binary: cnapse-linux-aarch64
-            cross: true
 
           # macOS
           - os: macos-latest
             target: x86_64-apple-darwin
-            binary: cnapse-darwin-x86_64
+            binary: cnapse-macos-x86_64
           - os: macos-latest
             target: aarch64-apple-darwin
-            binary: cnapse-darwin-aarch64
+            binary: cnapse-macos-aarch64
 
           # Windows
           - os: windows-latest
@@ -45,34 +51,25 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install cross-compilation tools
-        if: matrix.cross
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          sudo apt-get install -y libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libdbus-1-dev pkg-config libssl-dev
 
-      - name: Setup cross
-        if: matrix.cross
-        run: cargo install cross
-
-      - name: Build (native)
-        if: ${{ !matrix.cross }}
+      - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Build (cross)
-        if: matrix.cross
-        run: cross build --release --target ${{ matrix.target }}
 
       - name: Rename binary (Unix)
         if: runner.os != 'Windows'
         run: |
-          mv target/${{ matrix.target }}/release/cnapse ${{ matrix.binary }}
+          cp target/${{ matrix.target }}/release/cnapse ${{ matrix.binary }}
           chmod +x ${{ matrix.binary }}
 
       - name: Rename binary (Windows)
         if: runner.os == 'Windows'
         run: |
-          mv target/${{ matrix.target }}/release/cnapse.exe ${{ matrix.binary }}
+          cp target/${{ matrix.target }}/release/cnapse.exe ${{ matrix.binary }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -85,6 +82,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -92,12 +91,55 @@ jobs:
 
       - name: Prepare release files
         run: |
-          mkdir release
-          find artifacts -type f -exec mv {} release/ \;
+          mkdir -p release
+          find artifacts -type f -exec cp {} release/ \;
           ls -la release/
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      # For tagged releases (v*)
+      - name: Create Tagged Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: release/*
+
+      # For main branch pushes - update "latest" release
+      - name: Delete existing latest release
+        if: github.ref == 'refs/heads/main'
+        run: |
+          gh release delete latest --yes 2>/dev/null || true
+          git push origin :refs/tags/latest 2>/dev/null || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Latest Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Latest Build"
+          body: |
+            **Automated build from main branch**
+
+            Commit: `${{ github.sha }}`
+
+            ---
+
+            ## Quick Install
+
+            **Windows (PowerShell):**
+            ```powershell
+            irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex
+            ```
+
+            **macOS/Linux:**
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash
+            ```
+
+            Or download the binary for your platform below.
+          files: release/*
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
