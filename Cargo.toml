@@ -91,7 +91,7 @@ image = { version = "0.24", default-features = false, features = ["png"] }
 
 # Embeddings (optional - requires ONNX runtime)
 # Note: ort-download-binaries requires a TLS feature: tls-rustls, tls-native, etc.
-ort = { version = "2", optional = true, features = ["download-binaries", "tls-rustls"] }
+ort = { version = "2.0.0-rc.11", optional = true, features = ["download-binaries", "tls-rustls"] }
 fastembed = { version = "3", optional = true }
 
 [target.'cfg(windows)'.dependencies]
