@@ -114,6 +114,25 @@ export function App() {
         }
         break;
 
+      case 'memory':
+        if (args === 'clear') {
+          tasks.clearMemory();
+          chat.addSystemMessage('🧠 Task memory cleared.');
+        } else {
+          const stats = tasks.getMemoryStats();
+          chat.addSystemMessage(
+            `🧠 Task Memory:\n\n` +
+            `  Learned patterns: ${stats.patternCount}\n` +
+            `  Total successful uses: ${stats.totalUses}\n\n` +
+            (stats.topPatterns.length > 0
+              ? `  Top patterns:\n${stats.topPatterns.map(p => `    • ${p}`).join('\n')}\n\n`
+              : '  No patterns learned yet.\n\n') +
+            `The more you use /task, the smarter it gets!\n` +
+            `Use /memory clear to reset.`
+          );
+        }
+        break;
+
       case 'quit':
       case 'exit':
         exit();

@@ -31,9 +31,11 @@ logs/
 *.so
 *.dylib
 
-# Node (for web frontend)
+# Node (for web frontend and CLI)
 web/node_modules/
 web/dist/
+cli/node_modules/
+cli/dist/
 
 # Temporary files
 *.tmp

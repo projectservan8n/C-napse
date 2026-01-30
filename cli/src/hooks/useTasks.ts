@@ -3,7 +3,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { parseTask, executeTask, formatTask, Task, TaskStep } from '../lib/tasks.js';
+import { parseTask, executeTask, formatTask, getTaskMemoryStats, clearTaskMemory, Task, TaskStep } from '../lib/tasks.js';
 
 export interface UseTasksResult {
   isRunning: boolean;
@@ -12,6 +12,8 @@ export interface UseTasksResult {
   error: string | null;
   run: (description: string) => Promise<Task>;
   format: (task: Task) => string;
+  getMemoryStats: () => { patternCount: number; totalUses: number; topPatterns: string[] };
+  clearMemory: () => void;
 }
 
 export function useTasks(onProgress?: (task: Task, step: TaskStep) => void): UseTasksResult {
@@ -55,5 +57,7 @@ export function useTasks(onProgress?: (task: Task, step: TaskStep) => void): Use
     error,
     run,
     format: formatTask,
+    getMemoryStats: getTaskMemoryStats,
+    clearMemory: clearTaskMemory,
   };
 }

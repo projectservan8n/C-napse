@@ -18,12 +18,13 @@ const MENU_ITEMS: MenuItem[] = [
   { command: '/screen', shortcut: 'Ctrl+S', description: 'Take screenshot and describe', category: 'actions' },
   { command: '/task', description: 'Run multi-step task', category: 'actions' },
   { command: '/telegram', shortcut: 'Ctrl+T', description: 'Toggle Telegram bot', category: 'actions' },
+  { command: '/memory', description: 'View/clear learned task patterns', category: 'actions' },
 
   // Settings
   { command: '/config', description: 'Show/edit configuration', category: 'settings' },
   { command: '/watch', shortcut: 'Ctrl+W', description: 'Toggle screen watching', category: 'settings' },
   { command: '/model', description: 'Change AI model', category: 'settings' },
-  { command: '/provider', description: 'Change AI provider', category: 'settings' },
+  { command: '/provider', shortcut: 'Ctrl+P', description: 'Change AI provider', category: 'settings' },
 ];
 
 interface HelpMenuProps {
