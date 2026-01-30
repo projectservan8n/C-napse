@@ -1,6 +1,6 @@
 {
   "name": "@projectservan8n/cnapse",
-  "version": "0.5.9",
+  "version": "0.6.0",
   "description": "Autonomous PC intelligence - AI assistant for desktop automation",
   "type": "module",
   "main": "dist/index.js",

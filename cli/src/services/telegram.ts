@@ -6,6 +6,7 @@ import { EventEmitter } from 'events';
 import { getConfig, getApiKey } from '../lib/config.js';
 import { describeScreen, captureScreenshot } from '../lib/vision.js';
 import { runCommand } from '../tools/shell.js';
+import { chat as chatWithAI, chatWithVision, Message } from '../lib/api.js';
 
 export interface TelegramMessage {
   chatId: number;
@@ -25,6 +26,7 @@ export class TelegramBotService extends EventEmitter {
   private bot: any = null;
   private isRunning = false;
   private allowedChatIds: Set<number> = new Set();
+  private chatHistory: Map<number, Message[]> = new Map();
 
   constructor() {
     super();
@@ -205,7 +207,7 @@ export class TelegramBotService extends EventEmitter {
       await ctx.reply(status);
     });
 
-    // Handle text messages - forward to AI
+    // Handle text messages - forward to AI and respond
     this.bot.on('text', async (ctx: any) => {
       if (!this.isAllowed(ctx.chat.id)) {
         return;
@@ -216,14 +218,71 @@ export class TelegramBotService extends EventEmitter {
         return;
       }
 
+      const chatId = ctx.chat.id;
+      const userText = ctx.message.text;
+      const from = ctx.from.username || ctx.from.first_name || 'User';
+
       const message: TelegramMessage = {
-        chatId: ctx.chat.id,
-        text: ctx.message.text,
-        from: ctx.from.username || ctx.from.first_name || 'User',
+        chatId,
+        text: userText,
+        from,
       };
 
       this.emit('message', message);
-      this.emit('command', 'chat', ctx.message.text, ctx.chat.id);
+
+      // Get or initialize chat history for this user
+      if (!this.chatHistory.has(chatId)) {
+        this.chatHistory.set(chatId, []);
+      }
+      const history = this.chatHistory.get(chatId)!;
+
+      // Add user message to history
+      history.push({ role: 'user', content: userText });
+
+      // Keep only last 10 messages for context
+      if (history.length > 10) {
+        history.splice(0, history.length - 10);
+      }
+
+      try {
+        // Send typing indicator
+        await ctx.sendChatAction('typing');
+
+        // Check if this looks like a screen/vision request
+        const isVisionRequest = /screen|see|look|what('?s| is) (on|visible)|show me|screenshot/i.test(userText);
+
+        let response;
+        if (isVisionRequest) {
+          // Capture screenshot and use vision
+          const screenshot = await captureScreenshot();
+          if (screenshot) {
+            response = await chatWithVision(history, screenshot);
+          } else {
+            response = await chatWithAI(history);
+          }
+        } else {
+          response = await chatWithAI(history);
+        }
+
+        // Add assistant response to history
+        history.push({ role: 'assistant', content: response.content });
+
+        // Send response (split if too long for Telegram)
+        const responseText = response.content || '(no response)';
+        if (responseText.length > 4000) {
+          // Split into chunks
+          const chunks = responseText.match(/.{1,4000}/gs) || [responseText];
+          for (const chunk of chunks) {
+            await ctx.reply(chunk);
+          }
+        } else {
+          await ctx.reply(responseText);
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        await ctx.reply(`❌ Error: ${errorMsg}`);
+        this.emit('error', new Error(errorMsg));
+      }
     });
 
     // Error handling
