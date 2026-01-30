@@ -4,10 +4,378 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agents — C-napse</title>
+    <meta name="description" content="Understanding C-napse's multi-agent architecture and specialized agents.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --bg-card: #0d0d0d;
+            --border: #1a1a1a;
+            --border-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #555555;
+            --accent: #00d4ff;
+            --accent-secondary: #8b5cf6;
+            --accent-dim: #00d4ff15;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff4444;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo {
+            font-family: 'Silkscreen', cursive;
+            font-weight: 400;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .nav-links { display: flex; gap: 40px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-primary); }
+
+        .docs-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 60px;
+            padding-top: 120px;
+            padding-bottom: 100px;
+        }
+
+        .sidebar { position: sticky; top: 120px; height: fit-content; }
+        .sidebar-section { margin-bottom: 32px; }
+        .sidebar-section h4 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .sidebar-section ul { list-style: none; }
+        .sidebar-section li { margin-bottom: 8px; }
+        .sidebar-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-left: -12px;
+        }
+        .sidebar-section a:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-section a.active { color: var(--accent); background: var(--accent-dim); }
+
+        .main-content { max-width: 800px; }
+
+        .main-content h1 {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content .lead {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            line-height: 1.7;
+        }
+
+        .main-content h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-top: 64px;
+            margin-bottom: 24px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-content h2:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+        .main-content h2 svg { color: var(--accent); }
+
+        .main-content h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .main-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .main-content ul, .main-content ol {
+            margin-bottom: 20px;
+            padding-left: 24px;
+            color: var(--text-secondary);
+        }
+
+        .main-content li { margin-bottom: 12px; line-height: 1.7; }
+        .main-content a { color: var(--accent); text-decoration: none; }
+        .main-content a:hover { text-decoration: underline; }
+
+        .main-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+            padding: 3px 8px;
+            border-radius: 6px;
+            color: var(--accent);
+        }
+
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-header span {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .code-block pre { padding: 20px; overflow-x: auto; }
+        .code-block code {
+            background: none;
+            padding: 0;
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .code-block .comment { color: var(--text-muted); }
+        .code-block .string { color: var(--success); }
+        .code-block .keyword { color: var(--accent-secondary); }
+        .code-block .function { color: var(--accent); }
+
+        .callout {
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .callout.info { background: var(--accent-dim); border: 1px solid rgba(0, 212, 255, 0.3); }
+        .callout-icon { width: 24px; height: 24px; flex-shrink: 0; }
+        .callout.info .callout-icon { color: var(--accent); }
+        .callout-content h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--accent); }
+        .callout-content p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+        /* Agent Cards */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .agent-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--accent-dim) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .agent-header h4 { font-size: 20px; font-weight: 600; }
+        .agent-header span { font-size: 13px; color: var(--text-muted); }
+        .agent-card p { margin-bottom: 16px; font-size: 14px; line-height: 1.7; }
+
+        .agent-capabilities {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .agent-capabilities li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        .agent-capabilities li:first-child { border-top: none; padding-top: 0; }
+
+        .agent-capabilities svg { color: var(--success); flex-shrink: 0; }
+
+        /* Architecture Diagram */
+        .architecture-diagram {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .architecture-diagram pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .docs-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 80px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .docs-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .docs-nav a:hover { border-color: var(--accent); color: var(--text-primary); transform: translateY(-2px); }
+        .docs-nav .label { font-size: 12px; color: var(--text-muted); display: block; }
+        .docs-nav .title { font-size: 15px; font-weight: 500; }
+
+        footer { padding: 48px 0; border-top: 1px solid var(--border); text-align: center; }
+        footer p { color: var(--text-muted); font-size: 14px; }
+        footer a { color: var(--text-secondary); text-decoration: none; }
+        footer a:hover { color: var(--accent); }
+
+        @media (max-width: 1024px) {
+            .docs-layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .agent-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -18,156 +386,339 @@
             </a>
             <ul class="nav-links">
                 <li><a href="./">Home</a></li>
-                <li><a href="./quickstart.html">Quick Start</a></li>
-                <li><a href="./configuration.html">Config</a></li>
-                <li><a href="./agents.html" class="active">Agents</a></li>
+                <li><a href="./architecture.html">Architecture</a></li>
+                <li><a href="./status.html">Status</a></li>
+                <li><a href="./docs.html" class="active">Docs</a></li>
                 <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
             </ul>
         </div>
     </nav>
 
-    <main class="docs-page">
-        <div class="container">
-            <aside class="docs-sidebar">
+    <main class="container">
+        <div class="docs-layout">
+            <aside class="sidebar">
                 <div class="sidebar-section">
-                    <h4>Agents</h4>
+                    <h4>Getting Started</h4>
                     <ul>
-                        <li><a href="#overview" class="active">Overview</a></li>
-                        <li><a href="#router">Router Agent</a></li>
-                        <li><a href="#shell">Shell Agent</a></li>
-                        <li><a href="#code">Code Agent</a></li>
-                        <li><a href="#research">Research Agent</a></li>
+                        <li><a href="./quickstart.html">Quick Start</a></li>
+                        <li><a href="./configuration.html">Configuration</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h4>Core Concepts</h4>
+                    <ul>
+                        <li><a href="./agents.html" class="active">Agents</a></li>
+                        <li><a href="./tools.html">Tools</a></li>
+                        <li><a href="./architecture.html">Architecture</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h4>Reference</h4>
+                    <ul>
+                        <li><a href="./api.html">API Reference</a></li>
                     </ul>
                 </div>
             </aside>
 
-            <article class="docs-content">
+            <div class="main-content">
                 <h1>Agent System</h1>
-                <p class="lead">Understanding C-napse's multi-agent architecture.</p>
+                <p class="lead">
+                    C-napse uses a multi-agent architecture where specialized agents handle different types
+                    of tasks. A router agent analyzes your query and delegates to the most appropriate specialist.
+                </p>
 
-                <section id="overview">
-                    <h2>Overview</h2>
-                    <p>
-                        C-napse uses a multi-agent system where specialized agents handle
-                        different types of tasks. A router agent analyzes your query and
-                        delegates to the most appropriate specialist.
-                    </p>
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                    </svg>
+                    Architecture Overview
+                </h2>
 
-                    <div class="code-block active">
-                        <pre><code>┌─────────────────────────────────────────┐
-│              User Query                 │
-└──────────────────┬──────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────┐
-│            Router Agent                 │
-│   Classifies intent, selects agent      │
-└──────────────────┬──────────────────────┘
-                   │
-       ┌───────────┼───────────┐
-       ▼           ▼           ▼
-   ┌───────┐  ┌────────┐  ┌──────────┐
-   │ Shell │  │  Code  │  │ Research │
-   │ Agent │  │ Agent  │  │  Agent   │
-   └───────┘  └────────┘  └──────────┘</code></pre>
+                <div class="architecture-diagram">
+                    <pre>
+                    User Query
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │    Router Agent     │
+              │ Classifies intent   │
+              │ Selects specialist  │
+              └──────────┬──────────┘
+                         │
+         ┌───────────────┼───────────────┐
+         │               │               │
+         ▼               ▼               ▼
+    ┌─────────┐    ┌──────────┐    ┌──────────┐
+    │  Shell  │    │   Code   │    │ Research │
+    │  Agent  │    │  Agent   │    │  Agent   │
+    └─────────┘    └──────────┘    └──────────┘
+         │               │               │
+         └───────────────┴───────────────┘
+                         │
+                         ▼
+                    Response
+                    </pre>
+                </div>
+
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 8V4H8"></path>
+                        <rect x="8" y="8" width="8" height="8" rx="2"></rect>
+                        <path d="M16 8V4h-4"></path>
+                        <path d="M12 16v4h4"></path>
+                        <path d="M12 16v4H8"></path>
+                    </svg>
+                    Specialized Agents
+                </h2>
+
+                <div class="agent-grid">
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Router Agent</h4>
+                                <span>Query classification</span>
+                            </div>
+                        </div>
+                        <p>The brain of the system. Analyzes queries to determine intent, selects the appropriate specialist, and extracts relevant context.</p>
+                        <ul class="agent-capabilities">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Intent classification
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Agent selection
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Context extraction
+                            </li>
+                        </ul>
                     </div>
-                </section>
 
-                <section id="router">
-                    <h2>Router Agent</h2>
-                    <p>
-                        The router is the brain of the system. It analyzes queries to
-                        determine:
-                    </p>
-                    <ul>
-                        <li><strong>Intent classification</strong> — What does the user want?</li>
-                        <li><strong>Agent selection</strong> — Which specialist should handle this?</li>
-                        <li><strong>Context extraction</strong> — What information is needed?</li>
-                    </ul>
-
-                    <p>You can force a specific agent:</p>
-                    <div class="code-block active">
-                        <pre><code>cnapse -a shell "list all rust files"
-cnapse -a code "explain this function"</code></pre>
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="4 17 10 11 4 5"></polyline>
+                                    <line x1="12" y1="19" x2="20" y2="19"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Shell Agent</h4>
+                                <span>System operations</span>
+                            </div>
+                        </div>
+                        <p>Handles system operations, file management, and command execution. The hands of C-napse for interacting with your system.</p>
+                        <ul class="agent-capabilities">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Execute shell commands
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                File operations
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Process management
+                            </li>
+                        </ul>
                     </div>
-                </section>
 
-                <section id="shell">
-                    <h2>Shell Agent</h2>
-                    <p>
-                        Handles system operations, file management, and command execution.
-                    </p>
-
-                    <h3>Capabilities</h3>
-                    <ul>
-                        <li>Execute shell commands</li>
-                        <li>File and directory operations</li>
-                        <li>Process management</li>
-                        <li>System information queries</li>
-                    </ul>
-
-                    <h3>Example Queries</h3>
-                    <div class="code-block active">
-                        <pre><code>"list all files in this folder"
-"find large files over 100MB"
-"show running processes"
-"what's my disk usage?"
-"rename all .txt files to .md"</code></pre>
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Code Agent</h4>
+                                <span>Code assistance</span>
+                            </div>
+                        </div>
+                        <p>Specializes in code understanding, generation, and modification. Your pair programmer for complex coding tasks.</p>
+                        <ul class="agent-capabilities">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Code explanation
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Bug identification
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Code generation
+                            </li>
+                        </ul>
                     </div>
-                </section>
 
-                <section id="code">
-                    <h2>Code Agent</h2>
-                    <p>
-                        Specializes in code understanding, generation, and modification.
-                    </p>
-
-                    <h3>Capabilities</h3>
-                    <ul>
-                        <li>Code explanation and analysis</li>
-                        <li>Bug identification</li>
-                        <li>Refactoring suggestions</li>
-                        <li>Code generation</li>
-                    </ul>
-
-                    <h3>Example Queries</h3>
-                    <div class="code-block active">
-                        <pre><code>"explain what this function does"
-"find potential bugs in this file"
-"refactor this code to be more readable"
-"write a test for this function"</code></pre>
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Research Agent</h4>
+                                <span>Information retrieval</span>
+                            </div>
+                        </div>
+                        <p>Handles information gathering and knowledge synthesis. Answers questions and explains complex concepts.</p>
+                        <ul class="agent-capabilities">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Answer questions
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Explain concepts
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Compare technologies
+                            </li>
+                        </ul>
                     </div>
-                </section>
+                </div>
 
-                <section id="research">
-                    <h2>Research Agent</h2>
-                    <p>
-                        Handles information gathering and knowledge synthesis.
-                    </p>
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Force Agent Selection
+                </h2>
 
-                    <h3>Capabilities</h3>
-                    <ul>
-                        <li>Answer general questions</li>
-                        <li>Explain concepts</li>
-                        <li>Compare technologies</li>
-                        <li>Summarize documentation</li>
-                    </ul>
+                <p>While the router automatically selects the best agent, you can force a specific agent:</p>
 
-                    <h3>Example Queries</h3>
-                    <div class="code-block active">
-                        <pre><code>"what's the difference between TCP and UDP?"
-"explain async/await in Rust"
-"how does memory management work in Go?"
-"compare React vs Vue for this use case"</code></pre>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Terminal</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                </section>
+                    <pre><code><span class="comment"># Force shell agent</span>
+cnapse -a shell <span class="string">"list all rust files"</span>
+
+<span class="comment"># Force code agent</span>
+cnapse -a code <span class="string">"explain this function"</span>
+
+<span class="comment"># Force research agent</span>
+cnapse -a research <span class="string">"what is the difference between TCP and UDP?"</span></code></pre>
+                </div>
+
+                <div class="callout info">
+                    <div class="callout-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <div class="callout-content">
+                        <h5>Best Practice</h5>
+                        <p>Let the router choose automatically for most tasks. Only force an agent when you know the router is making incorrect selections.</p>
+                    </div>
+                </div>
+
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Example Queries
+                </h2>
+
+                <h3>Shell Agent</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Example queries</span>
+                    </div>
+                    <pre><code><span class="string">"list all files in this folder"</span>
+<span class="string">"find large files over 100MB"</span>
+<span class="string">"show running processes"</span>
+<span class="string">"what's my disk usage?"</span>
+<span class="string">"rename all .txt files to .md"</span></code></pre>
+                </div>
+
+                <h3>Code Agent</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Example queries</span>
+                    </div>
+                    <pre><code><span class="string">"explain what this function does"</span>
+<span class="string">"find potential bugs in this file"</span>
+<span class="string">"refactor this code to be more readable"</span>
+<span class="string">"write a test for this function"</span></code></pre>
+                </div>
+
+                <h3>Research Agent</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Example queries</span>
+                    </div>
+                    <pre><code><span class="string">"what's the difference between TCP and UDP?"</span>
+<span class="string">"explain async/await in Rust"</span>
+<span class="string">"how does memory management work in Go?"</span>
+<span class="string">"compare React vs Vue for this use case"</span></code></pre>
+                </div>
 
                 <div class="docs-nav">
-                    <a href="./configuration.html" class="docs-nav-prev">← Configuration</a>
-                    <a href="./tools.html" class="docs-nav-next">Tools →</a>
+                    <a href="./configuration.html">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        <div>
+                            <span class="label">Previous</span>
+                            <span class="title">Configuration</span>
+                        </div>
+                    </a>
+                    <a href="./tools.html">
+                        <div>
+                            <span class="label">Next</span>
+                            <span class="title">Tools</span>
+                        </div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
                 </div>
-            </article>
+            </div>
         </div>
     </main>
+
+    <footer>
+        <div class="container">
+            <p>Built with Rust. Open source under MIT. <a href="https://github.com/projectservan8n/C-napse">GitHub</a></p>
+        </div>
+    </footer>
+
+    <script>
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'Copied!';
+                btn.style.background = 'var(--success)';
+                btn.style.borderColor = 'var(--success)';
+                btn.style.color = 'var(--bg-primary)';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>

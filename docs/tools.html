@@ -4,10 +4,350 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tools — C-napse</title>
+    <meta name="description" content="Available tools and capabilities in C-napse for system interaction.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --bg-card: #0d0d0d;
+            --border: #1a1a1a;
+            --border-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #555555;
+            --accent: #00d4ff;
+            --accent-secondary: #8b5cf6;
+            --accent-dim: #00d4ff15;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff4444;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo {
+            font-family: 'Silkscreen', cursive;
+            font-weight: 400;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .nav-links { display: flex; gap: 40px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-primary); }
+
+        .docs-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 60px;
+            padding-top: 120px;
+            padding-bottom: 100px;
+        }
+
+        .sidebar { position: sticky; top: 120px; height: fit-content; }
+        .sidebar-section { margin-bottom: 32px; }
+        .sidebar-section h4 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .sidebar-section ul { list-style: none; }
+        .sidebar-section li { margin-bottom: 8px; }
+        .sidebar-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-left: -12px;
+        }
+        .sidebar-section a:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-section a.active { color: var(--accent); background: var(--accent-dim); }
+
+        .main-content { max-width: 800px; }
+
+        .main-content h1 {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content .lead {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            line-height: 1.7;
+        }
+
+        .main-content h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-top: 64px;
+            margin-bottom: 24px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-content h2:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+        .main-content h2 svg { color: var(--accent); }
+
+        .main-content h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .main-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .main-content ul, .main-content ol {
+            margin-bottom: 20px;
+            padding-left: 24px;
+            color: var(--text-secondary);
+        }
+
+        .main-content li { margin-bottom: 12px; line-height: 1.7; }
+        .main-content a { color: var(--accent); text-decoration: none; }
+        .main-content a:hover { text-decoration: underline; }
+
+        .main-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+            padding: 3px 8px;
+            border-radius: 6px;
+            color: var(--accent);
+        }
+
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-header span {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .code-block pre { padding: 20px; overflow-x: auto; }
+        .code-block code {
+            background: none;
+            padding: 0;
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .code-block .comment { color: var(--text-muted); }
+        .code-block .string { color: var(--success); }
+        .code-block .keyword { color: var(--accent-secondary); }
+        .code-block .function { color: var(--accent); }
+        .code-block .number { color: var(--warning); }
+
+        .callout {
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .callout.warning { background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.3); }
+        .callout-icon { width: 24px; height: 24px; flex-shrink: 0; }
+        .callout.warning .callout-icon { color: var(--warning); }
+        .callout-content h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--warning); }
+        .callout-content p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+        /* Tool Table */
+        .tool-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+
+        .tool-table th, .tool-table td {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tool-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: var(--bg-tertiary);
+        }
+
+        .tool-table td { color: var(--text-secondary); }
+
+        .tool-table td:first-child {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        .tool-table tr:hover { background: var(--bg-secondary); }
+
+        /* Tool Category Card */
+        .tool-category {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .tool-category-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .tool-category-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-dim) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .tool-category-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .docs-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 80px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .docs-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .docs-nav a:hover { border-color: var(--accent); color: var(--text-primary); transform: translateY(-2px); }
+        .docs-nav .label { font-size: 12px; color: var(--text-muted); display: block; }
+        .docs-nav .title { font-size: 15px; font-weight: 500; }
+
+        footer { padding: 48px 0; border-top: 1px solid var(--border); text-align: center; }
+        footer p { color: var(--text-muted); font-size: 14px; }
+        footer a { color: var(--text-secondary); text-decoration: none; }
+        footer a:hover { color: var(--accent); }
+
+        @media (max-width: 1024px) {
+            .docs-layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .tool-table { font-size: 12px; }
+            .tool-table th, .tool-table td { padding: 12px 8px; }
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -18,52 +358,77 @@
             </a>
             <ul class="nav-links">
                 <li><a href="./">Home</a></li>
-                <li><a href="./quickstart.html">Quick Start</a></li>
-                <li><a href="./configuration.html">Config</a></li>
-                <li><a href="./agents.html">Agents</a></li>
+                <li><a href="./architecture.html">Architecture</a></li>
+                <li><a href="./status.html">Status</a></li>
+                <li><a href="./docs.html" class="active">Docs</a></li>
                 <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
             </ul>
         </div>
     </nav>
 
-    <main class="docs-page">
-        <div class="container">
-            <aside class="docs-sidebar">
+    <main class="container">
+        <div class="docs-layout">
+            <aside class="sidebar">
                 <div class="sidebar-section">
-                    <h4>Tools</h4>
+                    <h4>Getting Started</h4>
                     <ul>
-                        <li><a href="#overview" class="active">Overview</a></li>
-                        <li><a href="#filesystem">File System</a></li>
-                        <li><a href="#shell">Shell</a></li>
-                        <li><a href="#process">Process</a></li>
-                        <li><a href="#web">Web</a></li>
+                        <li><a href="./quickstart.html">Quick Start</a></li>
+                        <li><a href="./configuration.html">Configuration</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h4>Core Concepts</h4>
+                    <ul>
+                        <li><a href="./agents.html">Agents</a></li>
+                        <li><a href="./tools.html" class="active">Tools</a></li>
+                        <li><a href="./architecture.html">Architecture</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h4>Reference</h4>
+                    <ul>
+                        <li><a href="./api.html">API Reference</a></li>
                     </ul>
                 </div>
             </aside>
 
-            <article class="docs-content">
+            <div class="main-content">
                 <h1>Tools</h1>
-                <p class="lead">The capabilities that agents use to interact with your system.</p>
+                <p class="lead">
+                    Tools are the capabilities that agents use to interact with your system. When an agent
+                    decides on an action, it executes one or more tools to accomplish it.
+                </p>
 
-                <section id="overview">
-                    <h2>Overview</h2>
-                    <p>
-                        Tools are the hands of C-napse. When an agent decides on an action,
-                        it executes one or more tools to accomplish it. All tool executions
-                        are logged and can be reviewed.
-                    </p>
-
-                    <div class="callout">
-                        <strong>Safety:</strong> Tools that modify files or execute commands
-                        will prompt for confirmation by default. Use <code>--yes</code> to
-                        auto-approve.
+                <div class="callout warning">
+                    <div class="callout-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
                     </div>
-                </section>
+                    <div class="callout-content">
+                        <h5>Safety First</h5>
+                        <p>Tools that modify files or execute commands will prompt for confirmation by default. Use <code>--yes</code> to auto-approve (not recommended for production).</p>
+                    </div>
+                </div>
 
-                <section id="filesystem">
-                    <h2>File System Tools</h2>
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    File System Tools
+                </h2>
 
-                    <table class="docs-table">
+                <div class="tool-category">
+                    <div class="tool-category-header">
+                        <div class="tool-category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3>File Operations</h3>
+                    </div>
+                    <table class="tool-table">
                         <thead>
                             <tr>
                                 <th>Tool</th>
@@ -72,49 +437,65 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>read_file</code></td>
+                                <td>read_file</td>
                                 <td>Read file contents</td>
                             </tr>
                             <tr>
-                                <td><code>write_file</code></td>
+                                <td>write_file</td>
                                 <td>Create or overwrite a file</td>
                             </tr>
                             <tr>
-                                <td><code>append_file</code></td>
+                                <td>append_file</td>
                                 <td>Append content to a file</td>
                             </tr>
                             <tr>
-                                <td><code>list_dir</code></td>
+                                <td>list_dir</td>
                                 <td>List directory contents</td>
                             </tr>
                             <tr>
-                                <td><code>search_files</code></td>
+                                <td>search_files</td>
                                 <td>Search for files by name/pattern</td>
                             </tr>
                             <tr>
-                                <td><code>search_content</code></td>
+                                <td>search_content</td>
                                 <td>Search file contents (grep)</td>
                             </tr>
                             <tr>
-                                <td><code>move_file</code></td>
+                                <td>move_file</td>
                                 <td>Move or rename files</td>
                             </tr>
                             <tr>
-                                <td><code>copy_file</code></td>
+                                <td>copy_file</td>
                                 <td>Copy files</td>
                             </tr>
                             <tr>
-                                <td><code>delete_file</code></td>
+                                <td>delete_file</td>
                                 <td>Delete files (with confirmation)</td>
                             </tr>
                         </tbody>
                     </table>
-                </section>
+                </div>
 
-                <section id="shell">
-                    <h2>Shell Tools</h2>
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 17 10 11 4 5"></polyline>
+                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                    </svg>
+                    Shell Tools
+                </h2>
 
-                    <table class="docs-table">
+                <div class="tool-category">
+                    <div class="tool-category-header">
+                        <div class="tool-category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                <path d="m6 8 4 4-4 4"></path>
+                                <line x1="12" y1="16" x2="18" y2="16"></line>
+                            </svg>
+                        </div>
+                        <h3>Command Execution</h3>
+                    </div>
+                    <table class="tool-table">
                         <thead>
                             <tr>
                                 <th>Tool</th>
@@ -123,34 +504,60 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>execute</code></td>
+                                <td>execute</td>
                                 <td>Run a shell command</td>
                             </tr>
                             <tr>
-                                <td><code>execute_background</code></td>
+                                <td>execute_background</td>
                                 <td>Run command in background</td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
 
-                    <h3>Example</h3>
-                    <div class="code-block active">
-                        <pre><code>// Agent executes:
-execute("git status")
-
-// Returns:
-{
-  "stdout": "On branch main\nnothing to commit",
-  "stderr": "",
-  "exit_code": 0
-}</code></pre>
+                <h3>Example Output</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Tool execution result</span>
                     </div>
-                </section>
+                    <pre><code><span class="comment">// Agent executes:</span>
+<span class="function">execute</span>(<span class="string">"git status"</span>)
 
-                <section id="process">
-                    <h2>Process Tools</h2>
+<span class="comment">// Returns:</span>
+{
+  <span class="string">"stdout"</span>: <span class="string">"On branch main\nnothing to commit"</span>,
+  <span class="string">"stderr"</span>: <span class="string">""</span>,
+  <span class="string">"exit_code"</span>: <span class="number">0</span>
+}</code></pre>
+                </div>
 
-                    <table class="docs-table">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                        <rect x="9" y="9" width="6" height="6"></rect>
+                        <line x1="9" y1="1" x2="9" y2="4"></line>
+                        <line x1="15" y1="1" x2="15" y2="4"></line>
+                        <line x1="9" y1="20" x2="9" y2="23"></line>
+                        <line x1="15" y1="20" x2="15" y2="23"></line>
+                        <line x1="20" y1="9" x2="23" y2="9"></line>
+                        <line x1="20" y1="14" x2="23" y2="14"></line>
+                        <line x1="1" y1="9" x2="4" y2="9"></line>
+                        <line x1="1" y1="14" x2="4" y2="14"></line>
+                    </svg>
+                    Process Tools
+                </h2>
+
+                <div class="tool-category">
+                    <div class="tool-category-header">
+                        <div class="tool-category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4"></path>
+                            </svg>
+                        </div>
+                        <h3>System Management</h3>
+                    </div>
+                    <table class="tool-table">
                         <thead>
                             <tr>
                                 <th>Tool</th>
@@ -159,29 +566,46 @@ execute("git status")
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>list_processes</code></td>
+                                <td>list_processes</td>
                                 <td>List running processes</td>
                             </tr>
                             <tr>
-                                <td><code>process_info</code></td>
+                                <td>process_info</td>
                                 <td>Get details about a process</td>
                             </tr>
                             <tr>
-                                <td><code>kill_process</code></td>
+                                <td>kill_process</td>
                                 <td>Terminate a process</td>
                             </tr>
                             <tr>
-                                <td><code>system_info</code></td>
-                                <td>Get system information</td>
+                                <td>system_info</td>
+                                <td>Get system information (CPU, memory, disk)</td>
                             </tr>
                         </tbody>
                     </table>
-                </section>
+                </div>
 
-                <section id="web">
-                    <h2>Web Tools</h2>
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    Web Tools
+                </h2>
 
-                    <table class="docs-table">
+                <div class="tool-category">
+                    <div class="tool-category-header">
+                        <div class="tool-category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 11a9 9 0 0 1 9 9"></path>
+                                <path d="M4 4a16 16 0 0 1 16 16"></path>
+                                <circle cx="5" cy="19" r="1"></circle>
+                            </svg>
+                        </div>
+                        <h3>HTTP Requests</h3>
+                    </div>
+                    <table class="tool-table">
                         <thead>
                             <tr>
                                 <th>Tool</th>
@@ -190,27 +614,88 @@ execute("git status")
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>http_get</code></td>
+                                <td>http_get</td>
                                 <td>Make HTTP GET request</td>
                             </tr>
                             <tr>
-                                <td><code>http_post</code></td>
+                                <td>http_post</td>
                                 <td>Make HTTP POST request</td>
                             </tr>
                             <tr>
-                                <td><code>download_file</code></td>
+                                <td>download_file</td>
                                 <td>Download file from URL</td>
                             </tr>
                         </tbody>
                     </table>
-                </section>
+                </div>
+
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    Screen Tools
+                </h2>
+
+                <div class="tool-category">
+                    <div class="tool-category-header">
+                        <div class="tool-category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </div>
+                        <h3>Visual Perception</h3>
+                    </div>
+                    <table class="tool-table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>take_screenshot</td>
+                                <td>Capture the current screen</td>
+                            </tr>
+                            <tr>
+                                <td>watch_screen</td>
+                                <td>Monitor for screen changes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <div class="docs-nav">
-                    <a href="./agents.html" class="docs-nav-prev">← Agents</a>
-                    <a href="./api.html" class="docs-nav-next">API Reference →</a>
+                    <a href="./agents.html">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        <div>
+                            <span class="label">Previous</span>
+                            <span class="title">Agents</span>
+                        </div>
+                    </a>
+                    <a href="./api.html">
+                        <div>
+                            <span class="label">Next</span>
+                            <span class="title">API Reference</span>
+                        </div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
                 </div>
-            </article>
+            </div>
         </div>
     </main>
+
+    <footer>
+        <div class="container">
+            <p>Built with Rust. Open source under MIT. <a href="https://github.com/projectservan8n/C-napse">GitHub</a></p>
+        </div>
+    </footer>
 </body>
 </html>

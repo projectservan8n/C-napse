@@ -4,10 +4,377 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Reference — C-napse</title>
+    <meta name="description" content="REST and WebSocket API reference for integrating with C-napse.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --bg-card: #0d0d0d;
+            --border: #1a1a1a;
+            --border-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #555555;
+            --accent: #00d4ff;
+            --accent-secondary: #8b5cf6;
+            --accent-dim: #00d4ff15;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff4444;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo {
+            font-family: 'Silkscreen', cursive;
+            font-weight: 400;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .nav-links { display: flex; gap: 40px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-primary); }
+
+        .docs-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 60px;
+            padding-top: 120px;
+            padding-bottom: 100px;
+        }
+
+        .sidebar { position: sticky; top: 120px; height: fit-content; }
+        .sidebar-section { margin-bottom: 32px; }
+        .sidebar-section h4 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .sidebar-section ul { list-style: none; }
+        .sidebar-section li { margin-bottom: 8px; }
+        .sidebar-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-left: -12px;
+        }
+        .sidebar-section a:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-section a.active { color: var(--accent); background: var(--accent-dim); }
+
+        .main-content { max-width: 800px; }
+
+        .main-content h1 {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content .lead {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            line-height: 1.7;
+        }
+
+        .main-content h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-top: 64px;
+            margin-bottom: 24px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-content h2:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+        .main-content h2 svg { color: var(--accent); }
+
+        .main-content h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .main-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .main-content ul, .main-content ol {
+            margin-bottom: 20px;
+            padding-left: 24px;
+            color: var(--text-secondary);
+        }
+
+        .main-content li { margin-bottom: 12px; line-height: 1.7; }
+        .main-content a { color: var(--accent); text-decoration: none; }
+        .main-content a:hover { text-decoration: underline; }
+
+        .main-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+            padding: 3px 8px;
+            border-radius: 6px;
+            color: var(--accent);
+        }
+
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-header span {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .code-block pre { padding: 20px; overflow-x: auto; }
+        .code-block code {
+            background: none;
+            padding: 0;
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .code-block .comment { color: var(--text-muted); }
+        .code-block .string { color: var(--success); }
+        .code-block .keyword { color: var(--accent-secondary); }
+        .code-block .function { color: var(--accent); }
+        .code-block .number { color: var(--warning); }
+
+        .callout {
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .callout.info { background: var(--accent-dim); border: 1px solid rgba(0, 212, 255, 0.3); }
+        .callout.warning { background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.3); }
+        .callout-icon { width: 24px; height: 24px; flex-shrink: 0; }
+        .callout.info .callout-icon { color: var(--accent); }
+        .callout.warning .callout-icon { color: var(--warning); }
+        .callout-content h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .callout.info .callout-content h5 { color: var(--accent); }
+        .callout.warning .callout-content h5 { color: var(--warning); }
+        .callout-content p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+        /* API Method Badge */
+        .method-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            margin-right: 12px;
+        }
+
+        .method-badge.get { background: rgba(0, 255, 136, 0.15); color: var(--success); }
+        .method-badge.post { background: rgba(0, 212, 255, 0.15); color: var(--accent); }
+        .method-badge.delete { background: rgba(255, 68, 68, 0.15); color: var(--error); }
+        .method-badge.ws { background: rgba(139, 92, 246, 0.15); color: var(--accent-secondary); }
+
+        /* Endpoint Card */
+        .endpoint-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .endpoint-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .endpoint-path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .endpoint-body { padding: 24px; }
+        .endpoint-body p { margin-bottom: 16px; }
+
+        /* Message Type Table */
+        .msg-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .msg-table th, .msg-table td {
+            text-align: left;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .msg-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: var(--bg-tertiary);
+        }
+
+        .msg-table td { color: var(--text-secondary); }
+
+        .msg-table td:first-child {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        .docs-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 80px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .docs-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .docs-nav a:hover { border-color: var(--accent); color: var(--text-primary); transform: translateY(-2px); }
+        .docs-nav .label { font-size: 12px; color: var(--text-muted); display: block; }
+        .docs-nav .title { font-size: 15px; font-weight: 500; }
+
+        footer { padding: 48px 0; border-top: 1px solid var(--border); text-align: center; }
+        footer p { color: var(--text-muted); font-size: 14px; }
+        footer a { color: var(--text-secondary); text-decoration: none; }
+        footer a:hover { color: var(--accent); }
+
+        @media (max-width: 1024px) {
+            .docs-layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -18,232 +385,382 @@
             </a>
             <ul class="nav-links">
                 <li><a href="./">Home</a></li>
-                <li><a href="./quickstart.html">Quick Start</a></li>
-                <li><a href="./configuration.html">Config</a></li>
-                <li><a href="./agents.html">Agents</a></li>
+                <li><a href="./architecture.html">Architecture</a></li>
+                <li><a href="./status.html">Status</a></li>
+                <li><a href="./docs.html" class="active">Docs</a></li>
                 <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
             </ul>
         </div>
     </nav>
 
-    <main class="docs-page">
-        <div class="container">
-            <aside class="docs-sidebar">
+    <main class="container">
+        <div class="docs-layout">
+            <aside class="sidebar">
                 <div class="sidebar-section">
-                    <h4>API</h4>
+                    <h4>Getting Started</h4>
                     <ul>
-                        <li><a href="#overview" class="active">Overview</a></li>
-                        <li><a href="#rest">REST API</a></li>
-                        <li><a href="#websocket">WebSocket</a></li>
-                        <li><a href="#auth">Authentication</a></li>
+                        <li><a href="./quickstart.html">Quick Start</a></li>
+                        <li><a href="./configuration.html">Configuration</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h4>Core Concepts</h4>
+                    <ul>
+                        <li><a href="./agents.html">Agents</a></li>
+                        <li><a href="./tools.html">Tools</a></li>
+                        <li><a href="./architecture.html">Architecture</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h4>Reference</h4>
+                    <ul>
+                        <li><a href="./api.html" class="active">API Reference</a></li>
                     </ul>
                 </div>
             </aside>
 
-            <article class="docs-content">
+            <div class="main-content">
                 <h1>API Reference</h1>
-                <p class="lead">Integrate C-napse into your applications.</p>
+                <p class="lead">
+                    C-napse includes a server mode that exposes both REST and WebSocket APIs for
+                    integration with other applications.
+                </p>
 
-                <section id="overview">
-                    <h2>Overview</h2>
-                    <p>
-                        C-napse includes a server mode that exposes both REST and WebSocket
-                        APIs for integration with other applications.
-                    </p>
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <path d="m6 8 4 4-4 4"></path>
+                        <line x1="12" y1="16" x2="18" y2="16"></line>
+                    </svg>
+                    Starting the Server
+                </h2>
 
-                    <div class="code-block active">
-                        <pre><code># Start the server
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Terminal</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="comment"># Start the server with default settings</span>
 cnapse serve
 
-# With custom port
-cnapse serve --port 8080
+<span class="comment"># With custom port</span>
+cnapse serve --port <span class="number">8080</span>
 
-# Without web UI
+<span class="comment"># Without web UI</span>
 cnapse serve --no-web</code></pre>
+                </div>
+
+                <p>Default URL: <code>http://localhost:3000</code></p>
+
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 11a9 9 0 0 1 9 9"></path>
+                        <path d="M4 4a16 16 0 0 1 16 16"></path>
+                        <circle cx="5" cy="19" r="1"></circle>
+                    </svg>
+                    REST API
+                </h2>
+
+                <h3>Health Check</h3>
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method-badge get">GET</span>
+                        <span class="endpoint-path">/api/health</span>
                     </div>
-
-                    <p>Default URL: <code>http://localhost:3000</code></p>
-                </section>
-
-                <section id="rest">
-                    <h2>REST API</h2>
-
-                    <h3>Health Check</h3>
-                    <div class="code-block active">
-                        <pre><code>GET /api/health
-
-Response:
-{
-  "status": "ok",
-  "version": "0.1.0"
+                    <div class="endpoint-body">
+                        <p>Check if the server is running.</p>
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Response</span>
+                            </div>
+                            <pre><code>{
+  <span class="string">"status"</span>: <span class="string">"ok"</span>,
+  <span class="string">"version"</span>: <span class="string">"0.1.0"</span>
 }</code></pre>
+                        </div>
                     </div>
+                </div>
 
-                    <h3>Chat</h3>
-                    <div class="code-block active">
-                        <pre><code>POST /api/chat
-Content-Type: application/json
-X-API-Key: your-api-key
-
-{
-  "message": "list files in current directory",
-  "provider": "ollama",  // optional
-  "agent": "shell",      // optional
-  "stream": false        // optional
-}
-
-Response:
-{
-  "id": "msg_123",
-  "content": "Here are the files...",
-  "agent": "shell",
-  "tokens": 150,
-  "tools_used": ["list_dir"]
+                <h3>Chat</h3>
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method-badge post">POST</span>
+                        <span class="endpoint-path">/api/chat</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p>Send a message and get a response from C-napse.</p>
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Request</span>
+                            </div>
+                            <pre><code>{
+  <span class="string">"message"</span>: <span class="string">"list files in current directory"</span>,
+  <span class="string">"provider"</span>: <span class="string">"ollama"</span>,  <span class="comment">// optional</span>
+  <span class="string">"agent"</span>: <span class="string">"shell"</span>,      <span class="comment">// optional</span>
+  <span class="string">"stream"</span>: <span class="keyword">false</span>        <span class="comment">// optional</span>
 }</code></pre>
+                        </div>
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Response</span>
+                            </div>
+                            <pre><code>{
+  <span class="string">"id"</span>: <span class="string">"msg_123"</span>,
+  <span class="string">"content"</span>: <span class="string">"Here are the files..."</span>,
+  <span class="string">"agent"</span>: <span class="string">"shell"</span>,
+  <span class="string">"tokens"</span>: <span class="number">150</span>,
+  <span class="string">"tools_used"</span>: [<span class="string">"list_dir"</span>]
+}</code></pre>
+                        </div>
                     </div>
+                </div>
 
-                    <h3>List Agents</h3>
-                    <div class="code-block active">
-                        <pre><code>GET /api/agents
-X-API-Key: your-api-key
-
-Response:
-{
-  "agents": [
-    {"name": "router", "description": "Query routing"},
-    {"name": "shell", "description": "System operations"},
-    {"name": "code", "description": "Code assistance"},
-    {"name": "research", "description": "Information retrieval"}
+                <h3>List Agents</h3>
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method-badge get">GET</span>
+                        <span class="endpoint-path">/api/agents</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p>Get a list of available agents.</p>
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Response</span>
+                            </div>
+                            <pre><code>{
+  <span class="string">"agents"</span>: [
+    {<span class="string">"name"</span>: <span class="string">"router"</span>, <span class="string">"description"</span>: <span class="string">"Query routing"</span>},
+    {<span class="string">"name"</span>: <span class="string">"shell"</span>, <span class="string">"description"</span>: <span class="string">"System operations"</span>},
+    {<span class="string">"name"</span>: <span class="string">"code"</span>, <span class="string">"description"</span>: <span class="string">"Code assistance"</span>},
+    {<span class="string">"name"</span>: <span class="string">"research"</span>, <span class="string">"description"</span>: <span class="string">"Information retrieval"</span>}
   ]
 }</code></pre>
+                        </div>
                     </div>
+                </div>
 
-                    <h3>Chat History</h3>
-                    <div class="code-block active">
-                        <pre><code>GET /api/chat/history
-X-API-Key: your-api-key
-
-DELETE /api/chat/history
-X-API-Key: your-api-key</code></pre>
+                <h3>Chat History</h3>
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method-badge get">GET</span>
+                        <span class="endpoint-path">/api/chat/history</span>
                     </div>
-                </section>
+                    <div class="endpoint-body">
+                        <p>Retrieve conversation history.</p>
+                    </div>
+                </div>
 
-                <section id="websocket">
-                    <h2>WebSocket API</h2>
-                    <p>For real-time streaming responses:</p>
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method-badge delete">DELETE</span>
+                        <span class="endpoint-path">/api/chat/history</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p>Clear conversation history.</p>
+                    </div>
+                </div>
 
-                    <div class="code-block active">
-                        <pre><code>// Connect
-ws://localhost:3000/ws?token=your-api-key
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    WebSocket API
+                </h2>
 
-// Send message
-{
-  "type": "chat",
-  "id": "msg_123",
-  "content": "explain this code",
-  "stream": true
-}
+                <p>For real-time streaming responses, connect via WebSocket:</p>
 
-// Receive chunks
-{
-  "type": "chunk",
-  "id": "msg_123",
-  "content": "This function...",
-  "done": false
-}
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Connection</span>
+                    </div>
+                    <pre><code>ws://localhost:<span class="number">3000</span>/ws?token=your-api-key</code></pre>
+                </div>
 
-// Final response
-{
-  "type": "response",
-  "id": "msg_123",
-  "content": "Full response here",
-  "agent": "code",
-  "tokens": 250,
-  "done": true
+                <h3>Sending Messages</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Client message</span>
+                    </div>
+                    <pre><code>{
+  <span class="string">"type"</span>: <span class="string">"chat"</span>,
+  <span class="string">"id"</span>: <span class="string">"msg_123"</span>,
+  <span class="string">"content"</span>: <span class="string">"explain this code"</span>,
+  <span class="string">"stream"</span>: <span class="keyword">true</span>
 }</code></pre>
+                </div>
+
+                <h3>Receiving Responses</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Streaming chunk</span>
                     </div>
+                    <pre><code>{
+  <span class="string">"type"</span>: <span class="string">"chunk"</span>,
+  <span class="string">"id"</span>: <span class="string">"msg_123"</span>,
+  <span class="string">"content"</span>: <span class="string">"This function..."</span>,
+  <span class="string">"done"</span>: <span class="keyword">false</span>
+}</code></pre>
+                </div>
 
-                    <h3>Message Types</h3>
-                    <table class="docs-table">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Direction</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>auth</code></td>
-                                <td>Client → Server</td>
-                                <td>Authenticate connection</td>
-                            </tr>
-                            <tr>
-                                <td><code>chat</code></td>
-                                <td>Client → Server</td>
-                                <td>Send a message</td>
-                            </tr>
-                            <tr>
-                                <td><code>cancel</code></td>
-                                <td>Client → Server</td>
-                                <td>Cancel current request</td>
-                            </tr>
-                            <tr>
-                                <td><code>chunk</code></td>
-                                <td>Server → Client</td>
-                                <td>Streaming response chunk</td>
-                            </tr>
-                            <tr>
-                                <td><code>response</code></td>
-                                <td>Server → Client</td>
-                                <td>Complete response</td>
-                            </tr>
-                            <tr>
-                                <td><code>tool</code></td>
-                                <td>Server → Client</td>
-                                <td>Tool execution update</td>
-                            </tr>
-                            <tr>
-                                <td><code>error</code></td>
-                                <td>Server → Client</td>
-                                <td>Error message</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Final response</span>
+                    </div>
+                    <pre><code>{
+  <span class="string">"type"</span>: <span class="string">"response"</span>,
+  <span class="string">"id"</span>: <span class="string">"msg_123"</span>,
+  <span class="string">"content"</span>: <span class="string">"Full response here"</span>,
+  <span class="string">"agent"</span>: <span class="string">"code"</span>,
+  <span class="string">"tokens"</span>: <span class="number">250</span>,
+  <span class="string">"done"</span>: <span class="keyword">true</span>
+}</code></pre>
+                </div>
 
-                <section id="auth">
-                    <h2>Authentication</h2>
-                    <p>Generate an API key:</p>
+                <h3>Message Types</h3>
+                <table class="msg-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Direction</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>auth</td>
+                            <td>Client -> Server</td>
+                            <td>Authenticate connection</td>
+                        </tr>
+                        <tr>
+                            <td>chat</td>
+                            <td>Client -> Server</td>
+                            <td>Send a message</td>
+                        </tr>
+                        <tr>
+                            <td>cancel</td>
+                            <td>Client -> Server</td>
+                            <td>Cancel current request</td>
+                        </tr>
+                        <tr>
+                            <td>chunk</td>
+                            <td>Server -> Client</td>
+                            <td>Streaming response chunk</td>
+                        </tr>
+                        <tr>
+                            <td>response</td>
+                            <td>Server -> Client</td>
+                            <td>Complete response</td>
+                        </tr>
+                        <tr>
+                            <td>tool</td>
+                            <td>Server -> Client</td>
+                            <td>Tool execution update</td>
+                        </tr>
+                        <tr>
+                            <td>error</td>
+                            <td>Server -> Client</td>
+                            <td>Error message</td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                    <div class="code-block active">
-                        <pre><code># Generate new key
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Authentication
+                </h2>
+
+                <p>Generate an API key for server access:</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Terminal</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="comment"># Generate new key</span>
 cnapse auth generate-server-key
 
-# Output: cnapse-abc123...</code></pre>
-                    </div>
+<span class="comment"># Output: cnapse-abc123...</span></code></pre>
+                </div>
 
-                    <p>Include in requests:</p>
-                    <div class="code-block active">
-                        <pre><code># Header
-X-API-Key: cnapse-abc123...
+                <p>Include the key in requests:</p>
 
-# WebSocket query param
-ws://localhost:3000/ws?token=cnapse-abc123...</code></pre>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>HTTP Header</span>
                     </div>
+                    <pre><code>X-API-Key: cnapse-abc123...</code></pre>
+                </div>
 
-                    <div class="callout">
-                        <strong>Note:</strong> If no API key is configured, the server accepts
-                        all requests (development mode). Always set an API key in production.
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>WebSocket Query Param</span>
                     </div>
-                </section>
+                    <pre><code>ws://localhost:<span class="number">3000</span>/ws?token=cnapse-abc123...</code></pre>
+                </div>
+
+                <div class="callout warning">
+                    <div class="callout-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="callout-content">
+                        <h5>Development Mode</h5>
+                        <p>If no API key is configured, the server accepts all requests. Always set an API key in production.</p>
+                    </div>
+                </div>
 
                 <div class="docs-nav">
-                    <a href="./tools.html" class="docs-nav-prev">← Tools</a>
-                    <a href="./" class="docs-nav-next">Home →</a>
+                    <a href="./tools.html">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        <div>
+                            <span class="label">Previous</span>
+                            <span class="title">Tools</span>
+                        </div>
+                    </a>
+                    <a href="./">
+                        <div>
+                            <span class="label">Next</span>
+                            <span class="title">Home</span>
+                        </div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
                 </div>
-            </article>
+            </div>
         </div>
     </main>
+
+    <footer>
+        <div class="container">
+            <p>Built with Rust. Open source under MIT. <a href="https://github.com/projectservan8n/C-napse">GitHub</a></p>
+        </div>
+    </footer>
+
+    <script>
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'Copied!';
+                btn.style.background = 'var(--success)';
+                btn.style.borderColor = 'var(--success)';
+                btn.style.color = 'var(--bg-primary)';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>
