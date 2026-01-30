@@ -12,13 +12,24 @@ pub struct VscodeWorkspace {
     pub open_files: Vec<PathBuf>,
 }
 
+/// Helper to get process name as string (cross-platform)
+#[cfg(windows)]
+fn get_process_name(process: &sysinfo::Process) -> String {
+    process.name().to_string_lossy().to_string()
+}
+
+#[cfg(not(windows))]
+fn get_process_name(process: &sysinfo::Process) -> String {
+    process.name().to_string()
+}
+
 /// Check if VS Code is running
 pub fn is_vscode_running() -> bool {
     let mut sys = sysinfo::System::new_all();
     sys.refresh_processes();
 
     sys.processes().values().any(|p| {
-        let name = p.name().to_string_lossy().to_lowercase();
+        let name = get_process_name(p).to_lowercase();
         name.contains("code") || name.contains("code-insiders") || name.contains("codium")
     })
 }
