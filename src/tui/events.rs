@@ -35,6 +35,7 @@ pub struct EventHandler {
     _tx: mpsc::UnboundedSender<AppEvent>,
 }
 
+#[allow(dead_code)]
 impl EventHandler {
     pub fn new() -> Self {
         let (tx, rx) = mpsc::unbounded_channel();

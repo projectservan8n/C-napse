@@ -218,6 +218,7 @@ pub struct ScreenRegion {
     pub height: u32,
 }
 
+#[allow(dead_code)]
 impl ScreenRegion {
     /// Create a region for a specific area
     pub fn new(x: i32, y: i32, width: u32, height: u32) -> Self {
