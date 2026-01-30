@@ -6,7 +6,9 @@
       "Bash(cmd /c \"where cargo\")",
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Bash(cargo build:*)"
+      "Bash(cargo build:*)",
+      "Bash(git tag:*)",
+      "Bash(cargo fmt:*)"
     ]
   }
 }
