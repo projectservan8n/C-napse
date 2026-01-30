@@ -79,7 +79,12 @@ impl ScreenWatcher {
         }
 
         // Check if capture already in progress
-        let in_progress = self.capture_in_progress.lock().ok().map(|g| *g).unwrap_or(false);
+        let in_progress = self
+            .capture_in_progress
+            .lock()
+            .ok()
+            .map(|g| *g)
+            .unwrap_or(false);
         if in_progress {
             return None;
         }
