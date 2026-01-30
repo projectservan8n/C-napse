@@ -81,18 +81,22 @@ C-napse - Autonomous PC Intelligence
 
 Usage:
   cnapse                     Start interactive chat
+  cnapse init                Interactive setup wizard
   cnapse auth <provider> <key>  Set API key
   cnapse config              Show configuration
   cnapse config set <k> <v>  Set config value
   cnapse help                Show this help
 
 Providers:
-  ollama      - Local AI (default)
-  openrouter  - OpenRouter API
+  ollama      - Local AI (default, free)
+  openrouter  - OpenRouter API (many models)
   anthropic   - Anthropic Claude
   openai      - OpenAI GPT
 
-Examples:
+Quick Start:
+  cnapse init                # Interactive setup
+
+Manual Setup:
   cnapse auth openrouter sk-or-xxxxx
   cnapse config set provider openrouter
   cnapse config set model qwen/qwen-2.5-coder-32b-instruct
@@ -104,6 +108,60 @@ Examples:
     case '--version':
     case '-v': {
       console.log('cnapse v0.2.0');
+      process.exit(0);
+    }
+
+    case 'init': {
+      // Interactive setup
+      const readline = await import('readline');
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      const question = (q: string): Promise<string> =>
+        new Promise((resolve) => rl.question(q, resolve));
+
+      console.log('\n🚀 C-napse Setup\n');
+
+      console.log('Select a provider:');
+      console.log('  1. ollama     - Local AI (free, requires Ollama installed)');
+      console.log('  2. openrouter - OpenRouter API (pay per use, many models)');
+      console.log('  3. anthropic  - Anthropic Claude (pay per use)');
+      console.log('  4. openai     - OpenAI GPT (pay per use)');
+      console.log('');
+
+      const providerChoice = await question('Enter choice (1-4) [1]: ');
+      const providers = ['ollama', 'openrouter', 'anthropic', 'openai'] as const;
+      const providerIndex = parseInt(providerChoice || '1') - 1;
+      const provider = providers[providerIndex] || 'ollama';
+
+      setProvider(provider);
+      console.log(`✓ Provider set to: ${provider}`);
+
+      if (provider !== 'ollama') {
+        const apiKey = await question(`\nEnter your ${provider} API key: `);
+        if (apiKey) {
+          setApiKey(provider as any, apiKey);
+          console.log(`✓ API key saved`);
+        }
+      }
+
+      // Set default model based on provider
+      const defaultModels: Record<string, string> = {
+        ollama: 'qwen2.5:0.5b',
+        openrouter: 'qwen/qwen-2.5-coder-32b-instruct',
+        anthropic: 'claude-3-5-sonnet-20241022',
+        openai: 'gpt-4o',
+      };
+
+      const model = await question(`\nModel [${defaultModels[provider]}]: `);
+      setModel(model || defaultModels[provider]!);
+      console.log(`✓ Model set to: ${model || defaultModels[provider]}`);
+
+      rl.close();
+
+      console.log('\n✅ Setup complete! Run `cnapse` to start chatting.\n');
       process.exit(0);
     }
 
