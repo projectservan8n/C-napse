@@ -328,11 +328,9 @@
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 20px 24px;
-            padding-right: 100px;
             display: none;
             position: relative;
             transition: all 0.3s ease;
-            overflow-x: auto;
         }
 
         .install-box:hover {
@@ -341,7 +339,10 @@
         }
 
         .install-box.active {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
             animation: fadeScale 0.3s ease;
         }
 
@@ -355,14 +356,27 @@
             font-size: 13px;
             color: var(--text-primary);
             white-space: nowrap;
-            display: block;
+            overflow-x: auto;
+            flex: 1;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .install-box code::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .install-box code::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .install-box code::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
         }
 
         .install-box .copy-btn {
-            position: absolute;
-            top: 50%;
-            right: 16px;
-            transform: translateY(-50%);
+            flex-shrink: 0;
             padding: 8px 16px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -379,53 +393,7 @@
             background: var(--accent);
             border-color: var(--accent);
             color: var(--bg-primary);
-            transform: translateY(-50%) scale(1.05);
-        }
-
-        /* Scroll indicator */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            font-size: 12px;
-            animation: bounce 2s infinite;
-        }
-
-        .scroll-indicator .mouse {
-            width: 24px;
-            height: 38px;
-            border: 2px solid var(--text-muted);
-            border-radius: 12px;
-            position: relative;
-        }
-
-        .scroll-indicator .mouse::before {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 8px;
-            background: var(--text-muted);
-            border-radius: 2px;
-            animation: scrollWheel 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(10px); }
-        }
-
-        @keyframes scrollWheel {
-            0%, 100% { opacity: 1; top: 8px; }
-            50% { opacity: 0; top: 16px; }
+            transform: scale(1.05);
         }
 
         /* Sections */
@@ -510,9 +478,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
             margin-bottom: 24px;
             transition: transform 0.3s ease;
+            color: var(--accent);
         }
 
         .feature-card:hover .feature-icon {
@@ -667,8 +635,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
             transition: transform 0.3s ease;
+            color: var(--accent);
         }
 
         .docs-link:hover .docs-link-icon {
@@ -781,10 +749,10 @@
                 <span>C-napse</span>
             </a>
             <ul class="nav-links">
-                <li><a href="#" class="active">Home</a></li>
-                <li><a href="#architecture">Architecture</a></li>
-                <li><a href="#status">Status</a></li>
-                <li><a href="#docs">Docs</a></li>
+                <li><a href="./" class="active">Home</a></li>
+                <li><a href="./architecture.html">Architecture</a></li>
+                <li><a href="./status.html">Status</a></li>
+                <li><a href="./docs.html">Docs</a></li>
                 <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
             </ul>
             <button class="mobile-menu-btn">☰</button>
@@ -838,10 +806,6 @@
                 </div>
             </div>
 
-            <div class="scroll-indicator">
-                <div class="mouse"></div>
-                <span>Scroll</span>
-            </div>
         </section>
 
         <!-- Architecture -->
@@ -858,7 +822,19 @@
 
                 <div class="feature-grid">
                     <div class="feature-card animate-on-scroll delay-1">
-                        <div class="feature-icon">🧠</div>
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 5.58 2.5 2.5 0 0 0 2.96 3.08A2.5 2.5 0 0 0 12 19.5a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 12 4.5"></path>
+                                <path d="m15.7 10.4-.9.4"></path>
+                                <path d="m9.2 13.2-.9.4"></path>
+                                <path d="m13.6 15.7-.4-.9"></path>
+                                <path d="m10.8 9.2-.4-.9"></path>
+                                <path d="m15.7 13.5-.9-.4"></path>
+                                <path d="m9.2 10.9-.9-.4"></path>
+                                <path d="m10.5 15.7.4-.9"></path>
+                                <path d="m13.1 9.2.4-.9"></path>
+                            </svg>
+                        </div>
                         <h3>Neural Routing</h3>
                         <p>
                             Intelligent query classification routes requests to specialized agents —
@@ -867,7 +843,12 @@
                     </div>
 
                     <div class="feature-card animate-on-scroll delay-2">
-                        <div class="feature-icon">👁️</div>
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </div>
                         <h3>Screen Perception</h3>
                         <p>
                             Real-time visual context through screen capture and analysis.
@@ -876,7 +857,11 @@
                     </div>
 
                     <div class="feature-card animate-on-scroll delay-3">
-                        <div class="feature-icon">⚡</div>
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
                         <h3>Local Execution</h3>
                         <p>
                             Zero-latency tool execution with direct system access.
@@ -885,7 +870,13 @@
                     </div>
 
                     <div class="feature-card animate-on-scroll delay-4">
-                        <div class="feature-icon">🔗</div>
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                        </div>
                         <h3>Adaptive Memory</h3>
                         <p>
                             Persistent context through vector embeddings. Learns your
@@ -894,7 +885,12 @@
                     </div>
 
                     <div class="feature-card animate-on-scroll delay-5">
-                        <div class="feature-icon">📱</div>
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                            </svg>
+                        </div>
                         <h3>Cross-Device Sync</h3>
                         <p>
                             Seamless continuity between desktop and mobile via Telegram
@@ -903,7 +899,14 @@
                     </div>
 
                     <div class="feature-card animate-on-scroll delay-6">
-                        <div class="feature-icon">🔌</div>
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                                <path d="m2 12 5 3 2-6 6 2 3-5"></path>
+                                <path d="m2 12 10 10"></path>
+                                <path d="m12 22 3-11 7 5"></path>
+                            </svg>
+                        </div>
                         <h3>Provider Agnostic</h3>
                         <p>
                             Ollama for local inference, or connect to Anthropic, OpenAI,
@@ -991,7 +994,11 @@
 
                 <div class="docs-grid">
                     <a href="./quickstart.html" class="docs-link animate-on-scroll delay-1">
-                        <div class="docs-link-icon">🚀</div>
+                        <div class="docs-link-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
                         <div class="docs-link-text">
                             <h4>Quick Start</h4>
                             <p>Get up and running in 2 minutes</p>
@@ -999,7 +1006,12 @@
                     </a>
 
                     <a href="./configuration.html" class="docs-link animate-on-scroll delay-2">
-                        <div class="docs-link-icon">⚙️</div>
+                        <div class="docs-link-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                        </div>
                         <div class="docs-link-text">
                             <h4>Configuration</h4>
                             <p>Customize providers and settings</p>
@@ -1007,7 +1019,15 @@
                     </a>
 
                     <a href="./agents.html" class="docs-link animate-on-scroll delay-3">
-                        <div class="docs-link-icon">🤖</div>
+                        <div class="docs-link-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 8V4H8"></path>
+                                <rect x="8" y="8" width="8" height="8" rx="2"></rect>
+                                <path d="M16 8V4h-4"></path>
+                                <path d="M12 16v4h4"></path>
+                                <path d="M12 16v4H8"></path>
+                            </svg>
+                        </div>
                         <div class="docs-link-text">
                             <h4>Agents</h4>
                             <p>Understanding the agent system</p>
@@ -1015,7 +1035,11 @@
                     </a>
 
                     <a href="./tools.html" class="docs-link animate-on-scroll delay-4">
-                        <div class="docs-link-icon">🔧</div>
+                        <div class="docs-link-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                            </svg>
+                        </div>
                         <div class="docs-link-text">
                             <h4>Tools</h4>
                             <p>Available tools and capabilities</p>
@@ -1023,7 +1047,13 @@
                     </a>
 
                     <a href="./api.html" class="docs-link animate-on-scroll delay-5">
-                        <div class="docs-link-icon">📡</div>
+                        <div class="docs-link-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 11a9 9 0 0 1 9 9"></path>
+                                <path d="M4 4a16 16 0 0 1 16 16"></path>
+                                <circle cx="5" cy="19" r="1"></circle>
+                            </svg>
+                        </div>
                         <div class="docs-link-text">
                             <h4>API Reference</h4>
                             <p>Server API and WebSocket protocol</p>
@@ -1031,7 +1061,11 @@
                     </a>
 
                     <a href="https://github.com/projectservan8n/C-napse" class="docs-link animate-on-scroll delay-6" target="_blank">
-                        <div class="docs-link-icon">📦</div>
+                        <div class="docs-link-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                            </svg>
+                        </div>
                         <div class="docs-link-text">
                             <h4>Source Code</h4>
                             <p>View on GitHub</p>

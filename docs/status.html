@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status — C-napse</title>
+    <meta name="description" content="C-napse development status and component maturity levels.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --bg-card: #0d0d0d;
+            --border: #1a1a1a;
+            --border-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #555555;
+            --accent: #00d4ff;
+            --accent-secondary: #8b5cf6;
+            --accent-dim: #00d4ff15;
+            --success: #00ff88;
+            --warning: #ffaa00;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo {
+            font-family: 'Silkscreen', cursive;
+            font-weight: 400;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .nav-links { display: flex; gap: 40px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-primary); }
+
+        .page-header {
+            padding: 140px 0 80px;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.08) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .page-header h1 {
+            font-family: 'Silkscreen', cursive;
+            font-size: clamp(36px, 6vw, 56px);
+            font-weight: 400;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p { color: var(--text-secondary); font-size: 18px; max-width: 600px; margin: 0 auto; }
+
+        .content { padding: 40px 0 120px; }
+
+        .status-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            max-width: 900px;
+            margin: 0 auto 48px;
+        }
+
+        .status-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
+        }
+
+        .status-header h3 { font-size: 18px; font-weight: 600; }
+
+        .status-version {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            font-size: 13px;
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+        }
+
+        .status-row {
+            display: grid;
+            grid-template-columns: 1fr 180px 100px;
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .status-row:last-child { border-bottom: none; }
+        .status-row:hover { background: rgba(255, 255, 255, 0.02); }
+
+        .status-name { font-weight: 500; font-size: 15px; }
+        .status-desc { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .status-badge.stable { background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid rgba(0, 255, 136, 0.2); }
+        .status-badge.alpha { background: rgba(0, 212, 255, 0.1); color: var(--accent); border: 1px solid rgba(0, 212, 255, 0.2); }
+        .status-badge.preview { background: rgba(255, 170, 0, 0.1); color: var(--warning); border: 1px solid rgba(255, 170, 0, 0.2); }
+
+        .legend {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.stable { background: var(--success); }
+        .legend-dot.alpha { background: var(--accent); }
+        .legend-dot.preview { background: var(--warning); }
+
+        footer {
+            padding: 48px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p { color: var(--text-muted); font-size: 14px; }
+        footer a { color: var(--text-secondary); text-decoration: none; }
+        footer a:hover { color: var(--accent); }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .status-row { grid-template-columns: 1fr 90px; }
+            .status-row .status-desc { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="./" class="logo">
+                <div class="logo-icon">C</div>
+                <span>C-napse</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="./">Home</a></li>
+                <li><a href="./architecture.html">Architecture</a></li>
+                <li><a href="./status.html" class="active">Status</a></li>
+                <li><a href="./docs.html">Docs</a></li>
+                <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Status</h1>
+                <p>Current development status and maturity levels of C-napse components.</p>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container">
+                <div class="status-section">
+                    <div class="status-header">
+                        <h3>Core Components</h3>
+                        <span class="status-version">v0.1.0</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">CLI Runtime</div>
+                            <div class="status-desc">Core TUI interface and command execution</div>
+                        </div>
+                        <span class="status-badge alpha">Alpha</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Agent Router</div>
+                            <div class="status-desc">Multi-agent orchestration and query routing</div>
+                        </div>
+                        <span class="status-badge preview">Preview</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Tool System</div>
+                            <div class="status-desc">File, process, and shell operations</div>
+                        </div>
+                        <span class="status-badge stable">Stable</span>
+                    </div>
+                </div>
+
+                <div class="status-section">
+                    <div class="status-header">
+                        <h3>Intelligence Layer</h3>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Screen Watcher</div>
+                            <div class="status-desc">Visual context capture and analysis</div>
+                        </div>
+                        <span class="status-badge preview">Preview</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Memory System</div>
+                            <div class="status-desc">Vector embeddings and semantic retrieval</div>
+                        </div>
+                        <span class="status-badge alpha">Alpha</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Inference Backends</div>
+                            <div class="status-desc">Ollama, Anthropic, OpenAI providers</div>
+                        </div>
+                        <span class="status-badge stable">Stable</span>
+                    </div>
+                </div>
+
+                <div class="status-section">
+                    <div class="status-header">
+                        <h3>Interfaces</h3>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Telegram Bot</div>
+                            <div class="status-desc">Mobile interface and notifications</div>
+                        </div>
+                        <span class="status-badge stable">Stable</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">REST API</div>
+                            <div class="status-desc">HTTP endpoints for integrations</div>
+                        </div>
+                        <span class="status-badge alpha">Alpha</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">WebSocket</div>
+                            <div class="status-desc">Real-time streaming responses</div>
+                        </div>
+                        <span class="status-badge alpha">Alpha</span>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-dot stable"></div>
+                        <span>Stable — Production ready</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot alpha"></div>
+                        <span>Alpha — Functional, API may change</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot preview"></div>
+                        <span>Preview — Experimental</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Built with Rust. Open source under MIT. <a href="https://github.com/projectservan8n/C-napse">GitHub</a></p>
+        </div>
+    </footer>
+</body>
+</html>
