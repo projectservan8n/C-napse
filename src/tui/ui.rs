@@ -169,7 +169,7 @@ fn draw_messages(frame: &mut Frame, area: Rect, app: &TuiApp) {
         items.push(ListItem::new(Line::from("")));
     }
 
-    // Calculate scroll offset
+    // Calculate scroll offset - always auto-scroll to bottom
     let total_items = items.len();
     let visible_height = inner.height as usize;
     let scroll_offset = if total_items > visible_height {
@@ -178,9 +178,10 @@ fn draw_messages(frame: &mut Frame, area: Rect, app: &TuiApp) {
         0
     };
 
-    let list = List::new(items).highlight_style(Style::default().add_modifier(Modifier::BOLD));
+    // Skip items based on scroll offset to show latest messages
+    let visible_items: Vec<ListItem> = items.into_iter().skip(scroll_offset).collect();
+    let list = List::new(visible_items).highlight_style(Style::default().add_modifier(Modifier::BOLD));
 
-    // We need to skip items based on scroll
     frame.render_widget(list, inner);
 
     // Scrollbar
