@@ -130,11 +130,36 @@ fn draw_messages(frame: &mut Frame, area: Rect, app: &TuiApp) {
             &msg.content
         };
 
+        // Calculate available width for text (minus border and indent)
+        let max_width = inner.width.saturating_sub(4) as usize;
+
         for line in content.lines() {
-            items.push(ListItem::new(Line::from(Span::styled(
-                format!("  {}", line),
-                content_style,
-            ))));
+            // Wrap long lines manually
+            if line.len() > max_width && max_width > 0 {
+                let mut remaining = line;
+                while !remaining.is_empty() {
+                    let (chunk, rest) = if remaining.len() > max_width {
+                        // Try to break at word boundary
+                        let break_at = remaining[..max_width]
+                            .rfind(' ')
+                            .unwrap_or(max_width);
+                        let break_at = if break_at == 0 { max_width } else { break_at };
+                        (&remaining[..break_at], remaining[break_at..].trim_start())
+                    } else {
+                        (remaining, "")
+                    };
+                    items.push(ListItem::new(Line::from(Span::styled(
+                        format!("  {}", chunk),
+                        content_style,
+                    ))));
+                    remaining = rest;
+                }
+            } else {
+                items.push(ListItem::new(Line::from(Span::styled(
+                    format!("  {}", line),
+                    content_style,
+                ))));
+            }
         }
 
         // Tool calls
