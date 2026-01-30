@@ -22,6 +22,11 @@
     "ollama"
   ],
   "author": "projectservan8n",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/projectservan8n/C-napse.git"
+  },
+  "homepage": "https://c-napse.up.railway.app",
   "license": "MIT",
   "dependencies": {
     "ink": "^5.0.1",
