@@ -80,14 +80,14 @@ Write-Step "2/3" "Installing C-napse..." "working"
 Write-Host ""
 
 try {
-    npm install -g cnapse@latest 2>&1 | Out-Null
+    npm install -g @projectservan8n/cnapse@latest 2>&1 | Out-Null
     Write-Host "`r  ● " -NoNewline -ForegroundColor Green
     Write-Host "[2/3] " -NoNewline -ForegroundColor DarkGray
     Write-Host "C-napse installed" -ForegroundColor White
 } catch {
     Write-Host "`r  ✗ " -NoNewline -ForegroundColor Red
     Write-Host "[2/3] " -NoNewline -ForegroundColor DarkGray
-    Write-Host "Failed - try: npm install -g cnapse" -ForegroundColor Red
+    Write-Host "Failed - try: npm install -g @projectservan8n/cnapse" -ForegroundColor Red
 }
 Write-Host ""
 

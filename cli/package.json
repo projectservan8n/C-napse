@@ -1,5 +1,5 @@
 {
-  "name": "cnapse",
+  "name": "@projectservan8n/cnapse",
   "version": "0.2.0",
   "description": "Autonomous PC intelligence - AI assistant for desktop automation",
   "type": "module",
