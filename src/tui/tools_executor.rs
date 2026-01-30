@@ -64,7 +64,9 @@ impl ToolExecutor {
             }
 
             "list_dir" => {
-                let path = self.get_string_arg(&request.args, "path").unwrap_or_else(|_| ".".to_string());
+                let path = self
+                    .get_string_arg(&request.args, "path")
+                    .unwrap_or_else(|_| ".".to_string());
                 let result = filesystem::list_dir(&path, false);
                 Ok(ToolResult {
                     success: result.success,
@@ -126,10 +128,7 @@ impl ToolExecutor {
 
             // Screenshot
             "screenshot" => {
-                let path = request
-                    .args
-                    .get("path")
-                    .and_then(|v| v.as_str());
+                let path = request.args.get("path").and_then(|v| v.as_str());
 
                 use crate::tools::screenshot;
                 let result = screenshot::take_screenshot(path);
@@ -149,7 +148,11 @@ impl ToolExecutor {
         }
     }
 
-    fn get_string_arg(&self, args: &HashMap<String, serde_json::Value>, key: &str) -> Result<String> {
+    fn get_string_arg(
+        &self,
+        args: &HashMap<String, serde_json::Value>,
+        key: &str,
+    ) -> Result<String> {
         args.get(key)
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
@@ -178,11 +181,7 @@ pub fn parse_tool_calls(response: &str) -> Vec<ToolRequest> {
             let args = json
                 .get("args")
                 .and_then(|a| a.as_object())
-                .map(|o| {
-                    o.iter()
-                        .map(|(k, v)| (k.clone(), v.clone()))
-                        .collect()
-                })
+                .map(|o| o.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
                 .unwrap_or_default();
 
             tools.push(ToolRequest {
@@ -205,9 +204,15 @@ pub fn parse_tool_calls(response: &str) -> Vec<ToolRequest> {
                 if !arg.is_empty() {
                     // Try to parse as key=value
                     if let Some((key, value)) = arg.split_once('=') {
-                        args.insert(key.trim().to_string(), serde_json::Value::String(value.trim().to_string()));
+                        args.insert(
+                            key.trim().to_string(),
+                            serde_json::Value::String(value.trim().to_string()),
+                        );
                     } else {
-                        args.insert(format!("arg{}", i), serde_json::Value::String(arg.to_string()));
+                        args.insert(
+                            format!("arg{}", i),
+                            serde_json::Value::String(arg.to_string()),
+                        );
                     }
                 }
             }

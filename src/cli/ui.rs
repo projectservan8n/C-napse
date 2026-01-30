@@ -20,10 +20,7 @@ pub static SERVER: Emoji<'_, '_> = Emoji("🌐 ", "[S] ");
 
 /// Print the C-napse banner
 pub fn print_banner() {
-    println!(
-        "{}",
-        style(crate::BANNER_COMPACT).cyan()
-    );
+    println!("{}", style(crate::BANNER_COMPACT).cyan());
 }
 
 /// Print a success message
@@ -82,7 +79,12 @@ pub fn subheader(title: &str) {
 /// Print agent output
 pub fn agent_output(agent: &str, content: &str) {
     println!();
-    println!("{} {} {}", ROBOT, style(format!("[{}]", agent)).cyan().bold(), style("─".repeat(40)).dim());
+    println!(
+        "{} {} {}",
+        ROBOT,
+        style(format!("[{}]", agent)).cyan().bold(),
+        style("─".repeat(40)).dim()
+    );
     println!("{}", content);
     println!("{}", style("─".repeat(60)).dim());
 }

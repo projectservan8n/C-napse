@@ -1,10 +1,10 @@
 //! OpenRouter API backend
 
-use async_trait::async_trait;
-use secrecy::ExposeSecret;
+use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
 use crate::config::{Credentials, Settings};
 use crate::error::CnapseError;
-use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
+use async_trait::async_trait;
+use secrecy::ExposeSecret;
 
 const API_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -72,7 +72,10 @@ impl InferenceBackend for OpenRouterBackend {
         let mut req = self
             .client
             .post(API_URL)
-            .header("Authorization", format!("Bearer {}", api_key.expose_secret()))
+            .header(
+                "Authorization",
+                format!("Bearer {}", api_key.expose_secret()),
+            )
             .header("content-type", "application/json")
             .header("HTTP-Referer", &self.settings.openrouter.site_url)
             .header("X-Title", &self.settings.openrouter.app_name);
@@ -82,7 +85,10 @@ impl InferenceBackend for OpenRouterBackend {
         if !response.status().is_success() {
             let status = response.status();
             let text = response.text().await.unwrap_or_default();
-            return Err(CnapseError::api("openrouter", format!("{}: {}", status, text)));
+            return Err(CnapseError::api(
+                "openrouter",
+                format!("{}: {}", status, text),
+            ));
         }
 
         let result: serde_json::Value = response.json().await?;

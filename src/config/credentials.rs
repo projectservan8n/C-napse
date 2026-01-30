@@ -62,7 +62,8 @@ impl Credentials {
         let content = std::fs::read_to_string(path)
             .map_err(|e| CnapseError::config(format!("Failed to read credentials: {}", e)))?;
 
-        toml::from_str(&content).map_err(|e| CnapseError::config(format!("Invalid credentials file: {}", e)))
+        toml::from_str(&content)
+            .map_err(|e| CnapseError::config(format!("Invalid credentials file: {}", e)))
     }
 
     /// Save credentials to the default path
@@ -114,7 +115,12 @@ impl Credentials {
             "anthropic" => self.anthropic.api_key = Some(key.to_string()),
             "openai" => self.openai.api_key = Some(key.to_string()),
             "openrouter" => self.openrouter.api_key = Some(key.to_string()),
-            _ => return Err(CnapseError::config(format!("Unknown provider: {}", provider))),
+            _ => {
+                return Err(CnapseError::config(format!(
+                    "Unknown provider: {}",
+                    provider
+                )))
+            }
         }
         Ok(())
     }
@@ -125,7 +131,12 @@ impl Credentials {
             "anthropic" => self.anthropic.api_key = None,
             "openai" => self.openai.api_key = None,
             "openrouter" => self.openrouter.api_key = None,
-            _ => return Err(CnapseError::config(format!("Unknown provider: {}", provider))),
+            _ => {
+                return Err(CnapseError::config(format!(
+                    "Unknown provider: {}",
+                    provider
+                )))
+            }
         }
         Ok(())
     }

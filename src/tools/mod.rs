@@ -1,11 +1,11 @@
 //! Tool implementations for agents
 
-pub mod filesystem;
-pub mod shell;
-pub mod process;
 pub mod clipboard;
-pub mod screenshot;
+pub mod filesystem;
 pub mod network;
+pub mod process;
+pub mod screenshot;
+pub mod shell;
 
 use serde::{Deserialize, Serialize};
 

@@ -29,7 +29,7 @@ pub fn take_screenshot(output_path: Option<&str>) -> ToolResult {
                         img.as_raw(),
                         img.width(),
                         img.height(),
-                        image::ColorType::Rgba8
+                        image::ColorType::Rgba8,
                     ) {
                         Ok(()) => ToolResult::ok(format!(
                             "Screenshot saved to: {}\nSize: {}x{}",

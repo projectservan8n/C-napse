@@ -1,9 +1,9 @@
 //! Local inference backend using llama.cpp
 
-use async_trait::async_trait;
+use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
 use crate::config::Settings;
 use crate::error::CnapseError;
-use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
+use async_trait::async_trait;
 
 pub struct LocalBackend {
     settings: Settings,
@@ -36,7 +36,7 @@ impl InferenceBackend for LocalBackend {
         // This is a placeholder that returns an error
 
         Err(CnapseError::inference(
-            "Local inference not yet implemented. Please use a cloud provider or download models."
+            "Local inference not yet implemented. Please use a cloud provider or download models.",
         ))
     }
 

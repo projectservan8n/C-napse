@@ -1,19 +1,19 @@
 //! Web server and API for C-napse
 
 pub mod api;
-pub mod websocket;
-pub mod auth;
 pub mod apps;
+pub mod auth;
+pub mod websocket;
 
 use crate::config::Settings;
 use crate::error::{CnapseError, Result};
 use axum::{
-    routing::{get, post, delete},
+    routing::{delete, get, post},
     Router,
 };
-use tower_http::cors::{CorsLayer, Any};
-use tower_http::trace::TraceLayer;
 use std::net::SocketAddr;
+use tower_http::cors::{Any, CorsLayer};
+use tower_http::trace::TraceLayer;
 
 /// Start the C-napse server
 pub async fn start_server(
@@ -75,9 +75,7 @@ fn create_router(no_web: bool, no_auth: bool, settings: Settings) -> Result<Rout
         .allow_headers(Any);
 
     // Add tracing layer
-    let app = app
-        .layer(cors)
-        .layer(TraceLayer::new_for_http());
+    let app = app.layer(cors).layer(TraceLayer::new_for_http());
 
     Ok(app)
 }

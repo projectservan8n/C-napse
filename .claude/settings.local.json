@@ -8,7 +8,17 @@
       "Bash(git push:*)",
       "Bash(cargo build:*)",
       "Bash(git tag:*)",
-      "Bash(cargo fmt:*)"
+      "Bash(cargo fmt:*)",
+      "Bash(cmd /c \"cd /d e:\\\\C-napse && cargo fmt --all\")",
+      "Bash(cmd /c \"cd /d e:\\\\C-napse && git status\")",
+      "Bash(cmd /c \"cd /d e:\\\\C-napse && git status --porcelain\")",
+      "Bash(cmd /c \"cd /d e:\\\\C-napse && git diff --stat\")",
+      "Bash(cmd /c \"cd /d e:\\\\C-napse && git add -A && git status\")",
+      "Bash(powershell -Command \"cd ''e:\\\\C-napse''; cargo fmt --all; git add -A; git status\")",
+      "Bash(powershell -Command \"& { $env:Path += '';'' + $env:USERPROFILE + ''\\\\.cargo\\\\bin''; cd ''e:\\\\C-napse''; cargo fmt --all }\")",
+      "Bash(powershell -Command:*)",
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; C:\\\\Users\\\\*\\\\.cargo\\\\bin\\\\cargo.exe fmt --all 2>&1\")",
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git status\")"
     ]
   }
 }

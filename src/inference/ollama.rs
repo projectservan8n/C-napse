@@ -3,10 +3,10 @@
 //! Ollama provides an easy way to run local LLMs with a simple API.
 //! This is the recommended backend for C-napse local inference.
 
-use async_trait::async_trait;
+use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
 use crate::config::Settings;
 use crate::error::{CnapseError, Result};
-use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 const DEFAULT_OLLAMA_URL: &str = "http://127.0.0.1:11434";
@@ -163,7 +163,10 @@ impl OllamaBackend {
 
         if !response.status().is_success() {
             let text = response.text().await.unwrap_or_default();
-            return Err(CnapseError::model(format!("Failed to pull model: {}", text)));
+            return Err(CnapseError::model(format!(
+                "Failed to pull model: {}",
+                text
+            )));
         }
 
         Ok(())
@@ -182,7 +185,10 @@ impl OllamaBackend {
 
         if !response.status().is_success() {
             let text = response.text().await.unwrap_or_default();
-            return Err(CnapseError::model(format!("Failed to delete model: {}", text)));
+            return Err(CnapseError::model(format!(
+                "Failed to delete model: {}",
+                text
+            )));
         }
 
         Ok(())
@@ -201,10 +207,16 @@ impl OllamaBackend {
 
         if !response.status().is_success() {
             let text = response.text().await.unwrap_or_default();
-            return Err(CnapseError::model(format!("Failed to get model info: {}", text)));
+            return Err(CnapseError::model(format!(
+                "Failed to get model info: {}",
+                text
+            )));
         }
 
-        response.json().await.map_err(|e| CnapseError::model(e.to_string()))
+        response
+            .json()
+            .await
+            .map_err(|e| CnapseError::model(e.to_string()))
     }
 
     /// Check if a specific model is available
@@ -271,12 +283,7 @@ impl InferenceBackend for OllamaBackend {
             keep_alive: self.config.keep_alive.clone(),
         };
 
-        let response = self
-            .client
-            .post(&url)
-            .json(&ollama_request)
-            .send()
-            .await?;
+        let response = self.client.post(&url).json(&ollama_request).send().await?;
 
         if !response.status().is_success() {
             let status = response.status();
@@ -344,10 +351,7 @@ pub mod recommended_models {
     pub const APP: &str = "qwen2.5-coder:1.5b";
 
     /// All recommended models for easy installation
-    pub const ALL: &[&str] = &[
-        "qwen2.5:0.5b",
-        "qwen2.5-coder:1.5b",
-    ];
+    pub const ALL: &[&str] = &["qwen2.5:0.5b", "qwen2.5-coder:1.5b"];
 }
 
 /// Check system requirements for running Ollama models
@@ -408,12 +412,32 @@ impl std::fmt::Display for SystemRequirements {
         writeln!(f, "CPU Cores:     {}", self.cpu_count)?;
         writeln!(f)?;
         writeln!(f, "Model Compatibility:")?;
-        writeln!(f, "  0.5B models: {}", if self.can_run_05b { "✓" } else { "✗" })?;
-        writeln!(f, "  1.5B models: {}", if self.can_run_1_5b { "✓" } else { "✗" })?;
-        writeln!(f, "  3B models:   {}", if self.can_run_3b { "✓" } else { "✗" })?;
-        writeln!(f, "  7B models:   {}", if self.can_run_7b { "✓" } else { "✗" })?;
+        writeln!(
+            f,
+            "  0.5B models: {}",
+            if self.can_run_05b { "✓" } else { "✗" }
+        )?;
+        writeln!(
+            f,
+            "  1.5B models: {}",
+            if self.can_run_1_5b { "✓" } else { "✗" }
+        )?;
+        writeln!(
+            f,
+            "  3B models:   {}",
+            if self.can_run_3b { "✓" } else { "✗" }
+        )?;
+        writeln!(
+            f,
+            "  7B models:   {}",
+            if self.can_run_7b { "✓" } else { "✗" }
+        )?;
         writeln!(f)?;
-        writeln!(f, "Concurrent small models: {}", self.concurrent_small_models)?;
+        writeln!(
+            f,
+            "Concurrent small models: {}",
+            self.concurrent_small_models
+        )?;
         writeln!(f, "Recommendation: {}", self.recommended_config)?;
         Ok(())
     }

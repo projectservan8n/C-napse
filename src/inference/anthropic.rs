@@ -1,10 +1,10 @@
 //! Anthropic Claude API backend
 
-use async_trait::async_trait;
-use secrecy::ExposeSecret;
+use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
 use crate::config::{Credentials, Settings};
 use crate::error::CnapseError;
-use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
+use async_trait::async_trait;
+use secrecy::ExposeSecret;
 
 const API_URL: &str = "https://api.anthropic.com/v1/messages";
 const API_VERSION: &str = "2023-06-01";
@@ -93,7 +93,10 @@ impl InferenceBackend for AnthropicBackend {
         if !response.status().is_success() {
             let status = response.status();
             let text = response.text().await.unwrap_or_default();
-            return Err(CnapseError::api("anthropic", format!("{}: {}", status, text)));
+            return Err(CnapseError::api(
+                "anthropic",
+                format!("{}: {}", status, text),
+            ));
         }
 
         let result: serde_json::Value = response.json().await?;

@@ -8,13 +8,15 @@
 
 mod app;
 mod events;
-mod ui;
 mod screen_watcher;
 mod tools_executor;
+mod ui;
 
 pub use app::TuiApp;
 pub use screen_watcher::ScreenWatcher;
-pub use tools_executor::{ToolExecutor, ToolRequest, ToolResult, parse_tool_calls, tools_description};
+pub use tools_executor::{
+    parse_tool_calls, tools_description, ToolExecutor, ToolRequest, ToolResult,
+};
 
 use crate::error::Result;
 use crossterm::{
@@ -22,10 +24,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use ratatui::{
-    backend::CrosstermBackend,
-    Terminal,
-};
+use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io;
 
 /// Launch the TUI application

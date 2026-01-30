@@ -1,9 +1,9 @@
 //! Context management with hot/warm/cold hierarchy
 
+use super::store::{MemoryStore, StoredMessage};
 use crate::agents::AgentMessage;
 use crate::config::Settings;
 use crate::error::Result;
-use super::store::{MemoryStore, StoredMessage};
 
 /// Manages conversation context with hierarchical storage
 pub struct ContextManager {
@@ -40,19 +40,15 @@ impl ContextManager {
             crate::agents::MessageRole::Tool => "tool",
         };
 
-        self.store.add_message(
-            &self.session_id,
-            role,
-            &message.content,
-            agent,
-            None,
-        )?;
+        self.store
+            .add_message(&self.session_id, role, &message.content, agent, None)?;
 
         // Trim hot context if needed
         let max_hot = self.settings.memory.hot_turns * 2; // User + Assistant per turn
         if self.hot_messages.len() > max_hot {
             // Move oldest to warm (would trigger summarization in full impl)
-            self.hot_messages.drain(0..self.hot_messages.len() - max_hot);
+            self.hot_messages
+                .drain(0..self.hot_messages.len() - max_hot);
         }
 
         Ok(())
@@ -69,7 +65,9 @@ impl ContextManager {
 
         // Search for relevant past messages
         if self.settings.memory.warm_chunks > 0 {
-            let relevant = self.store.search_messages(query, self.settings.memory.warm_chunks)?;
+            let relevant = self
+                .store
+                .search_messages(query, self.settings.memory.warm_chunks)?;
 
             // Add relevant context as a system message
             if !relevant.is_empty() {

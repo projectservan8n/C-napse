@@ -71,10 +71,7 @@ pub enum ServerMessage {
 }
 
 /// WebSocket upgrade handler
-pub async fn ws_handler(
-    ws: WebSocketUpgrade,
-    Query(query): Query<WsQuery>,
-) -> impl IntoResponse {
+pub async fn ws_handler(ws: WebSocketUpgrade, Query(query): Query<WsQuery>) -> impl IntoResponse {
     ws.on_upgrade(move |socket| handle_socket(socket, query.token))
 }
 
@@ -124,7 +121,9 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
                     done: true,
                 };
                 let _ = sender
-                    .send(Message::Text(serde_json::to_string(&response).unwrap().into()))
+                    .send(Message::Text(
+                        serde_json::to_string(&response).unwrap().into(),
+                    ))
                     .await;
             }
 
@@ -156,7 +155,9 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
                     done: true,
                 };
                 let _ = sender
-                    .send(Message::Text(serde_json::to_string(&response).unwrap().into()))
+                    .send(Message::Text(
+                        serde_json::to_string(&response).unwrap().into(),
+                    ))
                     .await;
             }
 
@@ -170,7 +171,9 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
                     done: true,
                 };
                 let _ = sender
-                    .send(Message::Text(serde_json::to_string(&response).unwrap().into()))
+                    .send(Message::Text(
+                        serde_json::to_string(&response).unwrap().into(),
+                    ))
                     .await;
             }
         }

@@ -1,8 +1,8 @@
 //! Shell Agent - Shell commands and system operations
 
-use async_trait::async_trait;
 use crate::agents::traits::{Agent, AgentContext, AgentResponse, Tool};
 use crate::error::CnapseError;
+use async_trait::async_trait;
 
 pub struct ShellAgent;
 
@@ -32,7 +32,8 @@ impl Agent for ShellAgent {
         let os = std::env::consts::OS;
         let shell = if cfg!(windows) { "PowerShell" } else { "bash" };
 
-        format!(r#"You are the Shell agent for C-napse. You generate and execute shell commands.
+        format!(
+            r#"You are the Shell agent for C-napse. You generate and execute shell commands.
 
 Current OS: {}
 Shell: {}
@@ -55,7 +56,9 @@ NEVER run commands that could:
 - Delete system files
 - Modify boot configuration
 - Change user permissions without confirmation
-- Execute downloaded scripts without review"#, os, shell)
+- Execute downloaded scripts without review"#,
+            os, shell
+        )
     }
 
     async fn execute(&self, ctx: AgentContext) -> Result<AgentResponse, CnapseError> {

@@ -1,10 +1,13 @@
 //! UI rendering for the TUI
 
-use super::app::{TuiApp, ToolStatus};
+use super::app::{ToolStatus, TuiApp};
 use crate::agents::MessageRole;
 use ratatui::{
     prelude::*,
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap, Scrollbar, ScrollbarOrientation, ScrollbarState},
+    widgets::{
+        Block, Borders, List, ListItem, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState,
+        Wrap,
+    },
 };
 
 /// ASCII banner for the header
@@ -22,10 +25,10 @@ pub fn draw(frame: &mut Frame, app: &TuiApp) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(8),  // ASCII Header
-            Constraint::Min(5),     // Messages
-            Constraint::Length(3),  // Input
-            Constraint::Length(1),  // Status bar
+            Constraint::Length(8), // ASCII Header
+            Constraint::Min(5),    // Messages
+            Constraint::Length(3), // Input
+            Constraint::Length(1), // Status bar
         ])
         .split(frame.area());
 
@@ -58,15 +61,18 @@ fn draw_header(frame: &mut Frame, area: Rect, app: &TuiApp) {
         "                    {} │ {} {}",
         app.settings.get_default_provider(),
         app.settings.get_default_model(),
-        if app.screen_watching { "│ 🖥️ Screen Watch ON" } else { "" }
+        if app.screen_watching {
+            "│ 🖥️ Screen Watch ON"
+        } else {
+            ""
+        }
     );
     lines.push(Line::from(Span::styled(
         status_line,
         Style::default().fg(Color::DarkGray),
     )));
 
-    let banner = Paragraph::new(lines)
-        .alignment(Alignment::Center);
+    let banner = Paragraph::new(lines).alignment(Alignment::Center);
 
     frame.render_widget(banner, inner);
 }
@@ -164,8 +170,7 @@ fn draw_messages(frame: &mut Frame, area: Rect, app: &TuiApp) {
         0
     };
 
-    let list = List::new(items)
-        .highlight_style(Style::default().add_modifier(Modifier::BOLD));
+    let list = List::new(items).highlight_style(Style::default().add_modifier(Modifier::BOLD));
 
     // We need to skip items based on scroll
     frame.render_widget(list, inner);
@@ -200,7 +205,11 @@ fn draw_input(frame: &mut Frame, area: Rect, app: &TuiApp) {
         } else {
             Style::default().fg(Color::Blue)
         })
-        .title(if app.processing { " Processing... " } else { " Message " });
+        .title(if app.processing {
+            " Processing... "
+        } else {
+            " Message "
+        });
 
     let inner = input_block.inner(area);
     frame.render_widget(input_block, area);
@@ -220,10 +229,7 @@ fn draw_input(frame: &mut Frame, area: Rect, app: &TuiApp) {
 
     // Show cursor
     if !app.processing {
-        frame.set_cursor_position(Position::new(
-            inner.x + app.cursor_pos as u16,
-            inner.y,
-        ));
+        frame.set_cursor_position(Position::new(inner.x + app.cursor_pos as u16, inner.y));
     }
 }
 
@@ -233,8 +239,8 @@ fn draw_status(frame: &mut Frame, area: Rect, app: &TuiApp) {
         app.status
     );
 
-    let status = Paragraph::new(status_text)
-        .style(Style::default().bg(Color::DarkGray).fg(Color::White));
+    let status =
+        Paragraph::new(status_text).style(Style::default().bg(Color::DarkGray).fg(Color::White));
 
     frame.render_widget(status, area);
 }

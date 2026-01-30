@@ -138,7 +138,12 @@ async fn create(name: &str, framework: &str, _settings: Option<Settings>) -> Res
         "react" => create_react_template(&app_dir, name)?,
         "svelte" => create_svelte_template(&app_dir, name)?,
         "vanilla" => create_vanilla_template(&app_dir, name)?,
-        _ => return Err(CnapseError::invalid_input(format!("Unknown framework: {}", framework))),
+        _ => {
+            return Err(CnapseError::invalid_input(format!(
+                "Unknown framework: {}",
+                framework
+            )))
+        }
     }
 
     ui::success(&format!("App created: {}", app_id));
@@ -639,7 +644,11 @@ async fn export(app_id: &str, output: Option<PathBuf>) -> Result<()> {
             .join(format!("{}.zip", app_id))
     });
 
-    ui::info(&format!("Exporting {} to {}", app_id, output_path.display()));
+    ui::info(&format!(
+        "Exporting {} to {}",
+        app_id,
+        output_path.display()
+    ));
 
     // TODO: Implement ZIP export
     ui::warning("ZIP export not yet implemented.");

@@ -55,15 +55,18 @@ pub async fn auth_middleware(
 
 /// Generate a random API key
 pub fn generate_api_key() -> String {
-    use sha2::{Sha256, Digest};
     use base64::Engine;
+    use sha2::{Digest, Sha256};
 
     let random_bytes: [u8; 32] = rand::random();
     let mut hasher = Sha256::new();
     hasher.update(random_bytes);
     let result = hasher.finalize();
 
-    format!("cnapse-{}", base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&result[..16]))
+    format!(
+        "cnapse-{}",
+        base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&result[..16])
+    )
 }
 
 // Add rand dependency for key generation

@@ -91,12 +91,12 @@ pub async fn execute(args: InitArgs) -> Result<()> {
         println!();
 
         let provider = &settings.general.default_provider;
-        ui::info(&format!(
-            "You selected '{}' as default provider.",
-            provider
-        ));
+        ui::info(&format!("You selected '{}' as default provider.", provider));
 
-        if ui::confirm(&format!("Would you like to add your {} API key now?", provider)) {
+        if ui::confirm(&format!(
+            "Would you like to add your {} API key now?",
+            provider
+        )) {
             if let Some(key) = ui::password(&format!("{} API key", provider)) {
                 let mut creds = Credentials::load()?;
                 creds.set_api_key(provider, &key)?;

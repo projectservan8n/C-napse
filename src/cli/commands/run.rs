@@ -48,9 +48,8 @@ pub async fn execute_query(
     use_memory: bool,
     settings: Option<Settings>,
 ) -> Result<()> {
-    let settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     // Determine provider to use
     let provider = provider.unwrap_or(&settings.general.default_provider);

@@ -71,12 +71,15 @@ impl ScreenWatcher {
     /// Capture current screen and return hash + description
     #[cfg(feature = "screenshots")]
     fn capture_screen(&self) -> Result<Option<(u64, String)>> {
-        use sha2::{Sha256, Digest};
+        use sha2::{Digest, Sha256};
 
-        let screens = Screen::all().map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
+        let screens = Screen::all()
+            .map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
 
         if let Some(screen) = screens.first() {
-            let image = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
+            let image = screen
+                .capture()
+                .map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
 
             // Calculate hash of image for change detection
             let rgba = image.as_raw();
@@ -93,11 +96,7 @@ impl ScreenWatcher {
             let hash = u64::from_le_bytes(hash_result[..8].try_into().unwrap());
 
             // Basic description based on image properties
-            let description = format!(
-                "Screen {}x{} captured",
-                image.width(),
-                image.height()
-            );
+            let description = format!("Screen {}x{} captured", image.width(), image.height());
 
             Ok(Some((hash, description)))
         } else {
@@ -121,21 +120,27 @@ impl ScreenWatcher {
     pub fn take_screenshot(&self, path: &std::path::Path) -> Result<()> {
         use image::ImageEncoder;
 
-        let screens = Screen::all().map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
+        let screens = Screen::all()
+            .map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
 
         if let Some(screen) = screens.first() {
-            let img = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
+            let img = screen
+                .capture()
+                .map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
 
             // Save using the image crate
-            let file = std::fs::File::create(path).map_err(|e| CnapseError::tool(format!("Failed to create file: {}", e)))?;
+            let file = std::fs::File::create(path)
+                .map_err(|e| CnapseError::tool(format!("Failed to create file: {}", e)))?;
             let mut writer = std::io::BufWriter::new(file);
             let encoder = image::codecs::png::PngEncoder::new(&mut writer);
-            encoder.write_image(
-                img.as_raw(),
-                img.width(),
-                img.height(),
-                image::ColorType::Rgba8
-            ).map_err(|e| CnapseError::tool(format!("Failed to save screenshot: {}", e)))?;
+            encoder
+                .write_image(
+                    img.as_raw(),
+                    img.width(),
+                    img.height(),
+                    image::ColorType::Rgba8,
+                )
+                .map_err(|e| CnapseError::tool(format!("Failed to save screenshot: {}", e)))?;
 
             Ok(())
         } else {
@@ -154,21 +159,26 @@ impl ScreenWatcher {
         use base64::Engine;
         use image::ImageEncoder;
 
-        let screens = Screen::all().map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
+        let screens = Screen::all()
+            .map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
 
         if let Some(screen) = screens.first() {
-            let img = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
+            let img = screen
+                .capture()
+                .map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
 
             // Convert to PNG bytes
             let mut buffer = Vec::new();
             {
                 let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
-                encoder.write_image(
-                    img.as_raw(),
-                    img.width(),
-                    img.height(),
-                    image::ColorType::Rgba8
-                ).map_err(|e| CnapseError::tool(format!("Failed to encode: {}", e)))?;
+                encoder
+                    .write_image(
+                        img.as_raw(),
+                        img.width(),
+                        img.height(),
+                        image::ColorType::Rgba8,
+                    )
+                    .map_err(|e| CnapseError::tool(format!("Failed to encode: {}", e)))?;
             }
 
             Ok(base64::engine::general_purpose::STANDARD.encode(&buffer))
@@ -210,7 +220,12 @@ pub struct ScreenRegion {
 impl ScreenRegion {
     /// Create a region for a specific area
     pub fn new(x: i32, y: i32, width: u32, height: u32) -> Self {
-        Self { x, y, width, height }
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 
     /// Full screen region

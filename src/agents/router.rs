@@ -1,8 +1,8 @@
 //! Router Agent - Classifies user intent and dispatches to specialist agents
 
-use async_trait::async_trait;
 use crate::agents::traits::{Agent, AgentContext, AgentResponse};
 use crate::error::CnapseError;
+use async_trait::async_trait;
 
 pub struct RouterAgent;
 

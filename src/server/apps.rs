@@ -1,12 +1,12 @@
 //! App management API
 
+use crate::config::Paths;
 use axum::{
     extract::{Json, Path},
     http::StatusCode,
     response::IntoResponse,
 };
 use serde::{Deserialize, Serialize};
-use crate::config::Paths;
 
 #[derive(Serialize)]
 pub struct AppInfo {
@@ -62,7 +62,10 @@ pub async fn list_apps() -> impl IntoResponse {
                 apps.push(AppInfo {
                     id: id.clone(),
                     name: manifest["name"].as_str().unwrap_or_default().to_string(),
-                    framework: manifest["framework"].as_str().unwrap_or("vanilla").to_string(),
+                    framework: manifest["framework"]
+                        .as_str()
+                        .unwrap_or("vanilla")
+                        .to_string(),
                     url: format!("/apps/{}/", id),
                 });
             }

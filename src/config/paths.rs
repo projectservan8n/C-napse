@@ -117,8 +117,9 @@ impl Paths {
             return Ok(Vec::new());
         }
 
-        let entries = std::fs::read_dir(&self.apps)
-            .map_err(|e| CnapseError::filesystem(format!("Failed to read apps directory: {}", e)))?;
+        let entries = std::fs::read_dir(&self.apps).map_err(|e| {
+            CnapseError::filesystem(format!("Failed to read apps directory: {}", e))
+        })?;
 
         let apps: Vec<PathBuf> = entries
             .filter_map(|e| e.ok())

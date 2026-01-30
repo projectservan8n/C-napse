@@ -170,10 +170,7 @@ async fn pull(model: &str, file: Option<&str>) -> Result<()> {
             repo
         ));
         ui::info("2. Find the .gguf file you want (e.g., *Q4_K_M.gguf)");
-        ui::info(&format!(
-            "3. Download to: {}",
-            paths.models.display()
-        ));
+        ui::info(&format!("3. Download to: {}", paths.models.display()));
         println!();
         ui::info("After downloading, run: cnapse models scan");
 
@@ -232,7 +229,10 @@ async fn remove(model: &str, force: bool) -> Result<()> {
     let model_path = paths.model_path(model);
 
     if !model_path.exists() {
-        return Err(CnapseError::not_found(format!("Model not found: {}", model)));
+        return Err(CnapseError::not_found(format!(
+            "Model not found: {}",
+            model
+        )));
     }
 
     if !force {
@@ -302,9 +302,8 @@ async fn set(agent: &str, model: &str, settings: Option<Settings>) -> Result<()>
         }
     }
 
-    let mut settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let mut settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     // Update the agent's model
     match agent {
@@ -329,7 +328,10 @@ async fn info(model: &str) -> Result<()> {
     let model_path = paths.model_path(model);
 
     if !model_path.exists() {
-        return Err(CnapseError::not_found(format!("Model not found: {}", model)));
+        return Err(CnapseError::not_found(format!(
+            "Model not found: {}",
+            model
+        )));
     }
 
     let metadata = std::fs::metadata(&model_path)?;
@@ -341,7 +343,10 @@ async fn info(model: &str) -> Result<()> {
 
     if let Ok(modified) = metadata.modified() {
         let datetime: chrono::DateTime<chrono::Local> = modified.into();
-        ui::kv("Modified", &datetime.format("%Y-%m-%d %H:%M:%S").to_string());
+        ui::kv(
+            "Modified",
+            &datetime.format("%Y-%m-%d %H:%M:%S").to_string(),
+        );
     }
 
     // Try to parse GGUF metadata (basic)

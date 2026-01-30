@@ -1,7 +1,7 @@
 //! Process management tools
 
 use super::ToolResult;
-use sysinfo::{System, Pid, ProcessStatus};
+use sysinfo::{Pid, ProcessStatus, System};
 
 /// Helper to get process name as string (cross-platform)
 /// On Windows, name() returns &OsStr, on Unix it returns &str

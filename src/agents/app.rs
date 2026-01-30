@@ -1,8 +1,8 @@
 //! App Agent - Web app creation for the launcher
 
-use async_trait::async_trait;
 use crate::agents::traits::{Agent, AgentContext, AgentResponse, Tool};
 use crate::error::CnapseError;
+use async_trait::async_trait;
 
 pub struct AppAgent;
 
@@ -59,7 +59,8 @@ Example app structure:
 ├── index.html
 ├── app.js (or app.vue, app.tsx)
 ├── style.css
-└── assets/"#.to_string()
+└── assets/"#
+            .to_string()
     }
 
     async fn execute(&self, ctx: AgentContext) -> Result<AgentResponse, CnapseError> {

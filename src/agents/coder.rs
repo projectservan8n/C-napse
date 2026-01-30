@@ -1,8 +1,8 @@
 //! Coder Agent - Code generation, editing, debugging
 
-use async_trait::async_trait;
 use crate::agents::traits::{Agent, AgentContext, AgentResponse, Tool};
 use crate::error::CnapseError;
+use async_trait::async_trait;
 
 pub struct CoderAgent;
 
@@ -44,7 +44,8 @@ Available tools:
 - edit_file(path, search, replace): Find and replace in file
 - run_code(language, code): Execute code snippet
 
-Always explain your changes briefly."#.to_string()
+Always explain your changes briefly."#
+            .to_string()
     }
 
     async fn execute(&self, ctx: AgentContext) -> Result<AgentResponse, CnapseError> {

@@ -1,7 +1,7 @@
 //! Agent trait definitions
 
-use async_trait::async_trait;
 use crate::error::CnapseError;
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 /// Role of a message in conversation

@@ -2,9 +2,9 @@
 
 use crate::config::Paths;
 use crate::error::{CnapseError, Result};
-use rusqlite::{Connection, params};
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use rusqlite::{params, Connection};
+use serde::{Deserialize, Serialize};
 
 /// A stored message
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -99,10 +99,8 @@ impl MemoryStore {
     /// Create a new session
     pub fn create_session(&self) -> Result<String> {
         let id = uuid::Uuid::new_v4().to_string();
-        self.conn.execute(
-            "INSERT INTO sessions (id) VALUES (?1)",
-            params![id],
-        )?;
+        self.conn
+            .execute("INSERT INTO sessions (id) VALUES (?1)", params![id])?;
         Ok(id)
     }
 
@@ -150,7 +148,11 @@ impl MemoryStore {
     }
 
     /// Get messages from a session
-    pub fn get_messages(&self, session_id: &str, limit: Option<usize>) -> Result<Vec<StoredMessage>> {
+    pub fn get_messages(
+        &self,
+        session_id: &str,
+        limit: Option<usize>,
+    ) -> Result<Vec<StoredMessage>> {
         let limit = limit.unwrap_or(100);
         let mut stmt = self.conn.prepare(
             "SELECT id, session_id, role, content, agent, tokens, created_at, metadata
@@ -166,8 +168,12 @@ impl MemoryStore {
                     content: row.get(3)?,
                     agent: row.get(4)?,
                     tokens: row.get(5)?,
-                    created_at: row.get::<_, String>(6)?.parse().unwrap_or_else(|_| Utc::now()),
-                    metadata: row.get::<_, Option<String>>(7)?
+                    created_at: row
+                        .get::<_, String>(6)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
+                    metadata: row
+                        .get::<_, Option<String>>(7)?
                         .and_then(|s| serde_json::from_str(&s).ok()),
                 })
             })?
@@ -187,10 +193,17 @@ impl MemoryStore {
             .query_map(params![limit], |row| {
                 Ok(StoredSession {
                     id: row.get(0)?,
-                    created_at: row.get::<_, String>(1)?.parse().unwrap_or_else(|_| Utc::now()),
-                    updated_at: row.get::<_, String>(2)?.parse().unwrap_or_else(|_| Utc::now()),
+                    created_at: row
+                        .get::<_, String>(1)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
+                    updated_at: row
+                        .get::<_, String>(2)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
                     summary: row.get(3)?,
-                    metadata: row.get::<_, Option<String>>(4)?
+                    metadata: row
+                        .get::<_, Option<String>>(4)?
                         .and_then(|s| serde_json::from_str(&s).ok()),
                 })
             })?
@@ -232,7 +245,10 @@ impl MemoryStore {
                     id: row.get(0)?,
                     content: row.get(1)?,
                     tags: serde_json::from_str(&tags_json).unwrap_or_default(),
-                    created_at: row.get::<_, String>(3)?.parse().unwrap_or_else(|_| Utc::now()),
+                    created_at: row
+                        .get::<_, String>(3)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
                 })
             })?
             .collect::<std::result::Result<Vec<_>, _>>()?;
@@ -265,8 +281,12 @@ impl MemoryStore {
                     content: row.get(3)?,
                     agent: row.get(4)?,
                     tokens: row.get(5)?,
-                    created_at: row.get::<_, String>(6)?.parse().unwrap_or_else(|_| Utc::now()),
-                    metadata: row.get::<_, Option<String>>(7)?
+                    created_at: row
+                        .get::<_, String>(6)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
+                    metadata: row
+                        .get::<_, Option<String>>(7)?
                         .and_then(|s| serde_json::from_str(&s).ok()),
                 })
             })?
@@ -281,10 +301,8 @@ impl MemoryStore {
             "DELETE FROM messages WHERE session_id = ?1",
             params![session_id],
         )?;
-        self.conn.execute(
-            "DELETE FROM sessions WHERE id = ?1",
-            params![session_id],
-        )?;
+        self.conn
+            .execute("DELETE FROM sessions WHERE id = ?1", params![session_id])?;
         Ok(())
     }
 }

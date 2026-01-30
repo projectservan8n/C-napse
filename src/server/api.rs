@@ -1,9 +1,6 @@
 //! REST API handlers
 
-use axum::{
-    extract::Json,
-    response::IntoResponse,
-};
+use axum::{extract::Json, response::IntoResponse};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]

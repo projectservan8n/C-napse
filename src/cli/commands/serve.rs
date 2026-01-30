@@ -29,9 +29,8 @@ pub struct ServeArgs {
 }
 
 pub async fn execute(args: ServeArgs, settings: Option<Settings>) -> Result<()> {
-    let settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     // Override settings with command line args
     let host = args.host;

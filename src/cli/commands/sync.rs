@@ -77,15 +77,17 @@ pub async fn execute(args: SyncArgs, settings: Option<Settings>) -> Result<()> {
 }
 
 async fn phone_connect(ip: &str, port: u16, settings: Option<Settings>) -> Result<()> {
-    let mut settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let mut settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     ui::info(&format!("Connecting to phone at {}:{}...", ip, port));
 
     // Validate IP format
     if ip.parse::<std::net::IpAddr>().is_err() {
-        return Err(CnapseError::invalid_input(format!("Invalid IP address: {}", ip)));
+        return Err(CnapseError::invalid_input(format!(
+            "Invalid IP address: {}",
+            ip
+        )));
     }
 
     // TODO: Actually attempt connection
@@ -143,9 +145,8 @@ async fn phone_status(settings: Option<Settings>) -> Result<()> {
 }
 
 async fn vscode_enable(settings: Option<Settings>) -> Result<()> {
-    let mut settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let mut settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     settings.sync.vscode_integration = true;
     settings.save()?;
@@ -163,9 +164,8 @@ async fn vscode_enable(settings: Option<Settings>) -> Result<()> {
 }
 
 async fn vscode_disable(settings: Option<Settings>) -> Result<()> {
-    let mut settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let mut settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     settings.sync.vscode_integration = false;
     settings.save()?;

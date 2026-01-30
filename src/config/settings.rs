@@ -609,7 +609,8 @@ impl Settings {
         let content = std::fs::read_to_string(path)
             .map_err(|e| CnapseError::config(format!("Failed to read config: {}", e)))?;
 
-        toml::from_str(&content).map_err(|e| CnapseError::config(format!("Invalid config file: {}", e)))
+        toml::from_str(&content)
+            .map_err(|e| CnapseError::config(format!("Invalid config file: {}", e)))
     }
 
     /// Save settings to the default path
@@ -684,12 +685,15 @@ impl Settings {
 
                     obj.insert(part.to_string(), new_value);
                 } else {
-                    return Err(CnapseError::config(format!("Invalid config path: {}", path)));
+                    return Err(CnapseError::config(format!(
+                        "Invalid config path: {}",
+                        path
+                    )));
                 }
             } else {
-                current = current.get_mut(*part).ok_or_else(|| {
-                    CnapseError::config(format!("Invalid config path: {}", path))
-                })?;
+                current = current
+                    .get_mut(*part)
+                    .ok_or_else(|| CnapseError::config(format!("Invalid config path: {}", path)))?;
             }
         }
 

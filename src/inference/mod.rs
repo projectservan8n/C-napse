@@ -2,22 +2,24 @@
 //!
 //! Supports local inference via Ollama and cloud APIs (Anthropic, OpenAI, OpenRouter)
 
+pub mod anthropic;
 pub mod backend;
 pub mod local;
 pub mod ollama;
-pub mod anthropic;
 pub mod openai;
 pub mod openrouter;
 
 pub use backend::{InferenceBackend, InferenceRequest, InferenceResponse};
-pub use ollama::{OllamaBackend, OllamaConfig, check_system_requirements, recommended_models};
+pub use ollama::{check_system_requirements, recommended_models, OllamaBackend, OllamaConfig};
 
 use crate::config::Settings;
 use crate::error::Result;
 use std::sync::Arc;
 
 /// Create an inference backend based on settings
-pub async fn create_backend(settings: &Settings) -> Result<Arc<dyn InferenceBackend + Send + Sync>> {
+pub async fn create_backend(
+    settings: &Settings,
+) -> Result<Arc<dyn InferenceBackend + Send + Sync>> {
     match settings.general.default_provider.as_str() {
         "ollama" => {
             let backend = OllamaBackend::with_url(settings.clone(), &settings.ollama.url);

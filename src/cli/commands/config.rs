@@ -60,9 +60,8 @@ pub async fn execute(args: ConfigArgs, settings: Option<Settings>) -> Result<()>
 }
 
 async fn show(settings: Option<Settings>, _secrets: bool) -> Result<()> {
-    let settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     ui::header("C-napse Configuration");
 
@@ -113,9 +112,8 @@ async fn show(settings: Option<Settings>, _secrets: bool) -> Result<()> {
 }
 
 async fn set(settings: Option<Settings>, key: &str, value: &str) -> Result<()> {
-    let mut settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let mut settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     // Validate the key exists
     if settings.get(key).is_none() {
@@ -131,9 +129,8 @@ async fn set(settings: Option<Settings>, key: &str, value: &str) -> Result<()> {
 }
 
 async fn get(settings: Option<Settings>, key: &str) -> Result<()> {
-    let settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     match settings.get(key) {
         Some(value) => {

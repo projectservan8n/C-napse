@@ -62,11 +62,7 @@ pub fn open_in_vscode(path: &str) -> Result<()> {
     let editors = ["code", "code-insiders", "codium"];
 
     for editor in editors {
-        if std::process::Command::new(editor)
-            .arg(path)
-            .spawn()
-            .is_ok()
-        {
+        if std::process::Command::new(editor).arg(path).spawn().is_ok() {
             return Ok(());
         }
     }

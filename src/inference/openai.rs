@@ -1,10 +1,10 @@
 //! OpenAI API backend
 
-use async_trait::async_trait;
-use secrecy::ExposeSecret;
+use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
 use crate::config::{Credentials, Settings};
 use crate::error::CnapseError;
-use super::backend::{InferenceBackend, InferenceRequest, InferenceResponse};
+use async_trait::async_trait;
+use secrecy::ExposeSecret;
 
 const API_URL: &str = "https://api.openai.com/v1/chat/completions";
 
@@ -72,7 +72,10 @@ impl InferenceBackend for OpenAIBackend {
         let response = self
             .client
             .post(API_URL)
-            .header("Authorization", format!("Bearer {}", api_key.expose_secret()))
+            .header(
+                "Authorization",
+                format!("Bearer {}", api_key.expose_secret()),
+            )
             .header("content-type", "application/json")
             .json(&body)
             .send()
@@ -115,7 +118,10 @@ impl InferenceBackend for OpenAIBackend {
         let response = self
             .client
             .get("https://api.openai.com/v1/models")
-            .header("Authorization", format!("Bearer {}", api_key.expose_secret()))
+            .header(
+                "Authorization",
+                format!("Bearer {}", api_key.expose_secret()),
+            )
             .send()
             .await?;
 

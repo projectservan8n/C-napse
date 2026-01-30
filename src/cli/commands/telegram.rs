@@ -69,9 +69,8 @@ pub async fn execute(args: TelegramArgs, settings: Option<Settings>) -> Result<(
 }
 
 async fn start(daemon: bool, settings: Option<Settings>) -> Result<()> {
-    let settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     // Check for bot token
     let credentials = Credentials::load()?;
@@ -120,7 +119,10 @@ async fn status(settings: Option<Settings>) -> Result<()> {
     let credentials = Credentials::load().unwrap_or_default();
     let has_token = credentials.telegram.bot_token.is_some();
 
-    ui::kv("Bot token", if has_token { "configured" } else { "not set" });
+    ui::kv(
+        "Bot token",
+        if has_token { "configured" } else { "not set" },
+    );
 
     if let Some(settings) = settings {
         ui::kv("Enabled", &settings.telegram.enabled.to_string());
@@ -175,9 +177,8 @@ async fn setup() -> Result<()> {
 }
 
 async fn users_add(user_id: i64, settings: Option<Settings>) -> Result<()> {
-    let mut settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let mut settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     if settings.telegram.allowed_users.contains(&user_id) {
         ui::info(&format!("User {} is already in the allowed list.", user_id));
@@ -192,9 +193,8 @@ async fn users_add(user_id: i64, settings: Option<Settings>) -> Result<()> {
 }
 
 async fn users_remove(user_id: i64, settings: Option<Settings>) -> Result<()> {
-    let mut settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let mut settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     if !settings.telegram.allowed_users.contains(&user_id) {
         ui::info(&format!("User {} is not in the allowed list.", user_id));
@@ -209,9 +209,8 @@ async fn users_remove(user_id: i64, settings: Option<Settings>) -> Result<()> {
 }
 
 async fn users_list(settings: Option<Settings>) -> Result<()> {
-    let settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     ui::header("Allowed Telegram Users");
 

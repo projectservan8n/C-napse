@@ -6,13 +6,9 @@ use std::process::Command;
 /// Run a shell command
 pub fn run_command(cmd: &str) -> ToolResult {
     let output = if cfg!(windows) {
-        Command::new("cmd")
-            .args(["/C", cmd])
-            .output()
+        Command::new("cmd").args(["/C", cmd]).output()
     } else {
-        Command::new("sh")
-            .args(["-c", cmd])
-            .output()
+        Command::new("sh").args(["-c", cmd]).output()
     };
 
     match output {

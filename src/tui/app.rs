@@ -303,7 +303,7 @@ impl TuiApp {
     }
 
     async fn process_with_agent(&mut self, input: &str) -> Result<String> {
-        use crate::tui::{ToolExecutor, parse_tool_calls, tools_description};
+        use crate::tui::{parse_tool_calls, tools_description, ToolExecutor};
 
         // Build context from recent messages
         let messages: Vec<AgentMessage> = self
@@ -409,8 +409,14 @@ impl TuiApp {
                 }
 
                 if let Ok(r) = result {
-                    tool_results.push(format!("[{} result: {}]", tool.name,
-                        if r.success { &r.output } else { r.error.as_deref().unwrap_or("Failed") }
+                    tool_results.push(format!(
+                        "[{} result: {}]",
+                        tool.name,
+                        if r.success {
+                            &r.output
+                        } else {
+                            r.error.as_deref().unwrap_or("Failed")
+                        }
                     ));
                 }
             }
@@ -444,13 +450,8 @@ impl TuiApp {
         }
 
         // Save to memory
-        self.memory.add_message(
-            &self.conversation_id,
-            "user",
-            input,
-            None,
-            None,
-        )?;
+        self.memory
+            .add_message(&self.conversation_id, "user", input, None, None)?;
         self.memory.add_message(
             &self.conversation_id,
             "assistant",
@@ -476,7 +477,8 @@ impl TuiApp {
                      /model <name> - Switch model\n\
                      /status - Show current status\n\
                      /new - Start new conversation\n\
-                     /exit - Exit C-napse".to_string()
+                     /exit - Exit C-napse"
+                        .to_string(),
                 );
             }
             "/clear" => {
@@ -491,7 +493,10 @@ impl TuiApp {
                     let model = parts[1..].join(" ");
                     self.add_system_message(format!("Switched to model: {}", model));
                 } else {
-                    self.add_system_message(format!("Current model: {}", self.settings.get_default_model()));
+                    self.add_system_message(format!(
+                        "Current model: {}",
+                        self.settings.get_default_model()
+                    ));
                 }
             }
             "/status" => {
@@ -517,7 +522,10 @@ impl TuiApp {
                 self.running = false;
             }
             _ => {
-                self.add_system_message(format!("Unknown command: {}. Type /help for available commands.", command));
+                self.add_system_message(format!(
+                    "Unknown command: {}. Type /help for available commands.",
+                    command
+                ));
             }
         }
 
@@ -542,7 +550,9 @@ impl TuiApp {
             match ScreenWatcher::new() {
                 Ok(watcher) => {
                     self.screen_watcher = Some(watcher);
-                    self.add_system_message("🖥️ Screen watching enabled. I can now see your screen.".to_string());
+                    self.add_system_message(
+                        "🖥️ Screen watching enabled. I can now see your screen.".to_string(),
+                    );
                 }
                 Err(e) => {
                     self.screen_watching = false;

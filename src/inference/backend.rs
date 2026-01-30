@@ -1,8 +1,8 @@
 //! Inference backend trait and types
 
-use async_trait::async_trait;
 use crate::agents::AgentMessage;
 use crate::error::CnapseError;
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 /// Request for inference

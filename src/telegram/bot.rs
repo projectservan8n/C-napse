@@ -51,8 +51,7 @@ async fn handle_command(text: &str) -> String {
     let args = parts.get(1).map(|s| *s).unwrap_or("");
 
     match command {
-        "start" => {
-            r#"🤖 Welcome to C-napse!
+        "start" => r#"🤖 Welcome to C-napse!
 
 I'm your PC automation assistant. Here's what I can do:
 
@@ -64,11 +63,9 @@ I'm your PC automation assistant. Here's what I can do:
 /apps - List apps
 
 Just send me a message and I'll help you control your PC!"#
-                .to_string()
-        }
+            .to_string(),
 
-        "help" => {
-            r#"📚 C-napse Commands
+        "help" => r#"📚 C-napse Commands
 
 /start - Welcome message
 /help - Show this help
@@ -80,8 +77,7 @@ Just send me a message and I'll help you control your PC!"#
 /apps - List available apps
 /history - Recent commands
 /cancel - Cancel operation"#
-                .to_string()
-        }
+            .to_string(),
 
         "status" => {
             let sys = sysinfo::System::new_all();
@@ -107,7 +103,10 @@ Just send me a message and I'll help you control your PC!"#
             if args.is_empty() {
                 "Usage: /run <query>".to_string()
             } else {
-                format!("🔄 Processing: {}\n\n(Full inference not yet implemented)", args)
+                format!(
+                    "🔄 Processing: {}\n\n(Full inference not yet implemented)",
+                    args
+                )
             }
         }
 
@@ -120,10 +119,7 @@ Just send me a message and I'll help you control your PC!"#
                 if result.success {
                     format!("✅ Output:\n```\n{}\n```", result.output)
                 } else {
-                    format!(
-                        "❌ Error:\n```\n{}\n```",
-                        result.error.unwrap_or_default()
-                    )
+                    format!("❌ Error:\n```\n{}\n```", result.error.unwrap_or_default())
                 }
             }
         }
@@ -139,14 +135,12 @@ Just send me a message and I'll help you control your PC!"#
             let apps = paths.list_apps().unwrap_or_default();
 
             if apps.is_empty() {
-                "📱 No apps created yet.\n\nCreate apps with: cnapse app create \"App Name\"".to_string()
+                "📱 No apps created yet.\n\nCreate apps with: cnapse app create \"App Name\""
+                    .to_string()
             } else {
                 let list: Vec<String> = apps
                     .iter()
-                    .filter_map(|p| {
-                        p.file_name()
-                            .map(|n| format!("• {}", n.to_string_lossy()))
-                    })
+                    .filter_map(|p| p.file_name().map(|n| format!("• {}", n.to_string_lossy())))
                     .collect();
 
                 format!("📱 Your Apps:\n\n{}", list.join("\n"))
@@ -155,6 +149,9 @@ Just send me a message and I'll help you control your PC!"#
 
         "cancel" => "✅ Operation cancelled.".to_string(),
 
-        _ => format!("❓ Unknown command: /{}\n\nType /help for available commands.", command),
+        _ => format!(
+            "❓ Unknown command: /{}\n\nType /help for available commands.",
+            command
+        ),
     }
 }

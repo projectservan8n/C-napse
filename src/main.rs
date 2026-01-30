@@ -19,16 +19,13 @@ async fn main() -> anyhow::Result<()> {
         _ => "trace",
     };
 
-    let filter = if cli.quiet {
-        "error"
-    } else {
-        log_level
-    };
+    let filter = if cli.quiet { "error" } else { log_level };
 
     tracing_subscriber::registry()
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            format!("cnapse={filter},tower_http={filter}").into()
-        }))
+        .with(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| format!("cnapse={filter},tower_http={filter}").into()),
+        )
         .with(tracing_subscriber::fmt::layer().with_target(false))
         .init();
 

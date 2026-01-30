@@ -12,9 +12,8 @@ pub async fn execute(
     use_memory: bool,
     settings: Option<Settings>,
 ) -> Result<()> {
-    let settings = settings.ok_or_else(|| {
-        CnapseError::config("Configuration not found. Run 'cnapse init' first.")
-    })?;
+    let settings = settings
+        .ok_or_else(|| CnapseError::config("Configuration not found. Run 'cnapse init' first."))?;
 
     // Print welcome banner
     ui::print_banner();
@@ -30,7 +29,10 @@ pub async fn execute(
     // Show current config
     let active_provider = provider.unwrap_or(&settings.general.default_provider);
     ui::info(&format!("Provider: {}", active_provider));
-    ui::info(&format!("Memory: {}", if use_memory { "enabled" } else { "disabled" }));
+    ui::info(&format!(
+        "Memory: {}",
+        if use_memory { "enabled" } else { "disabled" }
+    ));
     println!();
 
     ui::info("Type 'help' for commands, 'exit' to quit.");
@@ -84,7 +86,10 @@ pub async fn execute(
             }
             "config" => {
                 ui::info(&format!("Provider: {}", active_provider));
-                ui::info(&format!("Memory: {}", if use_memory { "enabled" } else { "disabled" }));
+                ui::info(&format!(
+                    "Memory: {}",
+                    if use_memory { "enabled" } else { "disabled" }
+                ));
                 continue;
             }
             _ => {}
@@ -286,7 +291,10 @@ async fn handle_slash_command(input: &str, settings: &Settings) -> Result<()> {
         }
         "provider" | "p" => {
             if args.is_empty() {
-                ui::info(&format!("Current provider: {}", settings.general.default_provider));
+                ui::info(&format!(
+                    "Current provider: {}",
+                    settings.general.default_provider
+                ));
                 ui::info("Available: local, anthropic, openai, openrouter");
             } else {
                 ui::info(&format!("Switched to provider: {}", args));

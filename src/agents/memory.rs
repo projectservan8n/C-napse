@@ -1,8 +1,8 @@
 //! Memory Agent - Context management, summarization, recall
 
-use async_trait::async_trait;
 use crate::agents::traits::{Agent, AgentContext, AgentResponse, Tool};
 use crate::error::CnapseError;
+use async_trait::async_trait;
 
 pub struct MemoryAgent;
 

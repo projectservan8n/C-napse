@@ -1,8 +1,8 @@
 //! Filer Agent - File system operations
 
-use async_trait::async_trait;
 use crate::agents::traits::{Agent, AgentContext, AgentResponse, Tool};
 use crate::error::CnapseError;
+use async_trait::async_trait;
 
 pub struct FilerAgent;
 
@@ -46,7 +46,8 @@ Available tools:
 - delete(path, force?): Delete (requires confirmation unless force)
 - search(pattern, path, type?): Search files by name/content
 - file_info(path): Get file metadata
-- watch(path): Watch for changes"#.to_string()
+- watch(path): Watch for changes"#
+            .to_string()
     }
 
     async fn execute(&self, ctx: AgentContext) -> Result<AgentResponse, CnapseError> {

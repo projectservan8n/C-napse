@@ -81,7 +81,10 @@ async fn add(provider: &str, key: Option<String>) -> Result<()> {
     credentials.save()?;
 
     ui::success(&format!("{} API key saved!", provider));
-    ui::kv("Masked key", &credentials.get_masked_key(&provider).unwrap_or_default());
+    ui::kv(
+        "Masked key",
+        &credentials.get_masked_key(&provider).unwrap_or_default(),
+    );
 
     Ok(())
 }
@@ -234,7 +237,10 @@ async fn test_anthropic(credentials: &Credentials) -> Result<()> {
     } else {
         let status = response.status();
         let text = response.text().await.unwrap_or_default();
-        Err(CnapseError::api("anthropic", format!("{}: {}", status, text)))
+        Err(CnapseError::api(
+            "anthropic",
+            format!("{}: {}", status, text),
+        ))
     }
 }
 
@@ -248,7 +254,10 @@ async fn test_openai(credentials: &Credentials) -> Result<()> {
     let client = reqwest::Client::new();
     let response = client
         .get("https://api.openai.com/v1/models")
-        .header("Authorization", format!("Bearer {}", api_key.expose_secret()))
+        .header(
+            "Authorization",
+            format!("Bearer {}", api_key.expose_secret()),
+        )
         .send()
         .await?;
 
@@ -271,7 +280,10 @@ async fn test_openrouter(credentials: &Credentials) -> Result<()> {
     let client = reqwest::Client::new();
     let response = client
         .get("https://openrouter.ai/api/v1/auth/key")
-        .header("Authorization", format!("Bearer {}", api_key.expose_secret()))
+        .header(
+            "Authorization",
+            format!("Bearer {}", api_key.expose_secret()),
+        )
         .send()
         .await?;
 
@@ -280,6 +292,9 @@ async fn test_openrouter(credentials: &Credentials) -> Result<()> {
     } else {
         let status = response.status();
         let text = response.text().await.unwrap_or_default();
-        Err(CnapseError::api("openrouter", format!("{}: {}", status, text)))
+        Err(CnapseError::api(
+            "openrouter",
+            format!("{}: {}", status, text),
+        ))
     }
 }
