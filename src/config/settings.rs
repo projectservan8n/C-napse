@@ -15,6 +15,9 @@ pub struct Settings {
     pub local: LocalConfig,
 
     #[serde(default)]
+    pub ollama: OllamaConfig,
+
+    #[serde(default)]
     pub anthropic: AnthropicConfig,
 
     #[serde(default)]
@@ -102,6 +105,44 @@ pub struct LocalAgentsConfig {
     pub memory: String,
 
     #[serde(default = "default_app_model")]
+    pub app: String,
+}
+
+/// Ollama settings
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OllamaConfig {
+    /// Ollama server URL
+    #[serde(default = "default_ollama_url")]
+    pub url: String,
+
+    /// Keep models loaded in memory
+    #[serde(default = "default_keep_alive")]
+    pub keep_alive: String,
+
+    /// Agent-specific Ollama model assignments
+    #[serde(default)]
+    pub agents: OllamaAgentsConfig,
+}
+
+/// Ollama model assignments for each agent
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OllamaAgentsConfig {
+    #[serde(default = "default_ollama_router")]
+    pub router: String,
+
+    #[serde(default = "default_ollama_coder")]
+    pub coder: String,
+
+    #[serde(default = "default_ollama_shell")]
+    pub shell: String,
+
+    #[serde(default = "default_ollama_filer")]
+    pub filer: String,
+
+    #[serde(default = "default_ollama_memory")]
+    pub memory: String,
+
+    #[serde(default = "default_ollama_app")]
     pub app: String,
 }
 
@@ -284,6 +325,39 @@ fn default_app_model() -> String {
     "qwen2.5-coder-1.5b-instruct.Q4_K_M.gguf".to_string()
 }
 
+// Ollama defaults
+fn default_ollama_url() -> String {
+    "http://127.0.0.1:11434".to_string()
+}
+
+fn default_keep_alive() -> String {
+    "5m".to_string()
+}
+
+fn default_ollama_router() -> String {
+    "qwen2.5:0.5b".to_string()
+}
+
+fn default_ollama_coder() -> String {
+    "qwen2.5-coder:1.5b".to_string()
+}
+
+fn default_ollama_shell() -> String {
+    "qwen2.5:0.5b".to_string()
+}
+
+fn default_ollama_filer() -> String {
+    "qwen2.5:0.5b".to_string()
+}
+
+fn default_ollama_memory() -> String {
+    "qwen2.5:0.5b".to_string()
+}
+
+fn default_ollama_app() -> String {
+    "qwen2.5-coder:1.5b".to_string()
+}
+
 fn default_anthropic_model() -> String {
     "claude-sonnet-4-20250514".to_string()
 }
@@ -389,6 +463,29 @@ impl Default for LocalAgentsConfig {
     }
 }
 
+impl Default for OllamaConfig {
+    fn default() -> Self {
+        Self {
+            url: default_ollama_url(),
+            keep_alive: default_keep_alive(),
+            agents: OllamaAgentsConfig::default(),
+        }
+    }
+}
+
+impl Default for OllamaAgentsConfig {
+    fn default() -> Self {
+        Self {
+            router: default_ollama_router(),
+            coder: default_ollama_coder(),
+            shell: default_ollama_shell(),
+            filer: default_ollama_filer(),
+            memory: default_ollama_memory(),
+            app: default_ollama_app(),
+        }
+    }
+}
+
 impl Default for AnthropicConfig {
     fn default() -> Self {
         Self {
@@ -481,6 +578,7 @@ impl Default for Settings {
         Self {
             general: GeneralConfig::default(),
             local: LocalConfig::default(),
+            ollama: OllamaConfig::default(),
             anthropic: AnthropicConfig::default(),
             openai: OpenAIConfig::default(),
             openrouter: OpenRouterConfig::default(),

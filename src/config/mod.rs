@@ -11,5 +11,6 @@ pub use settings::Settings;
 // Re-export sub-config modules
 pub use settings::{
     AnthropicConfig, AppsConfig, GeneralConfig, LocalAgentsConfig, LocalConfig, MemoryConfig,
-    OpenAIConfig, OpenRouterConfig, ServerConfig, SyncConfig, TelegramConfig,
+    OllamaAgentsConfig, OllamaConfig, OpenAIConfig, OpenRouterConfig, ServerConfig, SyncConfig,
+    TelegramConfig,
 };
