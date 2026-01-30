@@ -90,7 +90,9 @@ screenshots = "0.8"
 image = { version = "0.24", default-features = false, features = ["png"] }
 
 # Embeddings (optional - requires ONNX runtime)
-fastembed = { version = "3", optional = true, features = ["ort-download-binaries"] }
+# Note: ort-download-binaries requires a TLS feature: tls-rustls, tls-native, etc.
+ort = { version = "2", optional = true, features = ["download-binaries", "tls-rustls"] }
+fastembed = { version = "3", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["shellapi", "winuser"] }
@@ -109,7 +111,7 @@ tokio-test = "0.4"
 default = ["local-inference", "screenshots"]
 local-inference = []
 screenshots = []
-embeddings = ["fastembed"]
+embeddings = ["fastembed", "ort"]
 cuda = []
 metal = []
 

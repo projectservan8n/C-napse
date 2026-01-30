@@ -18,7 +18,10 @@
       "Bash(powershell -Command \"& { $env:Path += '';'' + $env:USERPROFILE + ''\\\\.cargo\\\\bin''; cd ''e:\\\\C-napse''; cargo fmt --all }\")",
       "Bash(powershell -Command:*)",
       "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; C:\\\\Users\\\\*\\\\.cargo\\\\bin\\\\cargo.exe fmt --all 2>&1\")",
-      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git status\")"
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git status\")",
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git commit -m ''Apply cargo fmt to fix code formatting\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")",
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git push origin main\")",
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix fastembed/ort TLS feature requirement for CI\n\nAdd tls-rustls feature to ort dependency to fix download-binaries\ncompilation error in CI when using --all-features.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")"
     ]
   }
 }
