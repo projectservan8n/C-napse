@@ -211,7 +211,21 @@ Before outputting steps, THINK through these questions:
 ### Web Browsing
 - open_url: Open URL in default browser (e.g., "open_url:https://perplexity.ai")
 - browse_and_ask: Open AI website, type question, wait for response (e.g., "browse_and_ask:perplexity|What is the capital of France?")
-- browse_and_ask: Supports: perplexity, chatgpt, claude, google
+- browse_and_ask: Supports: perplexity, chatgpt, claude, google, copilot, bard
+- web_search: Search Google and extract results (e.g., "web_search:best restaurants in NYC")
+
+### Email
+- send_email: Send email via Gmail or Outlook web (e.g., "send_email:gmail|to@email.com|Subject|Body text here")
+- send_email: Supports: gmail, outlook
+
+### Google Apps (via browser)
+- google_sheets: Interact with Google Sheets (e.g., "google_sheets:new|My Spreadsheet" or "google_sheets:type|A1|Hello World")
+- google_sheets: Commands: new (create), open (open existing), type (type in cell), read (screenshot current view)
+- google_docs: Interact with Google Docs (e.g., "google_docs:new|My Document" or "google_docs:type|Hello World")
+- google_docs: Commands: new (create), open (open existing), type (type text)
+
+### Research
+- research: Multi-step web research - searches, gathers info, summarizes (e.g., "research:What are the latest AI trends in 2024?")
 
 ### Utility
 - wait: Wait N seconds (e.g., "wait:2" - use 1-3s for app loads)
@@ -302,14 +316,62 @@ Output:
 ### Example 7: "search google for weather today"
 Thinking:
 - Goal: Open Google and search for something
-- How: Use browse_and_ask with google target
-- Sequence: Open Google, search, capture results
+- How: Use web_search for quick results extraction
+- Sequence: Search and get results
 
 Output:
 [
-  { "description": "Search Google", "action": "browse_and_ask:google|weather today" },
-  { "description": "Wait for results", "action": "wait:2" },
-  { "description": "Capture search results", "action": "screenshot" }
+  { "description": "Search Google for weather", "action": "web_search:weather today" }
+]
+
+### Example 8: "send an email to john@example.com about the meeting tomorrow"
+Thinking:
+- Goal: Compose and send an email via Gmail
+- How: Use send_email with gmail, recipient, subject, body
+- Sequence: Open Gmail, compose, fill fields, send
+
+Output:
+[
+  { "description": "Send email via Gmail", "action": "send_email:gmail|john@example.com|Meeting Tomorrow|Hi John, this is a reminder about our meeting tomorrow. Please let me know if you have any questions." }
+]
+
+### Example 9: "create a new google sheet called Sales Report and add headers"
+Thinking:
+- Goal: Create a new Google Sheet and add content
+- How: Use google_sheets to create new, then type in cells
+- Sequence: Create sheet -> Navigate to cells -> Type headers
+
+Output:
+[
+  { "description": "Create new Google Sheet", "action": "google_sheets:new|Sales Report" },
+  { "description": "Wait for sheet to load", "action": "wait:3" },
+  { "description": "Type header in A1", "action": "google_sheets:type|A1|Product" },
+  { "description": "Type header in B1", "action": "google_sheets:type|B1|Quantity" },
+  { "description": "Type header in C1", "action": "google_sheets:type|C1|Price" }
+]
+
+### Example 10: "research the latest news about AI regulations"
+Thinking:
+- Goal: Do multi-step research on a topic
+- How: Use research action which handles searching, gathering, summarizing
+- Sequence: Single research action does it all
+
+Output:
+[
+  { "description": "Research AI regulations news", "action": "research:latest news about AI regulations 2024" }
+]
+
+### Example 11: "write a document in google docs about project status"
+Thinking:
+- Goal: Create a Google Doc and write content
+- How: Use google_docs to create and type
+- Sequence: Create doc -> Type content
+
+Output:
+[
+  { "description": "Create new Google Doc", "action": "google_docs:new|Project Status Report" },
+  { "description": "Wait for doc to load", "action": "wait:3" },
+  { "description": "Type the content", "action": "google_docs:type|Project Status Report\n\nDate: Today\n\nSummary:\nThe project is on track. All milestones have been met.\n\nNext Steps:\n- Complete testing\n- Deploy to production" }
 ]
 
 ## YOUR TASK
@@ -649,6 +711,337 @@ Just give me the actual answer text, word for word as it appears. If there's no 
       const vision = await describeScreen();
       step.result = vision.description;
       break;
+
+    case 'web_search': {
+      // Human-like Google search: open browser, go to google, type, search
+      // Open browser with Win+R -> chrome/edge or just open google.com
+      await computer.keyCombo(['meta', 'r']); // Win+R
+      await sleep(500);
+      await computer.typeText('chrome'); // Try Chrome first
+      await computer.pressKey('Return');
+      await sleep(2000);
+
+      // Go to Google (Ctrl+L to focus address bar)
+      await computer.keyCombo(['control', 'l']);
+      await sleep(300);
+      await computer.typeText('google.com');
+      await computer.pressKey('Return');
+      await sleep(2000);
+
+      // Type search query (Google search box should be focused)
+      await computer.typeText(params);
+      await sleep(300);
+      await computer.pressKey('Return');
+      await sleep(3000); // Wait for results
+
+      // Capture and extract search results
+      const searchScreen = await describeScreen();
+      const searchExtract = await chat([{
+        role: 'user',
+        content: `Extract the top search results from this Google search page. For each result, include:
+- Title
+- Brief snippet/description
+- URL if visible
+
+Format as a numbered list. Be concise.`
+      }]);
+
+      step.result = `🔍 Search results for "${params}":\n\n${searchExtract.content}`;
+      break;
+    }
+
+    case 'send_email': {
+      // Human-like email: open browser, navigate to Gmail/Outlook, compose
+      // Format: send_email:provider|to|subject|body
+      const [provider, to, subject, ...bodyParts] = params.split('|');
+      const body = bodyParts.join('|');
+
+      // Open browser
+      await computer.keyCombo(['meta', 'r']); // Win+R
+      await sleep(500);
+      await computer.typeText('chrome');
+      await computer.pressKey('Return');
+      await sleep(2000);
+
+      // Navigate to email service
+      await computer.keyCombo(['control', 'l']); // Focus address bar
+      await sleep(300);
+
+      if (provider.toLowerCase() === 'gmail') {
+        await computer.typeText('mail.google.com');
+        await computer.pressKey('Return');
+        await sleep(4000); // Wait for Gmail to load
+
+        // Click Compose button (use keyboard shortcut 'c')
+        await computer.typeText('c'); // Gmail shortcut for compose
+        await sleep(2000); // Wait for compose window
+
+        // Fill in fields
+        await computer.typeText(to); // To field is focused
+        await sleep(300);
+        await computer.pressKey('Tab'); // Move to subject
+        await sleep(200);
+        await computer.typeText(subject);
+        await sleep(300);
+        await computer.pressKey('Tab'); // Move to body
+        await sleep(200);
+        await computer.typeText(body);
+        await sleep(500);
+
+        // Send with Ctrl+Enter
+        await computer.keyCombo(['control', 'Return']);
+
+      } else if (provider.toLowerCase() === 'outlook') {
+        await computer.typeText('outlook.live.com');
+        await computer.pressKey('Return');
+        await sleep(4000); // Wait for Outlook to load
+
+        // Click New mail (use keyboard shortcut 'n')
+        await computer.typeText('n'); // Outlook shortcut for new mail
+        await sleep(2000);
+
+        // Fill in fields
+        await computer.typeText(to);
+        await sleep(300);
+        await computer.pressKey('Tab');
+        await sleep(200);
+        await computer.typeText(subject);
+        await sleep(300);
+        await computer.pressKey('Tab');
+        await sleep(200);
+        await computer.typeText(body);
+        await sleep(500);
+
+        // Send with Ctrl+Enter
+        await computer.keyCombo(['control', 'Return']);
+      } else {
+        throw new Error(`Unsupported email provider: ${provider}. Use gmail or outlook.`);
+      }
+
+      await sleep(2000);
+      step.result = `📧 Email sent via ${provider} to ${to}`;
+      break;
+    }
+
+    case 'google_sheets': {
+      // Human-like: open browser, go to sheets, interact
+      // Format: google_sheets:command|arg1|arg2...
+      const [sheetCmd, ...sheetArgs] = params.split('|');
+
+      switch (sheetCmd.toLowerCase()) {
+        case 'new': {
+          const sheetName = sheetArgs[0] || 'Untitled spreadsheet';
+
+          // Open browser and go to Google Sheets
+          await computer.keyCombo(['meta', 'r']);
+          await sleep(500);
+          await computer.typeText('chrome');
+          await computer.pressKey('Return');
+          await sleep(2000);
+
+          await computer.keyCombo(['control', 'l']);
+          await sleep(300);
+          await computer.typeText('sheets.google.com');
+          await computer.pressKey('Return');
+          await sleep(3000);
+
+          // Click "Blank" to create new (or use keyboard)
+          // Usually there's a + or Blank option, let's try clicking near top
+          await computer.pressKey('Tab'); // Navigate
+          await computer.pressKey('Tab');
+          await computer.pressKey('Return'); // Create blank
+          await sleep(3000);
+
+          // Rename: click on title or use File > Rename
+          await computer.keyCombo(['alt', 'f']); // File menu
+          await sleep(500);
+          await computer.typeText('r'); // Rename option
+          await sleep(500);
+          await computer.keyCombo(['control', 'a']); // Select all
+          await computer.typeText(sheetName);
+          await computer.pressKey('Return');
+          await sleep(500);
+          await computer.pressKey('Escape'); // Close any dialog
+
+          step.result = `📊 Created Google Sheet: ${sheetName}`;
+          break;
+        }
+        case 'type': {
+          const cell = sheetArgs[0] || 'A1';
+          const cellValue = sheetArgs.slice(1).join('|');
+
+          // Navigate to cell using Ctrl+G or F5 (Go to)
+          await computer.keyCombo(['control', 'g']); // Go to cell dialog
+          await sleep(500);
+          await computer.typeText(cell);
+          await computer.pressKey('Return');
+          await sleep(300);
+
+          // Type the value
+          await computer.typeText(cellValue);
+          await computer.pressKey('Return'); // Confirm and move down
+          await sleep(200);
+
+          step.result = `📊 Typed "${cellValue}" in cell ${cell}`;
+          break;
+        }
+        case 'read': {
+          const readScreen = await describeScreen();
+          step.result = `📊 Current sheet view:\n${readScreen.description}`;
+          break;
+        }
+        default:
+          throw new Error(`Unknown google_sheets command: ${sheetCmd}`);
+      }
+      break;
+    }
+
+    case 'google_docs': {
+      // Human-like: open browser, go to docs, interact
+      // Format: google_docs:command|arg1|arg2...
+      const [docCmd, ...docArgs] = params.split('|');
+
+      switch (docCmd.toLowerCase()) {
+        case 'new': {
+          const docName = docArgs[0] || 'Untitled document';
+
+          // Open browser and go to Google Docs
+          await computer.keyCombo(['meta', 'r']);
+          await sleep(500);
+          await computer.typeText('chrome');
+          await computer.pressKey('Return');
+          await sleep(2000);
+
+          await computer.keyCombo(['control', 'l']);
+          await sleep(300);
+          await computer.typeText('docs.google.com');
+          await computer.pressKey('Return');
+          await sleep(3000);
+
+          // Click "Blank" to create new
+          await computer.pressKey('Tab');
+          await computer.pressKey('Tab');
+          await computer.pressKey('Return');
+          await sleep(3000);
+
+          // Rename using File > Rename
+          await computer.keyCombo(['alt', 'f']); // File menu
+          await sleep(500);
+          await computer.typeText('r'); // Rename
+          await sleep(500);
+          await computer.keyCombo(['control', 'a']); // Select all
+          await computer.typeText(docName);
+          await computer.pressKey('Return');
+          await sleep(500);
+          await computer.pressKey('Escape'); // Close dialog, focus doc
+
+          step.result = `📄 Created Google Doc: ${docName}`;
+          break;
+        }
+        case 'type': {
+          const docText = docArgs.join('|');
+          // Just type - cursor should be in document
+          await computer.typeText(docText);
+          step.result = `📄 Typed content in Google Doc`;
+          break;
+        }
+        default:
+          throw new Error(`Unknown google_docs command: ${docCmd}`);
+      }
+      break;
+    }
+
+    case 'research': {
+      // Human-like multi-step research: open browser, search, click results, gather info
+      const researchQuery = params;
+      const researchResults: string[] = [];
+
+      // Step 1: Open browser and go to Google
+      await computer.keyCombo(['meta', 'r']); // Win+R
+      await sleep(500);
+      await computer.typeText('chrome');
+      await computer.pressKey('Return');
+      await sleep(2000);
+
+      await computer.keyCombo(['control', 'l']); // Focus address bar
+      await sleep(300);
+      await computer.typeText('google.com');
+      await computer.pressKey('Return');
+      await sleep(2000);
+
+      // Type search query
+      await computer.typeText(researchQuery);
+      await computer.pressKey('Return');
+      await sleep(3000);
+
+      // Capture initial search results
+      let searchScreen = await describeScreen();
+      const initialResults = await chat([{
+        role: 'user',
+        content: `Extract the key information from these Google search results about: "${researchQuery}"
+Include any relevant facts, numbers, dates, or key points visible. Be thorough but concise.`
+      }]);
+      researchResults.push(`Search Results:\n${initialResults.content}`);
+
+      // Step 2: Click on first result (Tab to navigate, Enter to click)
+      await computer.pressKey('Tab');
+      await sleep(200);
+      await computer.pressKey('Tab');
+      await sleep(200);
+      await computer.pressKey('Return'); // Click first result
+      await sleep(4000); // Wait for page load
+
+      // Extract content from the page
+      searchScreen = await describeScreen();
+      const pageContent = await chat([{
+        role: 'user',
+        content: `Extract the main content and key information from this webpage about: "${researchQuery}"
+Ignore ads, navigation, footers. Focus on the actual article/content.`
+      }]);
+      researchResults.push(`\nSource 1 Content:\n${pageContent.content}`);
+
+      // Step 3: Go back (Alt+Left) and check another source
+      await computer.keyCombo(['alt', 'Left']); // Browser back
+      await sleep(2000);
+
+      // Scroll down a bit to see more results
+      await computer.scrollMouse(-3);
+      await sleep(500);
+
+      // Navigate to second result
+      await computer.pressKey('Tab');
+      await computer.pressKey('Tab');
+      await computer.pressKey('Tab');
+      await computer.pressKey('Return');
+      await sleep(4000);
+
+      searchScreen = await describeScreen();
+      const pageContent2 = await chat([{
+        role: 'user',
+        content: `Extract additional information from this webpage about: "${researchQuery}"
+Look for details not covered in the previous source.`
+      }]);
+      researchResults.push(`\nSource 2 Content:\n${pageContent2.content}`);
+
+      // Step 4: Synthesize all gathered information
+      const synthesis = await chat([{
+        role: 'user',
+        content: `Based on the following research gathered about "${researchQuery}", provide a comprehensive summary:
+
+${researchResults.join('\n\n')}
+
+Create a well-organized summary with:
+1. Key findings
+2. Important details
+3. Any notable facts or statistics
+4. Conclusion
+
+Be thorough but concise.`
+      }]);
+
+      step.result = `🔬 Research Summary: ${researchQuery}\n\n${synthesis.content}`;
+      break;
+    }
 
     case 'chat':
       // This is a fallback - just describe what user wants
