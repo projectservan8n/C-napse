@@ -162,27 +162,62 @@ if (!$ollamaInstalled) {
 
 # Step 4: Pull default model
 Write-Step "4/4" "Setting up AI model..." "working"
-if (Get-Command ollama -ErrorAction SilentlyContinue) {
+
+# Check if ollama command exists (might need PATH refresh after install)
+$ollamaPath = Get-Command ollama -ErrorAction SilentlyContinue
+if (!$ollamaPath) {
+    # Try common install locations
+    $possiblePaths = @(
+        "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe",
+        "$env:ProgramFiles\Ollama\ollama.exe",
+        "$env:USERPROFILE\AppData\Local\Programs\Ollama\ollama.exe"
+    )
+    foreach ($path in $possiblePaths) {
+        if (Test-Path $path) {
+            $ollamaPath = $path
+            break
+        }
+    }
+}
+
+if ($ollamaPath) {
     Write-Host ""
+
+    # First, ensure Ollama service is running
+    Write-Host "    Starting Ollama service..." -ForegroundColor DarkGray
+
+    # Start ollama serve in background if not already running
+    $ollamaRunning = Get-Process -Name "ollama" -ErrorAction SilentlyContinue
+    if (!$ollamaRunning) {
+        # Start ollama serve in a hidden window
+        Start-Process -FilePath $ollamaPath -ArgumentList "serve" -WindowStyle Hidden
+        Start-Sleep -Seconds 3  # Give it time to start
+    }
+
     Write-Host "    Downloading qwen2.5:0.5b (~400MB)..." -ForegroundColor DarkGray
+    Write-Host "    This may take a few minutes..." -ForegroundColor DarkGray
+    Write-Host ""
 
-    # Run ollama pull with output hidden
-    $pullProcess = Start-Process -FilePath "ollama" -ArgumentList "pull", "qwen2.5:0.5b" -NoNewWindow -Wait -PassThru -RedirectStandardOutput "$env:TEMP\ollama-out.txt" -RedirectStandardError "$env:TEMP\ollama-err.txt" 2>$null
+    # Run ollama pull - use cmd /c to handle the output properly
+    try {
+        $output = & cmd /c "$ollamaPath pull qwen2.5:0.5b 2>&1"
+        $exitCode = $LASTEXITCODE
 
-    if ($pullProcess.ExitCode -eq 0) {
-        Write-Host "`r  ● " -NoNewline -ForegroundColor Green
-        Write-Host "[4/4] " -NoNewline -ForegroundColor DarkGray
-        Write-Host "AI model ready" -ForegroundColor White
-    } else {
+        if ($exitCode -eq 0) {
+            Write-Host "`r  ● " -NoNewline -ForegroundColor Green
+            Write-Host "[4/4] " -NoNewline -ForegroundColor DarkGray
+            Write-Host "AI model ready" -ForegroundColor White
+        } else {
+            Write-Host "`r  ◌ " -NoNewline -ForegroundColor DarkGray
+            Write-Host "[4/4] " -NoNewline -ForegroundColor DarkGray
+            Write-Host "Run 'ollama pull qwen2.5:0.5b' manually" -ForegroundColor DarkGray
+        }
+    } catch {
         Write-Host "`r  ◌ " -NoNewline -ForegroundColor DarkGray
         Write-Host "[4/4] " -NoNewline -ForegroundColor DarkGray
-        Write-Host "Run 'ollama pull qwen2.5:0.5b' later" -ForegroundColor DarkGray
+        Write-Host "Run 'ollama pull qwen2.5:0.5b' manually" -ForegroundColor DarkGray
     }
     Write-Host ""
-
-    # Cleanup temp files
-    Remove-Item "$env:TEMP\ollama-out.txt" -ErrorAction SilentlyContinue
-    Remove-Item "$env:TEMP\ollama-err.txt" -ErrorAction SilentlyContinue
 } else {
     Write-Step "4/4" "Skipped (install Ollama first)" "skip"
     Write-Host ""

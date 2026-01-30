@@ -10,6 +10,7 @@ use chrono::{DateTime, Local};
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use ratatui::{prelude::*, Terminal};
 use std::time::Duration;
+use tokio::sync::mpsc;
 use uuid::Uuid;
 
 /// Message in the chat
@@ -36,6 +37,16 @@ pub enum ToolStatus {
     Running,
     Success,
     Failed,
+}
+
+/// Message from background task
+pub enum BackgroundMessage {
+    /// Response received from LLM
+    Response { msg_id: String, content: String },
+    /// Error occurred
+    Error { msg_id: String, error: String },
+    /// Status update
+    Status(String),
 }
 
 /// TUI Application
@@ -68,6 +79,10 @@ pub struct TuiApp {
     pub history: Vec<String>,
     /// History index
     pub history_index: Option<usize>,
+    /// Channel receiver for background messages
+    pub bg_receiver: Option<mpsc::UnboundedReceiver<BackgroundMessage>>,
+    /// Current processing message ID
+    pub current_msg_id: Option<String>,
 }
 
 impl TuiApp {
@@ -98,6 +113,8 @@ impl TuiApp {
             processing: false,
             history: Vec::new(),
             history_index: None,
+            bg_receiver: None,
+            current_msg_id: None,
         })
     }
 
@@ -106,8 +123,39 @@ impl TuiApp {
             // Draw UI
             terminal.draw(|f| self.draw(f))?;
 
-            // Handle events with timeout
-            if event::poll(Duration::from_millis(100))? {
+            // Check for background messages (non-blocking)
+            if let Some(receiver) = &mut self.bg_receiver {
+                while let Ok(msg) = receiver.try_recv() {
+                    match msg {
+                        BackgroundMessage::Response { msg_id, content } => {
+                            if let Some(m) = self.messages.iter_mut().find(|m| m.id == msg_id) {
+                                m.content = content;
+                                m.is_streaming = false;
+                            }
+                            self.processing = false;
+                            self.status = "Ready".to_string();
+                            self.current_msg_id = None;
+                            // Auto-scroll to bottom
+                            self.scroll = self.messages.len().saturating_sub(1);
+                        }
+                        BackgroundMessage::Error { msg_id, error } => {
+                            if let Some(m) = self.messages.iter_mut().find(|m| m.id == msg_id) {
+                                m.content = format!("Error: {}", error);
+                                m.is_streaming = false;
+                            }
+                            self.processing = false;
+                            self.status = "Ready".to_string();
+                            self.current_msg_id = None;
+                        }
+                        BackgroundMessage::Status(status) => {
+                            self.status = status;
+                        }
+                    }
+                }
+            }
+
+            // Handle events with timeout (short for responsiveness)
+            if event::poll(Duration::from_millis(50))? {
                 if let Event::Key(key) = event::read()? {
                     if key.kind == KeyEventKind::Press {
                         self.handle_key(key.code, key.modifiers).await?;
@@ -115,8 +163,8 @@ impl TuiApp {
                 }
             }
 
-            // Check screen watcher
-            if self.screen_watching {
+            // Check screen watcher (less frequently to avoid blocking)
+            if self.screen_watching && !self.processing {
                 if let Some(watcher) = &mut self.screen_watcher {
                     if let Some(change) = watcher.check_for_changes() {
                         self.add_system_message(format!("🖥️ Screen change detected: {}", change));
@@ -264,53 +312,31 @@ impl TuiApp {
         self.processing = true;
         self.status = "Thinking...".to_string();
 
-        // Add assistant message placeholder
+        // Add assistant message placeholder with "thinking" indicator
         let assistant_msg_id = Uuid::new_v4().to_string();
         self.messages.push(ChatMessage {
             id: assistant_msg_id.clone(),
             role: MessageRole::Assistant,
-            content: String::new(),
+            content: "Thinking...".to_string(),
             timestamp: Local::now(),
             tool_calls: vec![],
             is_streaming: true,
         });
 
-        // Process with agent
-        match self.process_with_agent(&user_input).await {
-            Ok(response) => {
-                // Update assistant message
-                if let Some(msg) = self.messages.iter_mut().find(|m| m.id == assistant_msg_id) {
-                    msg.content = response;
-                    msg.is_streaming = false;
-                }
-            }
-            Err(e) => {
-                // Update with error
-                if let Some(msg) = self.messages.iter_mut().find(|m| m.id == assistant_msg_id) {
-                    msg.content = format!("Error: {}", e);
-                    msg.is_streaming = false;
-                }
-            }
-        }
+        self.current_msg_id = Some(assistant_msg_id.clone());
 
-        self.processing = false;
-        self.status = "Ready".to_string();
+        // Create channel for background communication
+        let (tx, rx) = mpsc::unbounded_channel();
+        self.bg_receiver = Some(rx);
 
-        // Auto-scroll to bottom
-        self.scroll = self.messages.len().saturating_sub(1);
-
-        Ok(())
-    }
-
-    async fn process_with_agent(&mut self, input: &str) -> Result<String> {
-        use crate::tui::{parse_tool_calls, tools_description, ToolExecutor};
-
-        // Build context from recent messages
-        let messages: Vec<AgentMessage> = self
+        // Clone what we need for the background task
+        let settings = self.settings.clone();
+        let messages_for_context: Vec<AgentMessage> = self
             .messages
             .iter()
             .filter(|m| matches!(m.role, MessageRole::User | MessageRole::Assistant))
-            .take(10) // Last 10 messages for context
+            .filter(|m| !m.is_streaming) // Exclude the placeholder
+            .take(10)
             .map(|m| AgentMessage {
                 role: m.role.clone(),
                 content: m.content.clone(),
@@ -318,18 +344,65 @@ impl TuiApp {
             })
             .collect();
 
-        // Add screen context if watching
-        let mut context = input.to_string();
-        if self.screen_watching {
-            if let Some(watcher) = &self.screen_watcher {
-                if let Some(desc) = watcher.get_current_description() {
-                    context = format!("[Current screen: {}]\n\n{}", desc, input);
+        let screen_context = if self.screen_watching {
+            self.screen_watcher
+                .as_ref()
+                .and_then(|w| w.get_current_description())
+        } else {
+            None
+        };
+
+        let conversation_id = self.conversation_id.clone();
+
+        // Spawn background task for API call
+        tokio::spawn(async move {
+            let result = Self::process_in_background(
+                settings,
+                messages_for_context,
+                user_input,
+                screen_context,
+                conversation_id,
+            )
+            .await;
+
+            match result {
+                Ok(response) => {
+                    let _ = tx.send(BackgroundMessage::Response {
+                        msg_id: assistant_msg_id,
+                        content: response,
+                    });
+                }
+                Err(e) => {
+                    let _ = tx.send(BackgroundMessage::Error {
+                        msg_id: assistant_msg_id,
+                        error: e.to_string(),
+                    });
                 }
             }
-        }
+        });
+
+        Ok(())
+    }
+
+    /// Process message in background (static method to avoid borrowing issues)
+    async fn process_in_background(
+        settings: Settings,
+        context_messages: Vec<AgentMessage>,
+        user_input: String,
+        screen_context: Option<String>,
+        _conversation_id: String,
+    ) -> Result<String> {
+        use crate::tui::tools_description;
+
+        // Add screen context if available
+        let context = if let Some(desc) = screen_context {
+            format!("[Current screen: {}]\n\n{}", desc, user_input)
+        } else {
+            user_input
+        };
 
         // Create inference request
-        let backend = create_backend(&self.settings).await?;
+        let backend = create_backend(&settings).await?;
 
         // Build system prompt with tools
         let system_prompt = format!(
@@ -346,7 +419,7 @@ impl TuiApp {
             content: system_prompt,
             metadata: None,
         }];
-        all_messages.extend(messages);
+        all_messages.extend(context_messages);
         all_messages.push(AgentMessage {
             role: MessageRole::User,
             content: context,
@@ -354,8 +427,8 @@ impl TuiApp {
         });
 
         let request = InferenceRequest {
-            model: self.settings.get_default_model(),
-            messages: all_messages.clone(),
+            model: settings.get_default_model(),
+            messages: all_messages,
             temperature: 0.7,
             max_tokens: 2048,
             stop: vec![],
@@ -363,105 +436,9 @@ impl TuiApp {
         };
 
         let response = backend.infer(request).await?;
-        let mut final_response = response.content.clone();
-
-        // Check for tool calls and execute them
-        let tool_calls = parse_tool_calls(&response.content);
-        if !tool_calls.is_empty() {
-            let executor = ToolExecutor::new();
-
-            // Update the current message to show tool calls
-            if let Some(msg) = self.messages.last_mut() {
-                for tool in &tool_calls {
-                    msg.tool_calls.push(ToolCall {
-                        name: tool.name.clone(),
-                        status: ToolStatus::Running,
-                        result: None,
-                    });
-                }
-            }
-
-            // Execute each tool
-            let mut tool_results = Vec::new();
-            for (i, tool) in tool_calls.iter().enumerate() {
-                self.status = format!("Running {}...", tool.name);
-
-                let result = executor.execute(tool).await;
-
-                // Update tool status in message
-                if let Some(msg) = self.messages.last_mut() {
-                    if let Some(tc) = msg.tool_calls.get_mut(i) {
-                        match &result {
-                            Ok(r) if r.success => {
-                                tc.status = ToolStatus::Success;
-                                tc.result = Some(r.output.clone());
-                            }
-                            Ok(r) => {
-                                tc.status = ToolStatus::Failed;
-                                tc.result = r.error.clone();
-                            }
-                            Err(e) => {
-                                tc.status = ToolStatus::Failed;
-                                tc.result = Some(e.to_string());
-                            }
-                        }
-                    }
-                }
-
-                if let Ok(r) = result {
-                    tool_results.push(format!(
-                        "[{} result: {}]",
-                        tool.name,
-                        if r.success {
-                            &r.output
-                        } else {
-                            r.error.as_deref().unwrap_or("Failed")
-                        }
-                    ));
-                }
-            }
-
-            // If tools were executed, get a follow-up response with results
-            if !tool_results.is_empty() {
-                all_messages.push(AgentMessage {
-                    role: MessageRole::Assistant,
-                    content: response.content.clone(),
-                    metadata: None,
-                });
-                all_messages.push(AgentMessage {
-                    role: MessageRole::User,
-                    content: format!("Tool results:\n{}", tool_results.join("\n")),
-                    metadata: None,
-                });
-
-                let follow_up_request = InferenceRequest {
-                    model: self.settings.get_default_model(),
-                    messages: all_messages,
-                    temperature: 0.7,
-                    max_tokens: 2048,
-                    stop: vec![],
-                    stream: false,
-                };
-
-                if let Ok(follow_up) = backend.infer(follow_up_request).await {
-                    final_response = format!("{}\n\n{}", response.content, follow_up.content);
-                }
-            }
-        }
-
-        // Save to memory
-        self.memory
-            .add_message(&self.conversation_id, "user", input, None, None)?;
-        self.memory.add_message(
-            &self.conversation_id,
-            "assistant",
-            &final_response,
-            None,
-            None,
-        )?;
-
-        Ok(final_response)
+        Ok(response.content)
     }
+
 
     async fn handle_command(&mut self, cmd: &str) -> Result<()> {
         let parts: Vec<&str> = cmd.split_whitespace().collect();
