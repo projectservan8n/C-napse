@@ -22,7 +22,7 @@ const MENU_ITEMS: MenuItem[] = [
 
   // Settings
   { command: '/config', description: 'Show/edit configuration', category: 'settings' },
-  { command: '/watch', shortcut: 'Ctrl+W', description: 'Toggle screen watching', category: 'settings' },
+  { command: '/watch', shortcut: 'Ctrl+E', description: 'Toggle screen watching', category: 'settings' },
   { command: '/model', description: 'Change AI model', category: 'settings' },
   { command: '/provider', shortcut: 'Ctrl+P', description: 'Change AI provider', category: 'settings' },
 ];

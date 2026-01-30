@@ -39,11 +39,12 @@ export function App() {
     if (key.ctrl && inputChar === 'l') chat.clearMessages();
     if (key.ctrl && inputChar === 'h') setOverlay('help');
     if (key.ctrl && inputChar === 'p') setOverlay('provider');
-    if (key.ctrl && inputChar === 'w') {
+    // Note: Ctrl+W avoided - conflicts with terminal close
+    if (key.ctrl && inputChar === 'e') {
       setScreenWatch(prev => {
         const newState = !prev;
         chat.addSystemMessage(newState
-          ? '🖥️ Screen watching enabled.'
+          ? '🖥️ Screen watching enabled (Ctrl+E to toggle)'
           : '🖥️ Screen watching disabled.'
         );
         return newState;
