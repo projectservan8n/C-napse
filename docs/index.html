@@ -782,26 +782,13 @@
                     </p>
 
                     <div class="install-section">
-                        <div class="install-tabs">
-                            <button class="install-tab active" data-target="windows">Windows</button>
-                            <button class="install-tab" data-target="macos">macOS</button>
-                            <button class="install-tab" data-target="linux">Linux</button>
+                        <div class="install-box active" id="npm-install" style="display: flex;">
+                            <code>npm install -g @projectservan8n/cnapse</code>
+                            <button class="copy-btn" onclick="copyInstall('npm-install')">Copy</button>
                         </div>
-
-                        <div class="install-box active" id="windows">
-                            <code>irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex</code>
-                            <button class="copy-btn" onclick="copyInstall('windows')">Copy</button>
-                        </div>
-
-                        <div class="install-box" id="macos">
-                            <code style="color: var(--text-muted);">Coming soon — Windows-first for now</code>
-                            <button class="copy-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Soon</button>
-                        </div>
-
-                        <div class="install-box" id="linux">
-                            <code style="color: var(--text-muted);">Coming soon — Windows-first for now</code>
-                            <button class="copy-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Soon</button>
-                        </div>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 12px;">
+                            Windows-first for now. macOS/Linux support coming soon.
+                        </p>
                     </div>
                 </div>
             </div>

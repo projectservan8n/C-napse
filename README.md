@@ -30,21 +30,14 @@ C-napse is an agentic CLI that orchestrates specialized AI agents to control and
 
 ## Installation
 
-### One Command Install
-
-**Windows (PowerShell):**
-```powershell
-irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex
-```
-
-**macOS / Linux:** *Coming soon — Windows-first for now*
-
-### Or via npm
+### Install
 
 ```bash
 npm install -g @projectservan8n/cnapse
 npx playwright install chromium  # For browser features
 ```
+
+> **Note:** Windows-first for now. macOS/Linux support coming soon.
 
 ## Quick Start
 
