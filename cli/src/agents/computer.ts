@@ -16,7 +16,13 @@ Available tools:
 - getActiveWindow() - Get info about the currently focused window
 - listWindows() - List all open windows
 - focusWindow(title) - Focus a window by title (partial match)
+- minimizeWindow(title?) - Minimize a window by title, or active window if no title
+- maximizeWindow(title?) - Maximize a window by title, or active window if no title
+- closeWindow(title?) - Close a window by title, or active window if no title
+- restoreWindow(title) - Restore a minimized window by title
 - scrollMouse(amount) - Scroll mouse wheel (positive=up, negative=down)
+- dragMouse(startX, startY, endX, endY) - Drag mouse from one point to another
+- getMousePosition() - Get current mouse position
 
 Guidelines:
 1. Always confirm dangerous actions (like closing windows with unsaved work)
@@ -24,6 +30,13 @@ Guidelines:
 3. Wait briefly between actions to let the UI update
 4. Report what you see/do at each step
 5. If something fails, try alternative approaches
+
+Window control examples:
+- minimizeWindow("Visual Studio Code") - Minimize VS Code
+- minimizeWindow() - Minimize the currently active window
+- maximizeWindow("Chrome") - Maximize Chrome
+- closeWindow("Notepad") - Close Notepad
+- restoreWindow("Discord") - Restore minimized Discord
 
 Common keyboard shortcuts:
 - Copy: control+c
@@ -52,6 +65,10 @@ When asked to open an application:
     'getActiveWindow',
     'listWindows',
     'focusWindow',
+    'minimizeWindow',
+    'maximizeWindow',
+    'closeWindow',
+    'restoreWindow',
     'scrollMouse',
     'dragMouse',
     'getMousePosition',

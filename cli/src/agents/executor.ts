@@ -114,6 +114,14 @@ export async function executeTool(call: ToolCall): Promise<ToolResult> {
         return await computer.listWindows();
       case 'focusWindow':
         return await computer.focusWindow(args.title as string);
+      case 'minimizeWindow':
+        return await computer.minimizeWindow(args.title as string | undefined);
+      case 'maximizeWindow':
+        return await computer.maximizeWindow(args.title as string | undefined);
+      case 'closeWindow':
+        return await computer.closeWindow(args.title as string | undefined);
+      case 'restoreWindow':
+        return await computer.restoreWindow(args.title as string);
       case 'scrollMouse':
         return await computer.scrollMouse(args.amount as number);
       case 'dragMouse':

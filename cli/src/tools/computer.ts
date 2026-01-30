@@ -289,6 +289,188 @@ export async function focusWindow(title: string): Promise<ToolResult> {
 }
 
 /**
+ * Minimize a window by title (or active window if no title)
+ */
+export async function minimizeWindow(title?: string): Promise<ToolResult> {
+  try {
+    if (process.platform === 'win32') {
+      if (title) {
+        const escaped = title.replace(/'/g, "''");
+        const script = `
+$proc = Get-Process | Where-Object { $_.MainWindowTitle -like '*${escaped}*' -and $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+if ($proc) {
+    Add-Type @"
+    using System;
+    using System.Runtime.InteropServices;
+    public class Win32 {
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    }
+"@
+    [Win32]::ShowWindow($proc.MainWindowHandle, 6)
+    Write-Output "Minimized: $($proc.MainWindowTitle)"
+} else {
+    Write-Output "NOT_FOUND"
+}`;
+        const { stdout } = await execAsync(`powershell -Command "${script.replace(/\n/g, ' ')}"`, { shell: 'cmd.exe' });
+        if (stdout.includes('NOT_FOUND')) {
+          return err(`Window containing "${title}" not found`);
+        }
+        return ok(stdout.trim());
+      } else {
+        // Minimize active window using Alt+Space, N
+        await execAsync(`powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('% n')"`, { shell: 'cmd.exe' });
+        return ok('Minimized active window');
+      }
+    } else if (process.platform === 'darwin') {
+      if (title) {
+        await execAsync(`osascript -e 'tell application "${title}" to set miniaturized of window 1 to true'`);
+      } else {
+        await execAsync(`osascript -e 'tell application "System Events" to keystroke "m" using command down'`);
+      }
+      return ok(`Minimized window${title ? `: ${title}` : ''}`);
+    } else {
+      if (title) {
+        await execAsync(`wmctrl -r "${title}" -b add,hidden`);
+      } else {
+        await execAsync(`xdotool getactivewindow windowminimize`);
+      }
+      return ok(`Minimized window${title ? `: ${title}` : ''}`);
+    }
+  } catch (error) {
+    return err(`Failed to minimize window: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Maximize a window by title (or active window if no title)
+ */
+export async function maximizeWindow(title?: string): Promise<ToolResult> {
+  try {
+    if (process.platform === 'win32') {
+      if (title) {
+        const escaped = title.replace(/'/g, "''");
+        const script = `
+$proc = Get-Process | Where-Object { $_.MainWindowTitle -like '*${escaped}*' -and $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+if ($proc) {
+    Add-Type @"
+    using System;
+    using System.Runtime.InteropServices;
+    public class Win32 {
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    }
+"@
+    [Win32]::ShowWindow($proc.MainWindowHandle, 3)
+    Write-Output "Maximized: $($proc.MainWindowTitle)"
+} else {
+    Write-Output "NOT_FOUND"
+}`;
+        const { stdout } = await execAsync(`powershell -Command "${script.replace(/\n/g, ' ')}"`, { shell: 'cmd.exe' });
+        if (stdout.includes('NOT_FOUND')) {
+          return err(`Window containing "${title}" not found`);
+        }
+        return ok(stdout.trim());
+      } else {
+        // Maximize active window using Alt+Space, X
+        await execAsync(`powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('% x')"`, { shell: 'cmd.exe' });
+        return ok('Maximized active window');
+      }
+    } else if (process.platform === 'darwin') {
+      if (title) {
+        await execAsync(`osascript -e 'tell application "${title}" to set zoomed of window 1 to true'`);
+      } else {
+        await execAsync(`osascript -e 'tell application "System Events" to keystroke "f" using {control down, command down}'`);
+      }
+      return ok(`Maximized window${title ? `: ${title}` : ''}`);
+    } else {
+      if (title) {
+        await execAsync(`wmctrl -r "${title}" -b add,maximized_vert,maximized_horz`);
+      } else {
+        await execAsync(`wmctrl -r :ACTIVE: -b add,maximized_vert,maximized_horz`);
+      }
+      return ok(`Maximized window${title ? `: ${title}` : ''}`);
+    }
+  } catch (error) {
+    return err(`Failed to maximize window: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Close a window by title (or active window if no title)
+ */
+export async function closeWindow(title?: string): Promise<ToolResult> {
+  try {
+    if (process.platform === 'win32') {
+      if (title) {
+        const escaped = title.replace(/'/g, "''");
+        await execAsync(`powershell -Command "Get-Process | Where-Object { $_.MainWindowTitle -like '*${escaped}*' } | ForEach-Object { $_.CloseMainWindow() }"`, { shell: 'cmd.exe' });
+        return ok(`Closed window: ${title}`);
+      } else {
+        await execAsync(`powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('%{F4}')"`, { shell: 'cmd.exe' });
+        return ok('Closed active window');
+      }
+    } else if (process.platform === 'darwin') {
+      if (title) {
+        await execAsync(`osascript -e 'tell application "${title}" to close window 1'`);
+      } else {
+        await execAsync(`osascript -e 'tell application "System Events" to keystroke "w" using command down'`);
+      }
+      return ok(`Closed window${title ? `: ${title}` : ''}`);
+    } else {
+      if (title) {
+        await execAsync(`wmctrl -c "${title}"`);
+      } else {
+        await execAsync(`xdotool getactivewindow windowclose`);
+      }
+      return ok(`Closed window${title ? `: ${title}` : ''}`);
+    }
+  } catch (error) {
+    return err(`Failed to close window: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Restore a minimized window by title
+ */
+export async function restoreWindow(title: string): Promise<ToolResult> {
+  try {
+    if (process.platform === 'win32') {
+      const escaped = title.replace(/'/g, "''");
+      const script = `
+$proc = Get-Process | Where-Object { $_.MainWindowTitle -like '*${escaped}*' -and $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+if ($proc) {
+    Add-Type @"
+    using System;
+    using System.Runtime.InteropServices;
+    public class Win32 {
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    }
+"@
+    [Win32]::ShowWindow($proc.MainWindowHandle, 9)
+    Write-Output "Restored: $($proc.MainWindowTitle)"
+} else {
+    Write-Output "NOT_FOUND"
+}`;
+      const { stdout } = await execAsync(`powershell -Command "${script.replace(/\n/g, ' ')}"`, { shell: 'cmd.exe' });
+      if (stdout.includes('NOT_FOUND')) {
+        return err(`Window containing "${title}" not found`);
+      }
+      return ok(stdout.trim());
+    } else if (process.platform === 'darwin') {
+      await execAsync(`osascript -e 'tell application "${title}" to set miniaturized of window 1 to false'`);
+      return ok(`Restored window: ${title}`);
+    } else {
+      await execAsync(`wmctrl -r "${title}" -b remove,hidden`);
+      return ok(`Restored window: ${title}`);
+    }
+  } catch (error) {
+    return err(`Failed to restore window: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Scroll mouse wheel
  */
 export async function scrollMouse(amount: number): Promise<ToolResult> {
@@ -383,6 +565,10 @@ export function getComputerTools() {
     getActiveWindow,
     listWindows,
     focusWindow,
+    minimizeWindow,
+    maximizeWindow,
+    closeWindow,
+    restoreWindow,
     scrollMouse,
     dragMouse,
     getMousePosition,
@@ -435,6 +621,26 @@ export const computerTools = [
     name: 'focusWindow',
     description: 'Focus a window by title',
     parameters: { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] },
+  },
+  {
+    name: 'minimizeWindow',
+    description: 'Minimize a window by title (or active window if no title given)',
+    parameters: { type: 'object', properties: { title: { type: 'string', description: 'Window title to minimize (partial match). Leave empty for active window.' } } },
+  },
+  {
+    name: 'maximizeWindow',
+    description: 'Maximize a window by title (or active window if no title given)',
+    parameters: { type: 'object', properties: { title: { type: 'string', description: 'Window title to maximize (partial match). Leave empty for active window.' } } },
+  },
+  {
+    name: 'closeWindow',
+    description: 'Close a window by title (or active window if no title given)',
+    parameters: { type: 'object', properties: { title: { type: 'string', description: 'Window title to close (partial match). Leave empty for active window.' } } },
+  },
+  {
+    name: 'restoreWindow',
+    description: 'Restore a minimized window by title',
+    parameters: { type: 'object', properties: { title: { type: 'string', description: 'Window title to restore (partial match)' } }, required: ['title'] },
   },
   {
     name: 'scrollMouse',
