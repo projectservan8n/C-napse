@@ -22,7 +22,8 @@
       "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git commit -m ''Apply cargo fmt to fix code formatting\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")",
       "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git push origin main\")",
       "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix fastembed/ort TLS feature requirement for CI\n\nAdd tls-rustls feature to ort dependency to fix download-binaries\ncompilation error in CI when using --all-features.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")",
-      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix ort version to use prerelease 2.0.0-rc.11\n\nThe ort crate v2 is still in release candidate, so we need to\nspecify the exact prerelease version explicitly.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")"
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix ort version to use prerelease 2.0.0-rc.11\n\nThe ort crate v2 is still in release candidate, so we need to\nspecify the exact prerelease version explicitly.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")",
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix CI to not use --all-features due to fastembed/ort incompatibility\n\nThe embeddings feature uses fastembed which has complex ONNX runtime\ndependencies that are not compatible when mixed with explicit ort\nversions. Updated CI to use default features only, and upgraded\nfastembed to v4 which has better ort compatibility.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")"
     ]
   }
 }
