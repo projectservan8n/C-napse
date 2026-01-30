@@ -14,6 +14,14 @@ default-run = "cnapse"
 name = "cnapse"
 path = "src/main.rs"
 
+[[bin]]
+name = "cn"
+path = "src/main.rs"
+
+[[bin]]
+name = "c"
+path = "src/main.rs"
+
 [dependencies]
 # CLI Framework
 clap = { version = "4", features = ["derive", "env", "cargo"] }
