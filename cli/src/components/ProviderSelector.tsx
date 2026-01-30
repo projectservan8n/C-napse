@@ -54,10 +54,10 @@ const PROVIDERS: ProviderConfig[] = [
     description: 'Many models, budget-friendly',
     needsApiKey: true,
     models: [
-      { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen Coder 32B ($0.07/1M)', recommended: true },
-      { id: 'qwen/qwen-2-vl-7b-instruct', name: 'Qwen 2 VL (FREE vision)' },
+      { id: 'openai/gpt-5-nano', name: 'GPT-5 Nano ($0.05/1M) + Vision', recommended: true },
+      { id: 'google/gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite ($0.10/1M)' },
+      { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen Coder 32B ($0.07/1M)' },
       { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B ($0.10/1M)' },
-      { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (free tier)' },
       { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3 ($0.14/1M)' },
     ],
   },

@@ -15,10 +15,10 @@ const PROVIDERS = [
 const DEFAULT_MODELS: Record<string, string[]> = {
   ollama: ['qwen2.5:0.5b', 'qwen2.5:7b', 'llama3.2:3b', 'codellama:7b'],
   openrouter: [
-    'qwen/qwen-2.5-coder-32b-instruct',  // $0.07/1M - Best value!
-    'qwen/qwen-2-vl-7b-instruct',         // FREE - Vision model
+    'openai/gpt-5-nano',                  // $0.05/1M - Best budget + vision!
+    'google/gemini-2.5-flash-lite',       // $0.10/1M - Fast reasoning
+    'qwen/qwen-2.5-coder-32b-instruct',   // $0.07/1M - Best for coding
     'meta-llama/llama-3.3-70b-instruct',  // $0.10/1M
-    'google/gemini-2.0-flash-001',        // Free tier
   ],
   anthropic: [
     'claude-3-5-sonnet-20241022',
