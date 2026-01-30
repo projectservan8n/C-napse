@@ -53,12 +53,12 @@ const PROVIDERS: ProviderConfig[] = [
     description: 'Many models, pay-per-use, great value',
     needsApiKey: true,
     models: [
-      { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', description: 'Best for coding, very cheap', recommended: true },
-      { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', description: 'Best overall quality' },
-      { id: 'openai/gpt-4o', name: 'GPT-4o', description: 'Fast, multimodal' },
-      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', description: 'Cheap, fast, good quality' },
-      { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5', description: 'Long context, fast' },
-      { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', description: 'Open source, powerful' },
+      { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', description: 'Best value! $0.07/1M tokens', recommended: true },
+      { id: 'qwen/qwen-2-vl-7b-instruct', name: 'Qwen 2 VL 7B', description: 'FREE! Vision model' },
+      { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', description: 'Powerful, $0.10/1M tokens' },
+      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', description: 'Fast, $0.15/1M tokens' },
+      { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', description: 'Free tier available' },
+      { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', description: 'Cheap, $0.14/1M tokens' },
     ],
   },
   {

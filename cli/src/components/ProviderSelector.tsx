@@ -51,14 +51,14 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'openrouter',
     name: 'OpenRouter',
-    description: 'Many models, pay-per-use',
+    description: 'Many models, budget-friendly',
     needsApiKey: true,
     models: [
-      { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen Coder 32B', recommended: true },
-      { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
-      { id: 'openai/gpt-4o', name: 'GPT-4o' },
-      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini' },
-      { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5' },
+      { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen Coder 32B ($0.07/1M)', recommended: true },
+      { id: 'qwen/qwen-2-vl-7b-instruct', name: 'Qwen 2 VL (FREE vision)' },
+      { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B ($0.10/1M)' },
+      { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (free tier)' },
+      { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3 ($0.14/1M)' },
     ],
   },
   {

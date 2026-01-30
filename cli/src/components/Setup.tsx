@@ -15,17 +15,16 @@ const PROVIDERS = [
 const DEFAULT_MODELS: Record<string, string[]> = {
   ollama: ['qwen2.5:0.5b', 'qwen2.5:7b', 'llama3.2:3b', 'codellama:7b'],
   openrouter: [
-    'qwen/qwen-2.5-coder-32b-instruct',
-    'anthropic/claude-3.5-sonnet',
-    'openai/gpt-4o',
-    'google/gemini-pro-1.5',
+    'qwen/qwen-2.5-coder-32b-instruct',  // $0.07/1M - Best value!
+    'qwen/qwen-2-vl-7b-instruct',         // FREE - Vision model
+    'meta-llama/llama-3.3-70b-instruct',  // $0.10/1M
+    'google/gemini-2.0-flash-001',        // Free tier
   ],
   anthropic: [
     'claude-3-5-sonnet-20241022',
-    'claude-3-opus-20240229',
     'claude-3-haiku-20240307',
   ],
-  openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+  openai: ['gpt-4o-mini', 'gpt-3.5-turbo'],
 };
 
 export function Setup() {
