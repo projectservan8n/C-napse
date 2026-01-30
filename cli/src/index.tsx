@@ -13,23 +13,26 @@ async function main() {
 
     switch (command) {
       case 'auth': {
-        const provider = args[1] as 'openrouter' | 'anthropic' | 'openai';
+        const provider = args[1] as 'openrouter' | 'anthropic' | 'openai' | 'telegram';
         const key = args[2];
 
         if (!provider || !key) {
           console.log('Usage: cnapse auth <provider> <api-key>');
-          console.log('Providers: openrouter, anthropic, openai');
+          console.log('Providers: openrouter, anthropic, openai, telegram');
           process.exit(1);
         }
 
-        if (!['openrouter', 'anthropic', 'openai'].includes(provider)) {
+        if (!['openrouter', 'anthropic', 'openai', 'telegram'].includes(provider)) {
           console.log(`Invalid provider: ${provider}`);
-          console.log('Valid providers: openrouter, anthropic, openai');
+          console.log('Valid providers: openrouter, anthropic, openai, telegram');
           process.exit(1);
         }
 
         setApiKey(provider, key);
         console.log(`✓ ${provider} API key saved`);
+        if (provider === 'telegram') {
+          console.log('Start the bot with: cnapse, then /telegram or Ctrl+T');
+        }
         process.exit(0);
       }
 
@@ -84,32 +87,60 @@ async function main() {
       case 'help':
       case '--help':
       case '-h': {
+        // Colorful help using ANSI escape codes
+        const cyan = '\x1b[36m';
+        const green = '\x1b[32m';
+        const yellow = '\x1b[33m';
+        const magenta = '\x1b[35m';
+        const bold = '\x1b[1m';
+        const dim = '\x1b[2m';
+        const reset = '\x1b[0m';
+
         console.log(`
-C-napse - Autonomous PC Intelligence
+${cyan}${bold}╔═══════════════════════════════════════════════════════════╗
+║                                                               ║
+║   ${magenta}██████╗      ${cyan}███╗   ██╗ █████╗ ██████╗ ███████╗███████╗${reset}${cyan}${bold}   ║
+║   ${magenta}██╔════╝      ${cyan}████╗  ██║██╔══██╗██╔══██╗██╔════╝██╔════╝${reset}${cyan}${bold}   ║
+║   ${magenta}██║     █████╗${cyan}██╔██╗ ██║███████║██████╔╝███████╗█████╗${reset}${cyan}${bold}     ║
+║   ${magenta}██║     ╚════╝${cyan}██║╚██╗██║██╔══██║██╔═══╝ ╚════██║██╔══╝${reset}${cyan}${bold}     ║
+║   ${magenta}╚██████╗      ${cyan}██║ ╚████║██║  ██║██║     ███████║███████╗${reset}${cyan}${bold}   ║
+║   ${magenta} ╚═════╝      ${cyan}╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝     ╚══════╝╚══════╝${reset}${cyan}${bold}   ║
+║                                                               ║
+║              ${reset}${dim}Autonomous PC Intelligence${reset}${cyan}${bold}                     ║
+╚═══════════════════════════════════════════════════════════╝${reset}
 
-Usage:
-  cnapse                     Start interactive chat
-  cnapse init                Interactive setup wizard
-  cnapse config              Interactive configuration
-  cnapse config show         Show current configuration
-  cnapse config set <k> <v>  Set config value
-  cnapse auth <provider> <key>  Set API key
-  cnapse help                Show this help
+${yellow}${bold}USAGE${reset}
+  ${green}cnapse${reset}                        Start interactive chat
+  ${green}cnapse init${reset}                   Interactive setup wizard
+  ${green}cnapse config${reset}                 Interactive configuration
+  ${green}cnapse config show${reset}            Show current configuration
+  ${green}cnapse auth <provider> <key>${reset}  Set API key
+  ${green}cnapse help${reset}                   Show this help
 
-Providers:
-  ollama      - Local AI (default, free)
-  openrouter  - OpenRouter API (many models)
-  anthropic   - Anthropic Claude
-  openai      - OpenAI GPT
+${yellow}${bold}PROVIDERS${reset}
+  ${cyan}ollama${reset}      Local AI ${dim}(default, free, private)${reset}
+  ${cyan}openrouter${reset}  OpenRouter API ${dim}(many models, pay-per-use)${reset}
+  ${cyan}anthropic${reset}   Anthropic Claude ${dim}(best reasoning)${reset}
+  ${cyan}openai${reset}      OpenAI GPT ${dim}(reliable)${reset}
+  ${cyan}telegram${reset}    Telegram bot token ${dim}(remote control)${reset}
 
-Quick Start:
-  cnapse init                # Interactive setup
-  cnapse config              # Change provider/model
+${yellow}${bold}QUICK START${reset}
+  ${dim}# Interactive setup - easiest way${reset}
+  ${green}cnapse init${reset}
 
-Manual Setup:
-  cnapse auth openrouter sk-or-xxxxx
-  cnapse config set provider openrouter
-  cnapse config set model qwen/qwen-2.5-coder-32b-instruct
+  ${dim}# Manual setup with OpenRouter${reset}
+  ${green}cnapse auth openrouter sk-or-v1-xxxxx${reset}
+  ${green}cnapse config set provider openrouter${reset}
+
+  ${dim}# Add Telegram for remote control${reset}
+  ${green}cnapse auth telegram YOUR_BOT_TOKEN${reset}
+
+${yellow}${bold}IN-APP SHORTCUTS${reset}
+  ${cyan}Ctrl+H${reset}  Help menu       ${cyan}Ctrl+P${reset}  Change provider
+  ${cyan}Ctrl+E${reset}  Screen watch    ${cyan}Ctrl+T${reset}  Toggle Telegram
+  ${cyan}Ctrl+L${reset}  Clear chat      ${cyan}Ctrl+C${reset}  Exit
+
+${dim}GitHub: https://github.com/projectservan8n/C-napse${reset}
 `);
         process.exit(0);
       }
