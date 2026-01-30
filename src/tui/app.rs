@@ -348,6 +348,7 @@ impl TuiApp {
             self.screen_watcher
                 .as_ref()
                 .and_then(|w| w.get_current_description())
+                .map(|s| s.to_string())
         } else {
             None
         };
