@@ -5,7 +5,9 @@ import { ChatMessage } from './ChatMessage.js';
 import { ChatInput } from './ChatInput.js';
 import { StatusBar } from './StatusBar.js';
 import { HelpMenu } from './HelpMenu.js';
+import { ProviderSelector } from './ProviderSelector.js';
 import { chat, Message } from '../lib/api.js';
+import { getConfig } from '../lib/config.js';
 import { getScreenDescription } from '../lib/screen.js';
 import { describeScreen } from '../lib/vision.js';
 import { getTelegramBot, TelegramMessage } from '../services/telegram.js';
@@ -35,6 +37,7 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [screenWatch, setScreenWatch] = useState(false);
   const [showHelpMenu, setShowHelpMenu] = useState(false);
+  const [showProviderSelector, setShowProviderSelector] = useState(false);
   const [telegramEnabled, setTelegramEnabled] = useState(false);
   const screenContextRef = useRef<string | null>(null);
 
@@ -59,8 +62,8 @@ export function App() {
   }, [screenWatch]);
 
   useInput((inputChar, key) => {
-    // If help menu is open, don't process other shortcuts
-    if (showHelpMenu) {
+    // If any menu is open, don't process other shortcuts
+    if (showHelpMenu || showProviderSelector) {
       return;
     }
 
@@ -95,6 +98,9 @@ export function App() {
         );
         return newState;
       });
+    }
+    if (key.ctrl && inputChar === 'p') {
+      setShowProviderSelector(true);
     }
   });
 
@@ -215,14 +221,20 @@ export function App() {
           addSystemMessage('Usage: /task <description>\nExample: /task open notepad and type hello');
         }
         break;
-      case 'config':
-        addSystemMessage('⚙️ Configuration:\n  Provider: Use cnapse config\n  Model: Use cnapse config set model <name>');
+      case 'config': {
+        const config = getConfig();
+        addSystemMessage(
+          `⚙️ Current Configuration:\n` +
+          `  Provider: ${config.provider}\n` +
+          `  Model: ${config.model}\n` +
+          `  Ollama Host: ${config.ollamaHost}\n\n` +
+          `Use /provider to change provider/model`
+        );
         break;
+      }
       case 'model':
-        addSystemMessage('🤖 Model selection coming soon.\nUse: cnapse config set model <name>');
-        break;
       case 'provider':
-        addSystemMessage('🔌 Provider selection coming soon.\nUse: cnapse config set provider <name>');
+        setShowProviderSelector(true);
         break;
       case 'quit':
       case 'exit':
@@ -236,6 +248,10 @@ export function App() {
   const handleHelpMenuSelect = (command: string) => {
     // Execute the selected command
     handleCommand(command);
+  };
+
+  const handleProviderSelect = (provider: string, model: string) => {
+    addSystemMessage(`✅ Configuration updated:\n  Provider: ${provider}\n  Model: ${model}`);
   };
 
   const handleScreenCommand = async () => {
@@ -359,6 +375,18 @@ export function App() {
         <HelpMenu
           onClose={() => setShowHelpMenu(false)}
           onSelect={handleHelpMenuSelect}
+        />
+      </Box>
+    );
+  }
+
+  // If provider selector is open, show it as overlay
+  if (showProviderSelector) {
+    return (
+      <Box flexDirection="column" height="100%" alignItems="center" justifyContent="center">
+        <ProviderSelector
+          onClose={() => setShowProviderSelector(false)}
+          onSelect={handleProviderSelect}
         />
       </Box>
     );
