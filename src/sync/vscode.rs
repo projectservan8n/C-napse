@@ -13,12 +13,6 @@ pub struct VscodeWorkspace {
 }
 
 /// Helper to get process name as string (cross-platform)
-#[cfg(windows)]
-fn get_process_name(process: &sysinfo::Process) -> String {
-    process.name().to_string_lossy().to_string()
-}
-
-#[cfg(not(windows))]
 fn get_process_name(process: &sysinfo::Process) -> String {
     process.name().to_string()
 }

@@ -121,9 +121,7 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
                     done: true,
                 };
                 let _ = sender
-                    .send(Message::Text(
-                        serde_json::to_string(&response).unwrap(),
-                    ))
+                    .send(Message::Text(serde_json::to_string(&response).unwrap()))
                     .await;
             }
 
@@ -155,9 +153,7 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
                     done: true,
                 };
                 let _ = sender
-                    .send(Message::Text(
-                        serde_json::to_string(&response).unwrap(),
-                    ))
+                    .send(Message::Text(serde_json::to_string(&response).unwrap()))
                     .await;
             }
 
@@ -171,9 +167,7 @@ async fn handle_socket(socket: WebSocket, token: Option<String>) {
                     done: true,
                 };
                 let _ = sender
-                    .send(Message::Text(
-                        serde_json::to_string(&response).unwrap(),
-                    ))
+                    .send(Message::Text(serde_json::to_string(&response).unwrap()))
                     .await;
             }
         }

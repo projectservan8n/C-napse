@@ -4,13 +4,6 @@ use super::ToolResult;
 use sysinfo::{Pid, ProcessStatus, System};
 
 /// Helper to get process name as string (cross-platform)
-/// On Windows, name() returns &OsStr, on Unix it returns &str
-#[cfg(windows)]
-fn get_process_name(process: &sysinfo::Process) -> String {
-    process.name().to_string_lossy().to_string()
-}
-
-#[cfg(not(windows))]
 fn get_process_name(process: &sysinfo::Process) -> String {
     process.name().to_string()
 }
