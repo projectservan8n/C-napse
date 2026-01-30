@@ -23,7 +23,29 @@
       "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git push origin main\")",
       "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix fastembed/ort TLS feature requirement for CI\n\nAdd tls-rustls feature to ort dependency to fix download-binaries\ncompilation error in CI when using --all-features.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")",
       "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix ort version to use prerelease 2.0.0-rc.11\n\nThe ort crate v2 is still in release candidate, so we need to\nspecify the exact prerelease version explicitly.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")",
-      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix CI to not use --all-features due to fastembed/ort incompatibility\n\nThe embeddings feature uses fastembed which has complex ONNX runtime\ndependencies that are not compatible when mixed with explicit ort\nversions. Updated CI to use default features only, and upgraded\nfastembed to v4 which has better ort compatibility.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")"
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git add -A; git commit -m ''Fix CI to not use --all-features due to fastembed/ort incompatibility\n\nThe embeddings feature uses fastembed which has complex ONNX runtime\ndependencies that are not compatible when mixed with explicit ort\nversions. Updated CI to use default features only, and upgraded\nfastembed to v4 which has better ort compatibility.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")",
+      "Bash(powershell.exe -NoProfile -Command \"Set-Location ''e:\\\\C-napse''; git commit -m ''Fix all clippy warnings and errors\n\n- Fix unused variables by prefixing with underscore\n- Add ExposeSecret import to credentials test module\n- Remove unused mut in openrouter\n- Add #[allow\\(dead_code\\)] for placeholder structs/fields\n- Use #[derive\\(Default\\)] instead of manual Default impls\n- Change &PathBuf to &Path in function signatures\n- Use .next_back\\(\\) instead of .last\\(\\) for DoubleEndedIterator\n- Use .copied\\(\\) instead of .map\\(|s| *s\\) for map_clone\n- Remove .into\\(\\) for useless conversions\n- Remove wildcard in or patterns\n- Use .map\\(\\) instead of .and_then\\(|x| Some\\(y\\)\\)\n- Derive Default for ToolExecutor\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>''\")",
+      "Bash(cargo clippy:*)",
+      "Bash(git -C \"e:/C-napse\" add .github/workflows/release.yml install.sh)",
+      "Bash(git -C \"e:/C-napse\" commit -m \"$\\(cat <<''EOF''\nfeat: auto-release on every push to main\n\n- Release workflow now triggers on main branch pushes\n- Creates/updates a \"latest\" release with pre-built binaries\n- Add install.sh for macOS/Linux users\n- Binaries available immediately after CI passes\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git -C \"e:/C-napse\" push)",
+      "WebFetch(domain:labs.notapublicfigureanymore.com)",
+      "Bash(git -C \"e:/C-napse\" add docs/index.html)",
+      "Bash(git -C \"e:/C-napse\" commit -m \"$\\(cat <<''EOF''\nfix: install command box layout\n\n- Use nowrap to keep command on single line\n- Add horizontal scroll for overflow\n- Center copy button vertically\n- Add padding-right to prevent overlap with button\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(cargo check:*)",
+      "Bash(cd:*)",
+      "Bash(cmd /c \"cd /d e:\\\\C-napse && cargo check 2>&1\")",
+      "Bash(cmd /c \"e: && cd C-napse && cargo check\")",
+      "Bash(git -C \"e:/C-napse\" status)",
+      "Bash(git -C \"e:/C-napse\" diff src/tui/app.rs)",
+      "Bash(git -C \"e:/C-napse\" add src/tui/app.rs)",
+      "Bash(git -C \"e:/C-napse\" commit -m \"$\\(cat <<''EOF''\nFix type mismatch: convert Option<&str> to Option<String>\n\nThe screen_context from get_current_description\\(\\) returns Option<&str>\nbut process_in_background\\(\\) expects Option<String>. Added .map\\(|s| s.to_string\\(\\)\\)\nto properly convert the type.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git -C \"e:/C-napse\" push origin main)",
+      "Bash(gh repo view:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:projectservan8n.github.io)",
+      "WebFetch(domain:c-napse.up.railway.app)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

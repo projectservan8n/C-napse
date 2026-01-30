@@ -8,6 +8,7 @@ set -e
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
+RED='\033[0;31m'
 DIM='\033[0;90m'
 NC='\033[0m' # No Color
 
@@ -23,111 +24,69 @@ echo ""
 echo -e "${DIM}          Your AI-powered PC automation assistant${NC}"
 echo ""
 
-# Detect OS and architecture
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-ARCH=$(uname -m)
+# Step 1: Check Node.js
+echo -e "  ${YELLOW}○${NC} ${DIM}[1/3]${NC} Checking Node.js..."
 
-case "$OS" in
-    linux*)  OS="linux" ;;
-    darwin*) OS="macos" ;;
-    *)       echo "Unsupported OS: $OS"; exit 1 ;;
-esac
+NODE_VERSION=""
+if command -v node &> /dev/null; then
+    NODE_VERSION=$(node --version 2>/dev/null | cut -d'v' -f2 | cut -d'.' -f1)
+fi
 
-case "$ARCH" in
-    x86_64)  ARCH="x86_64" ;;
-    aarch64) ARCH="aarch64" ;;
-    arm64)   ARCH="aarch64" ;;
-    *)       echo "Unsupported architecture: $ARCH"; exit 1 ;;
-esac
-
-BINARY="cnapse-${OS}-${ARCH}"
-INSTALL_DIR="${HOME}/.local/bin"
-RELEASE_URL="https://github.com/projectservan8n/C-napse/releases/latest/download/${BINARY}"
-
-# Create install directory
-mkdir -p "$INSTALL_DIR"
-
-# Step 1: Download
-echo -e "  ${YELLOW}○${NC} ${DIM}[1/3]${NC} Downloading C-napse..."
-
-if curl -fsSL "$RELEASE_URL" -o "${INSTALL_DIR}/cnapse" 2>/dev/null; then
-    chmod +x "${INSTALL_DIR}/cnapse"
-    echo -e "\r  ${GREEN}●${NC} ${DIM}[1/3]${NC} Downloaded C-napse"
+if [[ -n "$NODE_VERSION" ]] && [[ "$NODE_VERSION" -ge 18 ]]; then
+    echo -e "\r  ${GREEN}●${NC} ${DIM}[1/3]${NC} Node.js v$(node --version | cut -d'v' -f2)"
 else
-    echo -e "\r  ${YELLOW}○${NC} ${DIM}[1/3]${NC} Building from source..."
+    echo -e "\r  ${YELLOW}○${NC} ${DIM}[1/3]${NC} Installing Node.js..."
 
-    # Check for Rust
-    if ! command -v cargo &> /dev/null; then
-        echo -e "    ${DIM}Installing Rust toolchain...${NC}"
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --quiet
-        source "$HOME/.cargo/env"
-    fi
-
-    # Check for Git
-    if ! command -v git &> /dev/null; then
-        echo -e "    ${YELLOW}Git not found. Please install git first.${NC}"
-        exit 1
-    fi
-
-    # Clone and build
-    TEMP_DIR=$(mktemp -d)
-    echo -e "    ${DIM}Cloning repository...${NC}"
-    git clone --quiet --depth 1 https://github.com/projectservan8n/C-napse.git "$TEMP_DIR"
-
-    echo -e "    ${DIM}Compiling (this takes 2-5 minutes)...${NC}"
-    cd "$TEMP_DIR"
-    cargo build --release --quiet 2>/dev/null
-
-    cp target/release/cnapse "${INSTALL_DIR}/cnapse"
-    chmod +x "${INSTALL_DIR}/cnapse"
-
-    cd - > /dev/null
-    rm -rf "$TEMP_DIR"
-
-    echo -e "\r  ${GREEN}●${NC} ${DIM}[1/3]${NC} Built C-napse from source"
-fi
-
-# Step 2: Add to PATH
-echo -e "  ${YELLOW}○${NC} ${DIM}[2/3]${NC} Configuring PATH..."
-
-# Detect shell and config file
-SHELL_NAME=$(basename "$SHELL")
-case "$SHELL_NAME" in
-    bash)
-        if [[ -f "$HOME/.bashrc" ]]; then
-            SHELL_RC="$HOME/.bashrc"
+    # Detect OS for node installation
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS - use brew if available, otherwise use nvm
+        if command -v brew &> /dev/null; then
+            brew install node@20 > /dev/null 2>&1
+            brew link --overwrite node@20 > /dev/null 2>&1 || true
         else
-            SHELL_RC="$HOME/.bash_profile"
+            echo -e "    ${DIM}Installing via nvm...${NC}"
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash > /dev/null 2>&1
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install 20 > /dev/null 2>&1
+            nvm use 20 > /dev/null 2>&1
         fi
-        ;;
-    zsh)  SHELL_RC="$HOME/.zshrc" ;;
-    fish) SHELL_RC="$HOME/.config/fish/config.fish" ;;
-    *)    SHELL_RC="$HOME/.profile" ;;
-esac
-
-# Add to PATH if not already there
-if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-    if [[ "$SHELL_NAME" == "fish" ]]; then
-        echo "set -gx PATH \$PATH $INSTALL_DIR" >> "$SHELL_RC"
     else
-        echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> "$SHELL_RC"
+        # Linux - use NodeSource
+        if command -v apt-get &> /dev/null; then
+            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - > /dev/null 2>&1
+            sudo apt-get install -y nodejs > /dev/null 2>&1
+        elif command -v dnf &> /dev/null; then
+            curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash - > /dev/null 2>&1
+            sudo dnf install -y nodejs > /dev/null 2>&1
+        elif command -v pacman &> /dev/null; then
+            sudo pacman -S --noconfirm nodejs npm > /dev/null 2>&1
+        else
+            echo -e "    ${RED}Please install Node.js 18+ manually: https://nodejs.org${NC}"
+            exit 1
+        fi
     fi
-    export PATH="$PATH:$INSTALL_DIR"
+
+    echo -e "\r  ${GREEN}●${NC} ${DIM}[1/3]${NC} Node.js installed"
 fi
 
-echo -e "\r  ${GREEN}●${NC} ${DIM}[2/3]${NC} Added to PATH"
+# Step 2: Install C-napse via npm
+echo -e "  ${YELLOW}○${NC} ${DIM}[2/3]${NC} Installing C-napse..."
 
-# Step 3: Check for Ollama
+if npm install -g @projectservan8n/cnapse@latest > /dev/null 2>&1; then
+    echo -e "\r  ${GREEN}●${NC} ${DIM}[2/3]${NC} C-napse installed"
+else
+    echo -e "\r  ${RED}✗${NC} ${DIM}[2/3]${NC} ${RED}Failed - try: npm install -g @projectservan8n/cnapse${NC}"
+    exit 1
+fi
+
+# Step 3: Check for Ollama (optional)
 echo -e "  ${YELLOW}○${NC} ${DIM}[3/3]${NC} Checking Ollama..."
 
 if command -v ollama &> /dev/null; then
-    echo -e "\r  ${GREEN}●${NC} ${DIM}[3/3]${NC} Ollama ready"
-
-    # Pull default model
-    echo -e "    ${DIM}Downloading qwen2.5:0.5b (~400MB)...${NC}"
-    ollama pull qwen2.5:0.5b > /dev/null 2>&1 || true
+    echo -e "\r  ${GREEN}●${NC} ${DIM}[3/3]${NC} Ollama ready (local AI available)"
 else
-    echo -e "\r  ${DIM}◌${NC} ${DIM}[3/3]${NC} ${DIM}Install Ollama from https://ollama.ai${NC}"
+    echo -e "\r  ${DIM}◌${NC} ${DIM}[3/3]${NC} ${DIM}Ollama not found (optional)${NC}"
 fi
 
 # Done!
@@ -138,11 +97,21 @@ echo -e "  ${GREEN}│${NC}   ✓ C-napse installed successfully!      ${GREEN}�
 echo -e "  ${GREEN}│${NC}                                          ${GREEN}│${NC}"
 echo -e "  ${GREEN}╰──────────────────────────────────────────╯${NC}"
 echo ""
-echo -e "  ${DIM}Restart your terminal, then run:${NC}"
+echo -e "  ${DIM}Quick Setup:${NC}"
 echo ""
-echo -e "    ${CYAN}cnapse${NC}"
+echo -e "  1. Set your API key (OpenRouter, Anthropic, or OpenAI):"
 echo ""
-echo -e "  ${DIM}Or start with a question:${NC}"
+echo -e "     ${CYAN}cnapse auth openrouter${NC} ${YELLOW}YOUR_API_KEY${NC}"
 echo ""
-echo -e "    ${CYAN}cnapse${NC} \"what files are in this folder?\""
+echo -e "  2. Set provider:"
+echo ""
+echo -e "     ${CYAN}cnapse config set provider openrouter${NC}"
+echo ""
+echo -e "  3. Start chatting:"
+echo ""
+echo -e "     ${CYAN}cnapse${NC}"
+echo ""
+echo -e "  Or use local AI with Ollama (no API key needed):"
+echo ""
+echo -e "     ${CYAN}cnapse config set provider ollama${NC}"
 echo ""

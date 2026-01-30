@@ -669,33 +669,31 @@
 
                     <div class="code-block">
                         <div class="code-header">
-                            <span>config.toml</span>
+                            <span>Terminal</span>
                             <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                         </div>
-                        <pre><code><span class="comment"># ~/.cnapse/config.toml</span>
+                        <pre><code><span class="comment"># Interactive setup (recommended)</span>
+cnapse init
 
-<span class="keyword">[llm]</span>
-<span class="function">provider</span> = <span class="string">"anthropic"</span>  <span class="comment"># or "openai", "ollama", "openrouter"</span>
-<span class="function">model</span> = <span class="string">"claude-3-5-sonnet-20241022"</span>
+<span class="comment"># Or set provider and API key manually</span>
+cnapse auth openrouter <span class="string">YOUR_API_KEY</span>
+cnapse config set provider openrouter
 
-<span class="keyword">[llm.anthropic]</span>
-<span class="function">api_key</span> = <span class="string">"sk-ant-..."</span>  <span class="comment"># Set via ANTHROPIC_API_KEY env var</span>
-
-<span class="keyword">[llm.openrouter]</span>
-<span class="function">api_key</span> = <span class="string">"sk-or-..."</span>  <span class="comment"># Set via OPENROUTER_API_KEY env var</span></code></pre>
+<span class="comment"># For local AI (no API key needed)</span>
+cnapse config set provider ollama</code></pre>
                     </div>
 
-                    <div class="callout warning">
+                    <div class="callout info">
                         <div class="callout-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                                <line x1="12" y1="9" x2="12" y2="13"></line>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
                             </svg>
                         </div>
                         <div class="callout-content">
-                            <h5>Security Note</h5>
-                            <p>Never commit API keys to version control. Use environment variables instead.</p>
+                            <h5>Pro Tip</h5>
+                            <p>Use <code>cnapse init</code> for an interactive setup wizard with arrow-key navigation!</p>
                         </div>
                     </div>
                 </div>
@@ -788,7 +786,7 @@ cnapse <span class="string">"List all files in the current directory and summari
 
     <footer>
         <div class="container">
-            <p>Built with Rust. Open source under MIT. <a href="https://github.com/projectservan8n/C-napse">GitHub</a></p>
+            <p>Built with Node.js. Open source under MIT. <a href="https://github.com/projectservan8n/C-napse">GitHub</a></p>
         </div>
     </footer>
 
