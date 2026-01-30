@@ -9,7 +9,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         * {
@@ -22,30 +22,39 @@
             --bg-primary: #000000;
             --bg-secondary: #0a0a0a;
             --bg-tertiary: #111111;
+            --bg-card: #0d0d0d;
             --border: #1a1a1a;
             --border-hover: #2a2a2a;
             --text-primary: #ffffff;
-            --text-secondary: #888888;
+            --text-secondary: #a0a0a0;
             --text-muted: #555555;
             --accent: #00d4ff;
-            --accent-dim: #00d4ff22;
+            --accent-secondary: #8b5cf6;
+            --accent-dim: #00d4ff15;
             --success: #00ff88;
             --warning: #ffaa00;
+            --glow: 0 0 60px rgba(0, 212, 255, 0.3);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .mono {
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Layout */
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -59,41 +68,56 @@
             left: 0;
             right: 0;
             z-index: 100;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(0, 0, 0, 0.9);
         }
 
         nav .container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 64px;
+            height: 72px;
         }
 
         .logo {
             font-weight: 600;
-            font-size: 18px;
+            font-size: 20px;
             letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.02);
         }
 
         .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, var(--accent) 0%, #0088ff 100%);
-            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: var(--glow);
         }
 
         .nav-links {
             display: flex;
-            gap: 32px;
+            gap: 40px;
             list-style: none;
         }
 
@@ -101,12 +125,28 @@
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 14px;
-            font-weight: 400;
-            transition: color 0.2s;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            transition: width 0.3s ease;
         }
 
         .nav-links a:hover {
             color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
         }
 
         .nav-links a.active {
@@ -115,69 +155,139 @@
 
         /* Hero */
         .hero {
-            padding: 160px 0 100px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
+            position: relative;
+            padding: 120px 0 80px;
+        }
+
+        /* Animated background */
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2%, 2%) rotate(1deg); }
+            66% { transform: translate(-1%, 1%) rotate(-1deg); }
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
         }
 
         .hero-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            background: var(--accent-dim);
-            border: 1px solid var(--accent);
+            gap: 10px;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 100px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             color: var(--accent);
-            margin-bottom: 32px;
+            margin-bottom: 40px;
             letter-spacing: 0.5px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.8s ease forwards;
         }
 
-        .hero-badge::before {
-            content: '';
-            width: 6px;
-            height: 6px;
+        .hero-badge .pulse {
+            width: 8px;
+            height: 8px;
             background: var(--accent);
             border-radius: 50%;
             animation: pulse 2s infinite;
+            box-shadow: 0 0 10px var(--accent);
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .hero h1 {
-            font-size: clamp(48px, 8vw, 80px);
-            font-weight: 600;
-            letter-spacing: -2px;
-            line-height: 1.1;
-            margin-bottom: 24px;
+            font-size: clamp(52px, 10vw, 100px);
+            font-weight: 700;
+            letter-spacing: -3px;
+            line-height: 1.0;
+            margin-bottom: 32px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.8s ease 0.1s forwards;
         }
 
-        .hero h1 span {
-            background: linear-gradient(135deg, var(--accent) 0%, #0088ff 50%, #8800ff 100%);
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--accent) 0%, #00a8ff 25%, var(--accent-secondary) 50%, #ff6b6b 75%, var(--accent) 100%);
+            background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            animation: gradientShift 5s linear infinite;
+        }
+
+        @keyframes gradientShift {
+            to { background-position: 200% center; }
         }
 
         .hero-subtitle {
             font-size: 18px;
             color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto 48px;
-            line-height: 1.7;
+            max-width: 560px;
+            margin: 0 auto 56px;
+            line-height: 1.8;
+            font-weight: 400;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.8s ease 0.2s forwards;
         }
 
         /* Install Section */
         .install-section {
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            max-width: 640px;
+            gap: 20px;
+            max-width: 600px;
             margin: 0 auto;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.8s ease 0.3s forwards;
         }
 
         .install-tabs {
@@ -187,39 +297,53 @@
         }
 
         .install-tab {
-            padding: 8px 16px;
+            padding: 10px 20px;
             background: transparent;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--text-secondary);
-            font-size: 13px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             font-family: inherit;
         }
 
         .install-tab:hover {
             border-color: var(--border-hover);
             color: var(--text-primary);
+            transform: translateY(-2px);
         }
 
         .install-tab.active {
-            background: var(--bg-tertiary);
-            border-color: var(--border-hover);
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-color: var(--accent);
             color: var(--text-primary);
         }
 
         .install-box {
-            background: var(--bg-secondary);
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px 24px;
+            border-radius: 16px;
+            padding: 24px 28px;
             display: none;
             position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .install-box:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
 
         .install-box.active {
             display: block;
+            animation: fadeScale 0.3s ease;
+        }
+
+        @keyframes fadeScale {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .install-box code {
@@ -231,122 +355,214 @@
 
         .install-box .copy-btn {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            padding: 6px 12px;
+            top: 16px;
+            right: 16px;
+            padding: 8px 16px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 8px;
             color: var(--text-secondary);
             font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             font-family: inherit;
         }
 
         .install-box .copy-btn:hover {
-            background: var(--border);
-            color: var(--text-primary);
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+            transform: scale(1.05);
         }
 
-        /* Architecture Section */
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-indicator .mouse {
+            width: 24px;
+            height: 38px;
+            border: 2px solid var(--text-muted);
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .scroll-indicator .mouse::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 2px;
+            animation: scrollWheel 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        @keyframes scrollWheel {
+            0%, 100% { opacity: 1; top: 8px; }
+            50% { opacity: 0; top: 16px; }
+        }
+
+        /* Sections */
         .section {
-            padding: 100px 0;
-            border-top: 1px solid var(--border);
+            padding: 140px 0;
+            position: relative;
         }
 
         .section-header {
             text-align: center;
-            margin-bottom: 64px;
+            margin-bottom: 80px;
         }
 
         .section-label {
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
             color: var(--accent);
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            display: inline-block;
         }
 
         .section-title {
-            font-size: 36px;
-            font-weight: 600;
-            letter-spacing: -1px;
-            margin-bottom: 16px;
+            font-size: clamp(36px, 5vw, 52px);
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
         }
 
         .section-desc {
             color: var(--text-secondary);
             max-width: 600px;
             margin: 0 auto;
+            font-size: 17px;
         }
 
         /* Feature Grid */
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
             gap: 24px;
         }
 
         .feature-card {
-            background: var(--bg-secondary);
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            transition: all 0.3s;
+            border-radius: 20px;
+            padding: 40px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .feature-card:hover {
             border-color: var(--border-hover);
-            transform: translateY(-2px);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
         }
 
         .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--accent-dim);
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent-dim) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: 28px;
+            margin-bottom: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .feature-card h3 {
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 20px;
+            font-weight: 600;
             margin-bottom: 12px;
+            letter-spacing: -0.5px;
         }
 
         .feature-card p {
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 15px;
             line-height: 1.7;
         }
 
-        /* Status Table */
+        /* Status Section */
         .status-section {
-            background: var(--bg-secondary);
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 24px;
             overflow: hidden;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .status-section:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .status-header {
-            padding: 20px 24px;
+            padding: 24px 32px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
         }
 
         .status-header h3 {
-            font-size: 16px;
-            font-weight: 500;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status-version {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            font-size: 13px;
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
         }
 
         .status-table {
@@ -355,10 +571,11 @@
 
         .status-row {
             display: grid;
-            grid-template-columns: 1fr 120px 100px;
-            padding: 16px 24px;
+            grid-template-columns: 1fr 140px 100px;
+            padding: 20px 32px;
             border-bottom: 1px solid var(--border);
             align-items: center;
+            transition: all 0.3s ease;
         }
 
         .status-row:last-child {
@@ -366,83 +583,95 @@
         }
 
         .status-row:hover {
-            background: var(--bg-tertiary);
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .status-name {
             font-weight: 500;
+            font-size: 15px;
         }
 
         .status-desc {
             color: var(--text-secondary);
             font-size: 13px;
+            margin-top: 4px;
         }
 
         .status-badge {
-            padding: 4px 10px;
+            padding: 6px 14px;
             border-radius: 100px;
             font-size: 11px;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-align: center;
         }
 
         .status-badge.stable {
-            background: #00ff8822;
+            background: rgba(0, 255, 136, 0.1);
             color: var(--success);
+            border: 1px solid rgba(0, 255, 136, 0.2);
         }
 
         .status-badge.alpha {
-            background: #00d4ff22;
+            background: rgba(0, 212, 255, 0.1);
             color: var(--accent);
+            border: 1px solid rgba(0, 212, 255, 0.2);
         }
 
         .status-badge.preview {
-            background: #ffaa0022;
+            background: rgba(255, 170, 0, 0.1);
             color: var(--warning);
+            border: 1px solid rgba(255, 170, 0, 0.2);
         }
 
         /* Docs Section */
         .docs-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-            max-width: 900px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
         .docs-link {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 20px 24px;
-            background: var(--bg-secondary);
+            gap: 20px;
+            padding: 24px 28px;
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 16px;
             text-decoration: none;
             color: var(--text-primary);
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .docs-link:hover {
             border-color: var(--accent);
-            background: var(--bg-tertiary);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.1);
         }
 
         .docs-link-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--bg-tertiary);
-            border-radius: 10px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 22px;
+            transition: transform 0.3s ease;
+        }
+
+        .docs-link:hover .docs-link-icon {
+            transform: rotate(10deg) scale(1.1);
         }
 
         .docs-link-text h4 {
-            font-size: 15px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 600;
             margin-bottom: 4px;
         }
 
@@ -453,71 +682,98 @@
 
         /* Footer */
         footer {
-            padding: 48px 0;
+            padding: 60px 0;
             border-top: 1px solid var(--border);
             text-align: center;
         }
 
         footer p {
             color: var(--text-muted);
-            font-size: 13px;
+            font-size: 14px;
         }
 
         footer a {
             color: var(--text-secondary);
             text-decoration: none;
+            transition: color 0.3s ease;
         }
 
         footer a:hover {
-            color: var(--text-primary);
+            color: var(--accent);
         }
 
-        /* Mobile */
+        /* Mobile Nav */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
             }
 
+            .mobile-menu-btn {
+                display: block;
+            }
+
             .hero {
-                padding: 120px 0 80px;
+                padding: 100px 0 60px;
             }
 
             .section {
-                padding: 64px 0;
+                padding: 80px 0;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
             }
 
             .status-row {
-                grid-template-columns: 1fr 80px;
+                grid-template-columns: 1fr 90px;
             }
 
             .status-row .status-desc {
                 display: none;
             }
+
+            .scroll-indicator {
+                display: none;
+            }
         }
 
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
+        /* Intersection Observer animations */
+        .animate-on-scroll {
             opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.2s; }
-        .delay-3 { animation-delay: 0.3s; }
-        .delay-4 { animation-delay: 0.4s; }
+        .animate-on-scroll.delay-1 { transition-delay: 0.1s; }
+        .animate-on-scroll.delay-2 { transition-delay: 0.2s; }
+        .animate-on-scroll.delay-3 { transition-delay: 0.3s; }
+        .animate-on-scroll.delay-4 { transition-delay: 0.4s; }
+        .animate-on-scroll.delay-5 { transition-delay: 0.5s; }
+        .animate-on-scroll.delay-6 { transition-delay: 0.6s; }
     </style>
 </head>
 <body>
     <nav>
         <div class="container">
-            <div class="logo">
+            <a href="#" class="logo">
                 <div class="logo-icon">C</div>
                 <span>C-napse</span>
-            </div>
+            </a>
             <ul class="nav-links">
                 <li><a href="#" class="active">Home</a></li>
                 <li><a href="#architecture">Architecture</a></li>
@@ -525,54 +781,67 @@
                 <li><a href="#docs">Docs</a></li>
                 <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
             </ul>
+            <button class="mobile-menu-btn">☰</button>
         </div>
     </nav>
 
     <main>
         <!-- Hero -->
         <section class="hero">
+            <div class="hero-bg">
+                <div class="hero-grid"></div>
+            </div>
+
             <div class="container">
-                <div class="hero-badge fade-in">
-                    Technical Preview
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="pulse"></span>
+                        Technical Preview
+                    </div>
+                    <h1>
+                        <span class="gradient">C-napse</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Autonomous PC intelligence. A neural agentic system that observes,
+                        reasons, and acts — transforming natural language into executed actions
+                        across your entire system.
+                    </p>
+
+                    <div class="install-section">
+                        <div class="install-tabs">
+                            <button class="install-tab active" data-target="windows">Windows</button>
+                            <button class="install-tab" data-target="macos">macOS</button>
+                            <button class="install-tab" data-target="linux">Linux</button>
+                        </div>
+
+                        <div class="install-box active" id="windows">
+                            <code>irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex</code>
+                            <button class="copy-btn" onclick="copyInstall('windows')">Copy</button>
+                        </div>
+
+                        <div class="install-box" id="macos">
+                            <code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code>
+                            <button class="copy-btn" onclick="copyInstall('macos')">Copy</button>
+                        </div>
+
+                        <div class="install-box" id="linux">
+                            <code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code>
+                            <button class="copy-btn" onclick="copyInstall('linux')">Copy</button>
+                        </div>
+                    </div>
                 </div>
-                <h1 class="fade-in delay-1">
-                    <span>C-napse</span>
-                </h1>
-                <p class="hero-subtitle fade-in delay-2">
-                    Autonomous PC intelligence. A neural agentic system that observes,
-                    reasons, and acts — transforming natural language into executed actions
-                    across your entire system.
-                </p>
+            </div>
 
-                <div class="install-section fade-in delay-3">
-                    <div class="install-tabs">
-                        <button class="install-tab active" data-target="windows">Windows</button>
-                        <button class="install-tab" data-target="macos">macOS</button>
-                        <button class="install-tab" data-target="linux">Linux</button>
-                    </div>
-
-                    <div class="install-box active" id="windows">
-                        <code>irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex</code>
-                        <button class="copy-btn" onclick="copyInstall('windows')">Copy</button>
-                    </div>
-
-                    <div class="install-box" id="macos">
-                        <code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code>
-                        <button class="copy-btn" onclick="copyInstall('macos')">Copy</button>
-                    </div>
-
-                    <div class="install-box" id="linux">
-                        <code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code>
-                        <button class="copy-btn" onclick="copyInstall('linux')">Copy</button>
-                    </div>
-                </div>
+            <div class="scroll-indicator">
+                <div class="mouse"></div>
+                <span>Scroll</span>
             </div>
         </section>
 
         <!-- Architecture -->
         <section class="section" id="architecture">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header animate-on-scroll">
                     <div class="section-label">Architecture</div>
                     <h2 class="section-title">Cognitive Agent System</h2>
                     <p class="section-desc">
@@ -582,7 +851,7 @@
                 </div>
 
                 <div class="feature-grid">
-                    <div class="feature-card">
+                    <div class="feature-card animate-on-scroll delay-1">
                         <div class="feature-icon">🧠</div>
                         <h3>Neural Routing</h3>
                         <p>
@@ -591,7 +860,7 @@
                         </p>
                     </div>
 
-                    <div class="feature-card">
+                    <div class="feature-card animate-on-scroll delay-2">
                         <div class="feature-icon">👁️</div>
                         <h3>Screen Perception</h3>
                         <p>
@@ -600,7 +869,7 @@
                         </p>
                     </div>
 
-                    <div class="feature-card">
+                    <div class="feature-card animate-on-scroll delay-3">
                         <div class="feature-icon">⚡</div>
                         <h3>Local Execution</h3>
                         <p>
@@ -609,7 +878,7 @@
                         </p>
                     </div>
 
-                    <div class="feature-card">
+                    <div class="feature-card animate-on-scroll delay-4">
                         <div class="feature-icon">🔗</div>
                         <h3>Adaptive Memory</h3>
                         <p>
@@ -618,7 +887,7 @@
                         </p>
                     </div>
 
-                    <div class="feature-card">
+                    <div class="feature-card animate-on-scroll delay-5">
                         <div class="feature-icon">📱</div>
                         <h3>Cross-Device Sync</h3>
                         <p>
@@ -627,7 +896,7 @@
                         </p>
                     </div>
 
-                    <div class="feature-card">
+                    <div class="feature-card animate-on-scroll delay-6">
                         <div class="feature-icon">🔌</div>
                         <h3>Provider Agnostic</h3>
                         <p>
@@ -642,7 +911,7 @@
         <!-- Status -->
         <section class="section" id="status">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header animate-on-scroll">
                     <div class="section-label">Development</div>
                     <h2 class="section-title">System Status</h2>
                     <p class="section-desc">
@@ -650,10 +919,10 @@
                     </p>
                 </div>
 
-                <div class="status-section">
+                <div class="status-section animate-on-scroll delay-1">
                     <div class="status-header">
                         <h3>Components</h3>
-                        <span class="mono" style="color: var(--text-muted); font-size: 12px;">v0.1.0</span>
+                        <span class="status-version">v0.1.0</span>
                     </div>
                     <div class="status-table">
                         <div class="status-row">
@@ -706,7 +975,7 @@
         <!-- Docs -->
         <section class="section" id="docs">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header animate-on-scroll">
                     <div class="section-label">Resources</div>
                     <h2 class="section-title">Documentation</h2>
                     <p class="section-desc">
@@ -715,7 +984,7 @@
                 </div>
 
                 <div class="docs-grid">
-                    <a href="./quickstart.html" class="docs-link">
+                    <a href="./quickstart.html" class="docs-link animate-on-scroll delay-1">
                         <div class="docs-link-icon">🚀</div>
                         <div class="docs-link-text">
                             <h4>Quick Start</h4>
@@ -723,7 +992,7 @@
                         </div>
                     </a>
 
-                    <a href="./configuration.html" class="docs-link">
+                    <a href="./configuration.html" class="docs-link animate-on-scroll delay-2">
                         <div class="docs-link-icon">⚙️</div>
                         <div class="docs-link-text">
                             <h4>Configuration</h4>
@@ -731,7 +1000,7 @@
                         </div>
                     </a>
 
-                    <a href="./agents.html" class="docs-link">
+                    <a href="./agents.html" class="docs-link animate-on-scroll delay-3">
                         <div class="docs-link-icon">🤖</div>
                         <div class="docs-link-text">
                             <h4>Agents</h4>
@@ -739,7 +1008,7 @@
                         </div>
                     </a>
 
-                    <a href="./tools.html" class="docs-link">
+                    <a href="./tools.html" class="docs-link animate-on-scroll delay-4">
                         <div class="docs-link-icon">🔧</div>
                         <div class="docs-link-text">
                             <h4>Tools</h4>
@@ -747,7 +1016,7 @@
                         </div>
                     </a>
 
-                    <a href="./api.html" class="docs-link">
+                    <a href="./api.html" class="docs-link animate-on-scroll delay-5">
                         <div class="docs-link-icon">📡</div>
                         <div class="docs-link-text">
                             <h4>API Reference</h4>
@@ -755,7 +1024,7 @@
                         </div>
                     </a>
 
-                    <a href="https://github.com/projectservan8n/C-napse" class="docs-link" target="_blank">
+                    <a href="https://github.com/projectservan8n/C-napse" class="docs-link animate-on-scroll delay-6" target="_blank">
                         <div class="docs-link-icon">📦</div>
                         <div class="docs-link-text">
                             <h4>Source Code</h4>
@@ -777,14 +1046,12 @@
     </footer>
 
     <script>
-        // Tab switching
+        // Tab switching with animation
         document.querySelectorAll('.install-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                // Update tabs
                 document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
 
-                // Update content
                 const target = tab.dataset.target;
                 document.querySelectorAll('.install-box').forEach(box => box.classList.remove('active'));
                 document.getElementById(target).classList.add('active');
@@ -798,7 +1065,13 @@
             navigator.clipboard.writeText(code).then(() => {
                 const btn = box.querySelector('.copy-btn');
                 btn.textContent = 'Copied!';
-                setTimeout(() => btn.textContent = 'Copy', 2000);
+                btn.style.background = 'var(--success)';
+                btn.style.borderColor = 'var(--success)';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                }, 2000);
             });
         }
 
@@ -811,6 +1084,34 @@
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
+        });
+
+        // Nav scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
         });
     </script>
 </body>
