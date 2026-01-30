@@ -18,7 +18,7 @@ pub fn is_vscode_running() -> bool {
     sys.refresh_processes();
 
     sys.processes().values().any(|p| {
-        let name = p.name().to_str().unwrap_or("").to_lowercase();
+        let name = p.name().to_string_lossy().to_lowercase();
         name.contains("code") || name.contains("code-insiders") || name.contains("codium")
     })
 }

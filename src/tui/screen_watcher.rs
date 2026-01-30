@@ -134,7 +134,7 @@ impl ScreenWatcher {
                 img.as_raw(),
                 img.width(),
                 img.height(),
-                image::ExtendedColorType::Rgba8
+                image::ColorType::Rgba8
             ).map_err(|e| CnapseError::tool(format!("Failed to save screenshot: {}", e)))?;
 
             Ok(())
@@ -152,22 +152,22 @@ impl ScreenWatcher {
     #[cfg(feature = "screenshots")]
     pub fn get_screenshot_base64(&self) -> Result<String> {
         use base64::Engine;
-        use std::io::Write;
+        use image::ImageEncoder;
 
         let screens = Screen::all().map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
 
         if let Some(screen) = screens.first() {
-            let image = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
+            let img = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
 
             // Convert to PNG bytes
             let mut buffer = Vec::new();
             {
-                let mut encoder = image::codecs::png::PngEncoder::new(&mut buffer);
-                encoder.encode(
-                    image.as_raw(),
-                    image.width(),
-                    image.height(),
-                    image::ExtendedColorType::Rgba8
+                let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
+                encoder.write_image(
+                    img.as_raw(),
+                    img.width(),
+                    img.height(),
+                    image::ColorType::Rgba8
                 ).map_err(|e| CnapseError::tool(format!("Failed to encode: {}", e)))?;
             }
 

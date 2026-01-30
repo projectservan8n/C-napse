@@ -3,6 +3,13 @@
 use super::ToolResult;
 use sysinfo::{System, Pid, ProcessStatus};
 
+/// Helper to get process name as string (cross-platform)
+fn get_process_name(process: &sysinfo::Process) -> String {
+    // sysinfo 0.30+ returns &OsStr on Windows, &str on Linux
+    // We use the Display trait which works for both
+    format!("{}", process.name().to_string_lossy())
+}
+
 /// List running processes
 pub fn list_processes() -> ToolResult {
     let mut sys = System::new_all();
@@ -15,7 +22,7 @@ pub fn list_processes() -> ToolResult {
             format!(
                 "{}\t{}\t{:.1}%\t{:.1} MB\t{}",
                 pid,
-                process.name().to_str().unwrap_or("?"),
+                get_process_name(process),
                 process.cpu_usage(),
                 process.memory() as f64 / 1024.0 / 1024.0,
                 match process.status() {
@@ -47,7 +54,7 @@ pub fn process_info(pid: u32) -> ToolResult {
             let info = format!(
                 "PID: {}\nName: {}\nCPU: {:.1}%\nMemory: {:.1} MB\nStatus: {:?}\nCommand: {:?}",
                 pid,
-                process.name().to_str().unwrap_or("?"),
+                get_process_name(process),
                 process.cpu_usage(),
                 process.memory() as f64 / 1024.0 / 1024.0,
                 process.status(),
@@ -87,10 +94,7 @@ pub fn find_process(name: &str) -> ToolResult {
         .processes()
         .iter()
         .filter(|(_, process)| {
-            process
-                .name()
-                .to_str()
-                .unwrap_or("")
+            get_process_name(process)
                 .to_lowercase()
                 .contains(&name.to_lowercase())
         })
@@ -98,7 +102,7 @@ pub fn find_process(name: &str) -> ToolResult {
             format!(
                 "{}\t{}\t{:.1}%",
                 pid,
-                process.name().to_str().unwrap_or("?"),
+                get_process_name(process),
                 process.cpu_usage()
             )
         })
