@@ -2,7 +2,7 @@
 
 use crate::config::Paths;
 use crate::error::{CnapseError, Result};
-use secrecy::{ExposeSecret, SecretString};
+use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 

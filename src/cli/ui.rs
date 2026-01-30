@@ -2,7 +2,6 @@
 
 use console::{style, Emoji, Term};
 use indicatif::{ProgressBar, ProgressStyle};
-use std::io::Write;
 
 // Emojis for different message types
 pub static SUCCESS: Emoji<'_, '_> = Emoji("✓ ", "√ ");

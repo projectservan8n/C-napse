@@ -3,16 +3,16 @@
 use crate::config::Credentials;
 use crate::error::Result;
 use axum::{
+    body::Body,
     http::{Request, StatusCode},
     middleware::Next,
     response::Response,
 };
-use secrecy::ExposeSecret;
 
 const API_KEY_HEADER: &str = "X-API-Key";
 
 /// Extract API key from request
-pub fn extract_api_key<B>(request: &Request<B>) -> Option<String> {
+pub fn extract_api_key(request: &Request<Body>) -> Option<String> {
     request
         .headers()
         .get(API_KEY_HEADER)
@@ -34,9 +34,9 @@ pub fn validate_api_key(key: &str) -> Result<bool> {
 }
 
 /// Auth middleware
-pub async fn auth_middleware<B>(
-    request: Request<B>,
-    next: Next<B>,
+pub async fn auth_middleware(
+    request: Request<Body>,
+    next: Next,
 ) -> std::result::Result<Response, StatusCode> {
     // Check for API key
     let key = extract_api_key(&request);

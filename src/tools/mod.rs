@@ -7,7 +7,6 @@ pub mod clipboard;
 pub mod screenshot;
 pub mod network;
 
-use crate::error::Result;
 use serde::{Deserialize, Serialize};
 
 /// Result of executing a tool

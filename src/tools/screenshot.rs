@@ -1,7 +1,6 @@
 //! Screenshot tools
 
 use super::ToolResult;
-use std::path::Path;
 
 /// Take a screenshot
 pub fn take_screenshot(output_path: Option<&str>) -> ToolResult {
@@ -17,14 +16,26 @@ pub fn take_screenshot(output_path: Option<&str>) -> ToolResult {
 
             // Capture primary screen
             match screens[0].capture() {
-                Ok(image) => {
-                    // Save to file
-                    match image.save(path) {
+                Ok(img) => {
+                    // Save to file using the image crate
+                    use image::ImageEncoder;
+                    let file = match std::fs::File::create(path) {
+                        Ok(f) => f,
+                        Err(e) => return ToolResult::err(format!("Failed to create file: {}", e)),
+                    };
+                    let mut writer = std::io::BufWriter::new(file);
+                    let encoder = image::codecs::png::PngEncoder::new(&mut writer);
+                    match encoder.write_image(
+                        img.as_raw(),
+                        img.width(),
+                        img.height(),
+                        image::ExtendedColorType::Rgba8
+                    ) {
                         Ok(()) => ToolResult::ok(format!(
                             "Screenshot saved to: {}\nSize: {}x{}",
                             path,
-                            image.width(),
-                            image.height()
+                            img.width(),
+                            img.height()
                         )),
                         Err(e) => ToolResult::err(format!("Failed to save screenshot: {}", e)),
                     }

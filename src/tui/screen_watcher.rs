@@ -79,7 +79,7 @@ impl ScreenWatcher {
             let image = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
 
             // Calculate hash of image for change detection
-            let rgba = image.rgba();
+            let rgba = image.as_raw();
             let mut hasher = Sha256::new();
 
             // Sample pixels for faster hashing (every 100th pixel)
@@ -119,12 +119,23 @@ impl ScreenWatcher {
     /// Take a screenshot and save to file
     #[cfg(feature = "screenshots")]
     pub fn take_screenshot(&self, path: &std::path::Path) -> Result<()> {
+        use image::ImageEncoder;
+
         let screens = Screen::all().map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
 
         if let Some(screen) = screens.first() {
-            let image = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
+            let img = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
 
-            image.save(path).map_err(|e| CnapseError::tool(format!("Failed to save screenshot: {}", e)))?;
+            // Save using the image crate
+            let file = std::fs::File::create(path).map_err(|e| CnapseError::tool(format!("Failed to create file: {}", e)))?;
+            let mut writer = std::io::BufWriter::new(file);
+            let encoder = image::codecs::png::PngEncoder::new(&mut writer);
+            encoder.write_image(
+                img.as_raw(),
+                img.width(),
+                img.height(),
+                image::ExtendedColorType::Rgba8
+            ).map_err(|e| CnapseError::tool(format!("Failed to save screenshot: {}", e)))?;
 
             Ok(())
         } else {
@@ -141,21 +152,24 @@ impl ScreenWatcher {
     #[cfg(feature = "screenshots")]
     pub fn get_screenshot_base64(&self) -> Result<String> {
         use base64::Engine;
+        use std::io::Write;
 
         let screens = Screen::all().map_err(|e| CnapseError::tool(format!("Failed to get screens: {}", e)))?;
 
         if let Some(screen) = screens.first() {
             let image = screen.capture().map_err(|e| CnapseError::tool(format!("Failed to capture: {}", e)))?;
 
-            // Resize for API (max 1920x1080)
-            let width = image.width().min(1920);
-            let height = image.height().min(1080);
-
             // Convert to PNG bytes
             let mut buffer = Vec::new();
-            let mut cursor = std::io::Cursor::new(&mut buffer);
-
-            image.save(&mut cursor).map_err(|e| CnapseError::tool(format!("Failed to encode: {}", e)))?;
+            {
+                let mut encoder = image::codecs::png::PngEncoder::new(&mut buffer);
+                encoder.encode(
+                    image.as_raw(),
+                    image.width(),
+                    image.height(),
+                    image::ExtendedColorType::Rgba8
+                ).map_err(|e| CnapseError::tool(format!("Failed to encode: {}", e)))?;
+            }
 
             Ok(base64::engine::general_purpose::STANDARD.encode(&buffer))
         } else {

@@ -124,8 +124,8 @@ impl AgentResponse {
     }
 
     pub fn with_tool_calls(mut self, calls: Vec<ToolCall>) -> Self {
-        self.tool_calls = calls;
         self.should_continue = !calls.is_empty();
+        self.tool_calls = calls;
         self
     }
 }

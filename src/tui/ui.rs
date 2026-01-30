@@ -1,6 +1,6 @@
 //! UI rendering for the TUI
 
-use super::app::{ChatMessage, TuiApp, ToolStatus};
+use super::app::{TuiApp, ToolStatus};
 use crate::agents::MessageRole;
 use ratatui::{
     prelude::*,

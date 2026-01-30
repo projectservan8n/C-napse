@@ -2,5 +2,3 @@
 
 pub mod phone;
 pub mod vscode;
-
-use crate::error::Result;

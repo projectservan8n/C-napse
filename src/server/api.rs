@@ -3,7 +3,6 @@
 use axum::{
     extract::Json,
     response::IntoResponse,
-    http::StatusCode,
 };
 use serde::{Deserialize, Serialize};
 

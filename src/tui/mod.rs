@@ -18,7 +18,7 @@ pub use tools_executor::{ToolExecutor, ToolRequest, ToolResult, parse_tool_calls
 
 use crate::error::Result;
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers},
+    event::{DisableMouseCapture, EnableMouseCapture},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };

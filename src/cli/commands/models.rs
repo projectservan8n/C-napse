@@ -4,7 +4,6 @@ use crate::cli::ui;
 use crate::config::{Paths, Settings};
 use crate::error::{CnapseError, Result};
 use clap::{Args, Subcommand};
-use std::path::PathBuf;
 
 #[derive(Args, Debug)]
 pub struct ModelsArgs {

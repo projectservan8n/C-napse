@@ -1,6 +1,6 @@
 //! TUI Application state and logic
 
-use crate::agents::{AgentMessage, MessageRole, RouterAgent};
+use crate::agents::{AgentMessage, MessageRole};
 use crate::config::Settings;
 use crate::error::Result;
 use crate::inference::{create_backend, InferenceRequest};
@@ -9,9 +9,7 @@ use crate::tui::screen_watcher::ScreenWatcher;
 use chrono::{DateTime, Local};
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use ratatui::{prelude::*, Terminal};
-use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::mpsc;
 use uuid::Uuid;
 
 /// Message in the chat
@@ -75,7 +73,7 @@ pub struct TuiApp {
 impl TuiApp {
     pub async fn new() -> Result<Self> {
         let settings = Settings::load()?;
-        let memory = MemoryStore::new(&settings)?;
+        let memory = MemoryStore::open()?;
         let conversation_id = Uuid::new_v4().to_string();
 
         Ok(Self {
@@ -316,6 +314,7 @@ impl TuiApp {
             .map(|m| AgentMessage {
                 role: m.role.clone(),
                 content: m.content.clone(),
+                metadata: None,
             })
             .collect();
 
@@ -345,11 +344,13 @@ impl TuiApp {
         let mut all_messages = vec![AgentMessage {
             role: MessageRole::System,
             content: system_prompt,
+            metadata: None,
         }];
         all_messages.extend(messages);
         all_messages.push(AgentMessage {
             role: MessageRole::User,
             content: context,
+            metadata: None,
         });
 
         let request = InferenceRequest {
@@ -358,6 +359,7 @@ impl TuiApp {
             temperature: 0.7,
             max_tokens: 2048,
             stop: vec![],
+            stream: false,
         };
 
         let response = backend.infer(request).await?;
@@ -418,10 +420,12 @@ impl TuiApp {
                 all_messages.push(AgentMessage {
                     role: MessageRole::Assistant,
                     content: response.content.clone(),
+                    metadata: None,
                 });
                 all_messages.push(AgentMessage {
                     role: MessageRole::User,
                     content: format!("Tool results:\n{}", tool_results.join("\n")),
+                    metadata: None,
                 });
 
                 let follow_up_request = InferenceRequest {
@@ -430,6 +434,7 @@ impl TuiApp {
                     temperature: 0.7,
                     max_tokens: 2048,
                     stop: vec![],
+                    stream: false,
                 };
 
                 if let Ok(follow_up) = backend.infer(follow_up_request).await {
@@ -443,11 +448,15 @@ impl TuiApp {
             &self.conversation_id,
             "user",
             input,
+            None,
+            None,
         )?;
         self.memory.add_message(
             &self.conversation_id,
             "assistant",
             &final_response,
+            None,
+            None,
         )?;
 
         Ok(final_response)

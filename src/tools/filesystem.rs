@@ -1,6 +1,5 @@
 //! File system tools
 
-use crate::error::{CnapseError, Result};
 use super::ToolResult;
 use std::path::Path;
 

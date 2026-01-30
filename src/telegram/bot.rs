@@ -1,7 +1,7 @@
 //! Telegram bot implementation
 
 use crate::config::Settings;
-use crate::error::{CnapseError, Result};
+use crate::error::Result;
 use teloxide::prelude::*;
 
 /// Run the Telegram bot
@@ -17,7 +17,7 @@ pub async fn run_bot(token: String, settings: Settings) -> Result<()> {
 
         async move {
             // Check authorization
-            if let Some(user) = msg.from {
+            if let Some(user) = msg.from() {
                 if !allowed.is_empty() && !allowed.contains(&(user.id.0 as i64)) {
                     bot.send_message(msg.chat.id, "❌ Unauthorized").await?;
                     return Ok(());

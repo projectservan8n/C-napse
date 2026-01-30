@@ -15,7 +15,7 @@ pub fn list_processes() -> ToolResult {
             format!(
                 "{}\t{}\t{:.1}%\t{:.1} MB\t{}",
                 pid,
-                process.name().to_string_lossy(),
+                process.name().to_str().unwrap_or("?"),
                 process.cpu_usage(),
                 process.memory() as f64 / 1024.0 / 1024.0,
                 match process.status() {
@@ -47,7 +47,7 @@ pub fn process_info(pid: u32) -> ToolResult {
             let info = format!(
                 "PID: {}\nName: {}\nCPU: {:.1}%\nMemory: {:.1} MB\nStatus: {:?}\nCommand: {:?}",
                 pid,
-                process.name().to_string_lossy(),
+                process.name().to_str().unwrap_or("?"),
                 process.cpu_usage(),
                 process.memory() as f64 / 1024.0 / 1024.0,
                 process.status(),
@@ -89,7 +89,8 @@ pub fn find_process(name: &str) -> ToolResult {
         .filter(|(_, process)| {
             process
                 .name()
-                .to_string_lossy()
+                .to_str()
+                .unwrap_or("")
                 .to_lowercase()
                 .contains(&name.to_lowercase())
         })
@@ -97,7 +98,7 @@ pub fn find_process(name: &str) -> ToolResult {
             format!(
                 "{}\t{}\t{:.1}%",
                 pid,
-                process.name().to_string_lossy(),
+                process.name().to_str().unwrap_or("?"),
                 process.cpu_usage()
             )
         })

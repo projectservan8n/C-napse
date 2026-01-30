@@ -1,8 +1,6 @@
 //! Message handlers for Telegram bot
 
 use crate::config::Settings;
-use crate::error::Result;
-use teloxide::prelude::*;
 
 /// Check if a user is authorized
 pub fn is_authorized(user_id: i64, allowed_users: &[i64]) -> bool {
