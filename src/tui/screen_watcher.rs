@@ -4,10 +4,18 @@
 //! enabling context-aware assistance.
 
 use crate::error::{CnapseError, Result};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use tokio::sync::mpsc;
 
 #[cfg(feature = "screenshots")]
 use screenshots::Screen;
+
+/// Screen capture result from background task
+pub struct ScreenCaptureResult {
+    pub hash: u64,
+    pub description: String,
+}
 
 /// Screen watcher for monitoring desktop activity
 pub struct ScreenWatcher {
@@ -21,6 +29,10 @@ pub struct ScreenWatcher {
     last_description: Option<String>,
     /// Screen capture enabled
     enabled: bool,
+    /// Receiver for background capture results
+    capture_receiver: Option<mpsc::UnboundedReceiver<ScreenCaptureResult>>,
+    /// Flag to track if capture is in progress
+    capture_in_progress: Arc<Mutex<bool>>,
 }
 
 impl ScreenWatcher {
@@ -29,48 +41,78 @@ impl ScreenWatcher {
         Ok(Self {
             last_hash: None,
             last_check: Instant::now(),
-            interval: Duration::from_secs(2), // Check every 2 seconds
+            interval: Duration::from_secs(3), // Check every 3 seconds (reduced frequency)
             last_description: None,
             enabled: true,
+            capture_receiver: None,
+            capture_in_progress: Arc::new(Mutex::new(false)),
         })
     }
 
-    /// Check for screen changes
+    /// Check for screen changes (non-blocking)
     pub fn check_for_changes(&mut self) -> Option<String> {
         if !self.enabled {
             return None;
+        }
+
+        // First, check if we have any results from previous capture
+        if let Some(receiver) = &mut self.capture_receiver {
+            if let Ok(result) = receiver.try_recv() {
+                // Reset in-progress flag
+                if let Ok(mut in_progress) = self.capture_in_progress.lock() {
+                    *in_progress = false;
+                }
+
+                let changed = self.last_hash.map(|h| h != result.hash).unwrap_or(true);
+                self.last_hash = Some(result.hash);
+                self.last_description = Some(result.description.clone());
+
+                if changed {
+                    return Some(result.description);
+                }
+            }
         }
 
         // Rate limit checks
         if self.last_check.elapsed() < self.interval {
             return None;
         }
+
+        // Check if capture already in progress
+        let in_progress = self.capture_in_progress.lock().ok().map(|g| *g).unwrap_or(false);
+        if in_progress {
+            return None;
+        }
+
         self.last_check = Instant::now();
 
-        // Capture screen
-        match self.capture_screen() {
-            Ok(Some((hash, description))) => {
-                let changed = self.last_hash.map(|h| h != hash).unwrap_or(true);
-                self.last_hash = Some(hash);
-                self.last_description = Some(description.clone());
+        // Start background capture
+        self.start_background_capture();
 
-                if changed {
-                    Some(description)
-                } else {
-                    None
-                }
-            }
-            Ok(None) => None,
-            Err(e) => {
-                tracing::warn!("Screen capture failed: {}", e);
-                None
-            }
-        }
+        None
     }
 
-    /// Capture current screen and return hash + description
+    /// Start a background screen capture
+    fn start_background_capture(&mut self) {
+        // Mark as in progress
+        if let Ok(mut in_progress) = self.capture_in_progress.lock() {
+            *in_progress = true;
+        }
+
+        let (tx, rx) = mpsc::unbounded_channel();
+        self.capture_receiver = Some(rx);
+
+        // Spawn blocking task for screen capture
+        tokio::task::spawn_blocking(move || {
+            if let Ok(Some(result)) = Self::capture_screen_sync() {
+                let _ = tx.send(result);
+            }
+        });
+    }
+
+    /// Synchronous screen capture (runs in blocking task)
     #[cfg(feature = "screenshots")]
-    fn capture_screen(&self) -> Result<Option<(u64, String)>> {
+    fn capture_screen_sync() -> Result<Option<ScreenCaptureResult>> {
         use sha2::{Digest, Sha256};
 
         let screens = Screen::all()
@@ -85,9 +127,9 @@ impl ScreenWatcher {
             let rgba = image.as_raw();
             let mut hasher = Sha256::new();
 
-            // Sample pixels for faster hashing (every 100th pixel)
+            // Sample pixels for faster hashing (every 200th pixel for speed)
             for (i, chunk) in rgba.chunks(4).enumerate() {
-                if i % 100 == 0 {
+                if i % 200 == 0 {
                     hasher.update(chunk);
                 }
             }
@@ -98,15 +140,14 @@ impl ScreenWatcher {
             // Basic description based on image properties
             let description = format!("Screen {}x{} captured", image.width(), image.height());
 
-            Ok(Some((hash, description)))
+            Ok(Some(ScreenCaptureResult { hash, description }))
         } else {
             Ok(None)
         }
     }
 
     #[cfg(not(feature = "screenshots"))]
-    fn capture_screen(&self) -> Result<Option<(u64, String)>> {
-        // Without screenshot feature, we can't capture
+    fn capture_screen_sync() -> Result<Option<ScreenCaptureResult>> {
         Ok(None)
     }
 
