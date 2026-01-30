@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference — C-napse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="./" class="logo">
+                <div class="logo-icon">C</div>
+                <span>C-napse</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="./">Home</a></li>
+                <li><a href="./quickstart.html">Quick Start</a></li>
+                <li><a href="./configuration.html">Config</a></li>
+                <li><a href="./agents.html">Agents</a></li>
+                <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="docs-page">
+        <div class="container">
+            <aside class="docs-sidebar">
+                <div class="sidebar-section">
+                    <h4>API</h4>
+                    <ul>
+                        <li><a href="#overview" class="active">Overview</a></li>
+                        <li><a href="#rest">REST API</a></li>
+                        <li><a href="#websocket">WebSocket</a></li>
+                        <li><a href="#auth">Authentication</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <article class="docs-content">
+                <h1>API Reference</h1>
+                <p class="lead">Integrate C-napse into your applications.</p>
+
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        C-napse includes a server mode that exposes both REST and WebSocket
+                        APIs for integration with other applications.
+                    </p>
+
+                    <div class="code-block active">
+                        <pre><code># Start the server
+cnapse serve
+
+# With custom port
+cnapse serve --port 8080
+
+# Without web UI
+cnapse serve --no-web</code></pre>
+                    </div>
+
+                    <p>Default URL: <code>http://localhost:3000</code></p>
+                </section>
+
+                <section id="rest">
+                    <h2>REST API</h2>
+
+                    <h3>Health Check</h3>
+                    <div class="code-block active">
+                        <pre><code>GET /api/health
+
+Response:
+{
+  "status": "ok",
+  "version": "0.1.0"
+}</code></pre>
+                    </div>
+
+                    <h3>Chat</h3>
+                    <div class="code-block active">
+                        <pre><code>POST /api/chat
+Content-Type: application/json
+X-API-Key: your-api-key
+
+{
+  "message": "list files in current directory",
+  "provider": "ollama",  // optional
+  "agent": "shell",      // optional
+  "stream": false        // optional
+}
+
+Response:
+{
+  "id": "msg_123",
+  "content": "Here are the files...",
+  "agent": "shell",
+  "tokens": 150,
+  "tools_used": ["list_dir"]
+}</code></pre>
+                    </div>
+
+                    <h3>List Agents</h3>
+                    <div class="code-block active">
+                        <pre><code>GET /api/agents
+X-API-Key: your-api-key
+
+Response:
+{
+  "agents": [
+    {"name": "router", "description": "Query routing"},
+    {"name": "shell", "description": "System operations"},
+    {"name": "code", "description": "Code assistance"},
+    {"name": "research", "description": "Information retrieval"}
+  ]
+}</code></pre>
+                    </div>
+
+                    <h3>Chat History</h3>
+                    <div class="code-block active">
+                        <pre><code>GET /api/chat/history
+X-API-Key: your-api-key
+
+DELETE /api/chat/history
+X-API-Key: your-api-key</code></pre>
+                    </div>
+                </section>
+
+                <section id="websocket">
+                    <h2>WebSocket API</h2>
+                    <p>For real-time streaming responses:</p>
+
+                    <div class="code-block active">
+                        <pre><code>// Connect
+ws://localhost:3000/ws?token=your-api-key
+
+// Send message
+{
+  "type": "chat",
+  "id": "msg_123",
+  "content": "explain this code",
+  "stream": true
+}
+
+// Receive chunks
+{
+  "type": "chunk",
+  "id": "msg_123",
+  "content": "This function...",
+  "done": false
+}
+
+// Final response
+{
+  "type": "response",
+  "id": "msg_123",
+  "content": "Full response here",
+  "agent": "code",
+  "tokens": 250,
+  "done": true
+}</code></pre>
+                    </div>
+
+                    <h3>Message Types</h3>
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Direction</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>auth</code></td>
+                                <td>Client → Server</td>
+                                <td>Authenticate connection</td>
+                            </tr>
+                            <tr>
+                                <td><code>chat</code></td>
+                                <td>Client → Server</td>
+                                <td>Send a message</td>
+                            </tr>
+                            <tr>
+                                <td><code>cancel</code></td>
+                                <td>Client → Server</td>
+                                <td>Cancel current request</td>
+                            </tr>
+                            <tr>
+                                <td><code>chunk</code></td>
+                                <td>Server → Client</td>
+                                <td>Streaming response chunk</td>
+                            </tr>
+                            <tr>
+                                <td><code>response</code></td>
+                                <td>Server → Client</td>
+                                <td>Complete response</td>
+                            </tr>
+                            <tr>
+                                <td><code>tool</code></td>
+                                <td>Server → Client</td>
+                                <td>Tool execution update</td>
+                            </tr>
+                            <tr>
+                                <td><code>error</code></td>
+                                <td>Server → Client</td>
+                                <td>Error message</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="auth">
+                    <h2>Authentication</h2>
+                    <p>Generate an API key:</p>
+
+                    <div class="code-block active">
+                        <pre><code># Generate new key
+cnapse auth generate-server-key
+
+# Output: cnapse-abc123...</code></pre>
+                    </div>
+
+                    <p>Include in requests:</p>
+                    <div class="code-block active">
+                        <pre><code># Header
+X-API-Key: cnapse-abc123...
+
+# WebSocket query param
+ws://localhost:3000/ws?token=cnapse-abc123...</code></pre>
+                    </div>
+
+                    <div class="callout">
+                        <strong>Note:</strong> If no API key is configured, the server accepts
+                        all requests (development mode). Always set an API key in production.
+                    </div>
+                </section>
+
+                <div class="docs-nav">
+                    <a href="./tools.html" class="docs-nav-prev">← Tools</a>
+                    <a href="./" class="docs-nav-next">Home →</a>
+                </div>
+            </article>
+        </div>
+    </main>
+</body>
+</html>

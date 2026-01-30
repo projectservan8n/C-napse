@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agents — C-napse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="./" class="logo">
+                <div class="logo-icon">C</div>
+                <span>C-napse</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="./">Home</a></li>
+                <li><a href="./quickstart.html">Quick Start</a></li>
+                <li><a href="./configuration.html">Config</a></li>
+                <li><a href="./agents.html" class="active">Agents</a></li>
+                <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="docs-page">
+        <div class="container">
+            <aside class="docs-sidebar">
+                <div class="sidebar-section">
+                    <h4>Agents</h4>
+                    <ul>
+                        <li><a href="#overview" class="active">Overview</a></li>
+                        <li><a href="#router">Router Agent</a></li>
+                        <li><a href="#shell">Shell Agent</a></li>
+                        <li><a href="#code">Code Agent</a></li>
+                        <li><a href="#research">Research Agent</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <article class="docs-content">
+                <h1>Agent System</h1>
+                <p class="lead">Understanding C-napse's multi-agent architecture.</p>
+
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        C-napse uses a multi-agent system where specialized agents handle
+                        different types of tasks. A router agent analyzes your query and
+                        delegates to the most appropriate specialist.
+                    </p>
+
+                    <div class="code-block active">
+                        <pre><code>┌─────────────────────────────────────────┐
+│              User Query                 │
+└──────────────────┬──────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────┐
+│            Router Agent                 │
+│   Classifies intent, selects agent      │
+└──────────────────┬──────────────────────┘
+                   │
+       ┌───────────┼───────────┐
+       ▼           ▼           ▼
+   ┌───────┐  ┌────────┐  ┌──────────┐
+   │ Shell │  │  Code  │  │ Research │
+   │ Agent │  │ Agent  │  │  Agent   │
+   └───────┘  └────────┘  └──────────┘</code></pre>
+                    </div>
+                </section>
+
+                <section id="router">
+                    <h2>Router Agent</h2>
+                    <p>
+                        The router is the brain of the system. It analyzes queries to
+                        determine:
+                    </p>
+                    <ul>
+                        <li><strong>Intent classification</strong> — What does the user want?</li>
+                        <li><strong>Agent selection</strong> — Which specialist should handle this?</li>
+                        <li><strong>Context extraction</strong> — What information is needed?</li>
+                    </ul>
+
+                    <p>You can force a specific agent:</p>
+                    <div class="code-block active">
+                        <pre><code>cnapse -a shell "list all rust files"
+cnapse -a code "explain this function"</code></pre>
+                    </div>
+                </section>
+
+                <section id="shell">
+                    <h2>Shell Agent</h2>
+                    <p>
+                        Handles system operations, file management, and command execution.
+                    </p>
+
+                    <h3>Capabilities</h3>
+                    <ul>
+                        <li>Execute shell commands</li>
+                        <li>File and directory operations</li>
+                        <li>Process management</li>
+                        <li>System information queries</li>
+                    </ul>
+
+                    <h3>Example Queries</h3>
+                    <div class="code-block active">
+                        <pre><code>"list all files in this folder"
+"find large files over 100MB"
+"show running processes"
+"what's my disk usage?"
+"rename all .txt files to .md"</code></pre>
+                    </div>
+                </section>
+
+                <section id="code">
+                    <h2>Code Agent</h2>
+                    <p>
+                        Specializes in code understanding, generation, and modification.
+                    </p>
+
+                    <h3>Capabilities</h3>
+                    <ul>
+                        <li>Code explanation and analysis</li>
+                        <li>Bug identification</li>
+                        <li>Refactoring suggestions</li>
+                        <li>Code generation</li>
+                    </ul>
+
+                    <h3>Example Queries</h3>
+                    <div class="code-block active">
+                        <pre><code>"explain what this function does"
+"find potential bugs in this file"
+"refactor this code to be more readable"
+"write a test for this function"</code></pre>
+                    </div>
+                </section>
+
+                <section id="research">
+                    <h2>Research Agent</h2>
+                    <p>
+                        Handles information gathering and knowledge synthesis.
+                    </p>
+
+                    <h3>Capabilities</h3>
+                    <ul>
+                        <li>Answer general questions</li>
+                        <li>Explain concepts</li>
+                        <li>Compare technologies</li>
+                        <li>Summarize documentation</li>
+                    </ul>
+
+                    <h3>Example Queries</h3>
+                    <div class="code-block active">
+                        <pre><code>"what's the difference between TCP and UDP?"
+"explain async/await in Rust"
+"how does memory management work in Go?"
+"compare React vs Vue for this use case"</code></pre>
+                    </div>
+                </section>
+
+                <div class="docs-nav">
+                    <a href="./configuration.html" class="docs-nav-prev">← Configuration</a>
+                    <a href="./tools.html" class="docs-nav-next">Tools →</a>
+                </div>
+            </article>
+        </div>
+    </main>
+</body>
+</html>

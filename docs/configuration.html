@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration — C-napse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="./" class="logo">
+                <div class="logo-icon">C</div>
+                <span>C-napse</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="./">Home</a></li>
+                <li><a href="./quickstart.html">Quick Start</a></li>
+                <li><a href="./configuration.html" class="active">Config</a></li>
+                <li><a href="./agents.html">Agents</a></li>
+                <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="docs-page">
+        <div class="container">
+            <aside class="docs-sidebar">
+                <div class="sidebar-section">
+                    <h4>Configuration</h4>
+                    <ul>
+                        <li><a href="#files" class="active">Config Files</a></li>
+                        <li><a href="#inference">Inference</a></li>
+                        <li><a href="#providers">Providers</a></li>
+                        <li><a href="#telegram">Telegram</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <article class="docs-content">
+                <h1>Configuration</h1>
+                <p class="lead">Configure C-napse to work the way you want.</p>
+
+                <section id="files">
+                    <h2>Config Files</h2>
+                    <p>C-napse stores configuration in your home directory:</p>
+
+                    <div class="code-block active">
+                        <pre><code>~/.cnapse/
+├── config.toml      # Main settings
+├── credentials.toml # API keys (encrypted)
+└── models/          # Local model storage</code></pre>
+                    </div>
+
+                    <p>You can edit these files directly or use the CLI:</p>
+
+                    <div class="code-block active">
+                        <pre><code># View all settings
+cnapse config list
+
+# Get a specific setting
+cnapse config get inference.provider
+
+# Set a value
+cnapse config set inference.provider anthropic</code></pre>
+                    </div>
+                </section>
+
+                <section id="inference">
+                    <h2>Inference Settings</h2>
+
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th>Setting</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>inference.provider</code></td>
+                                <td>ollama</td>
+                                <td>AI provider (ollama, anthropic, openai)</td>
+                            </tr>
+                            <tr>
+                                <td><code>inference.model</code></td>
+                                <td>qwen2.5:0.5b</td>
+                                <td>Model to use</td>
+                            </tr>
+                            <tr>
+                                <td><code>inference.temperature</code></td>
+                                <td>0.7</td>
+                                <td>Response creativity (0-1)</td>
+                            </tr>
+                            <tr>
+                                <td><code>inference.max_tokens</code></td>
+                                <td>4096</td>
+                                <td>Max response length</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="providers">
+                    <h2>Provider Configuration</h2>
+
+                    <h3>Ollama (Local)</h3>
+                    <div class="code-block active">
+                        <pre><code># List available models
+ollama list
+
+# Pull a new model
+ollama pull llama3.2:3b
+
+# Set as default
+cnapse config set inference.model llama3.2:3b</code></pre>
+                    </div>
+
+                    <h3>Anthropic</h3>
+                    <div class="code-block active">
+                        <pre><code># Set API key
+cnapse auth set anthropic sk-ant-...
+
+# Use Claude models
+cnapse config set inference.provider anthropic
+cnapse config set inference.model claude-sonnet-4-20250514</code></pre>
+                    </div>
+
+                    <h3>OpenAI</h3>
+                    <div class="code-block active">
+                        <pre><code># Set API key
+cnapse auth set openai sk-...
+
+# Use GPT models
+cnapse config set inference.provider openai
+cnapse config set inference.model gpt-4o</code></pre>
+                    </div>
+                </section>
+
+                <section id="telegram">
+                    <h2>Telegram Bot</h2>
+                    <p>Control your PC remotely via Telegram:</p>
+
+                    <div class="code-block active">
+                        <pre><code># Set bot token (from @BotFather)
+cnapse auth set telegram YOUR_BOT_TOKEN
+
+# Allow specific users (optional)
+cnapse config set telegram.allowed_users [123456789]
+
+# Start the bot
+cnapse telegram</code></pre>
+                    </div>
+
+                    <div class="callout">
+                        <strong>Security:</strong> Always restrict allowed users in production.
+                        Without restrictions, anyone can control your PC.
+                    </div>
+                </section>
+
+                <div class="docs-nav">
+                    <a href="./quickstart.html" class="docs-nav-prev">← Quick Start</a>
+                    <a href="./agents.html" class="docs-nav-next">Agents →</a>
+                </div>
+            </article>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-napse — Autonomous PC Intelligence</title>
+    <meta name="description" content="Neural agentic system for autonomous PC control. Local-first AI that thinks, acts, and adapts.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --border: #1a1a1a;
+            --border-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent: #00d4ff;
+            --accent-dim: #00d4ff22;
+            --success: #00ff88;
+            --warning: #ffaa00;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent) 0%, #0088ff 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 400;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a.active {
+            color: var(--text-primary);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 160px 0 100px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 32px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: 600;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent) 0%, #0088ff 50%, #8800ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 48px;
+            line-height: 1.7;
+        }
+
+        /* Install Section */
+        .install-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .install-tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .install-tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .install-tab:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .install-tab.active {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .install-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            display: none;
+            position: relative;
+        }
+
+        .install-box.active {
+            display: block;
+        }
+
+        .install-box code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .install-box .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .install-box .copy-btn:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        /* Architecture Section */
+        .section {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+
+        .section-desc {
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-dim);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* Status Table */
+        .status-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .status-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-header h3 {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .status-table {
+            width: 100%;
+        }
+
+        .status-row {
+            display: grid;
+            grid-template-columns: 1fr 120px 100px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .status-row:last-child {
+            border-bottom: none;
+        }
+
+        .status-row:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .status-name {
+            font-weight: 500;
+        }
+
+        .status-desc {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.stable {
+            background: #00ff8822;
+            color: var(--success);
+        }
+
+        .status-badge.alpha {
+            background: #00d4ff22;
+            color: var(--accent);
+        }
+
+        .status-badge.preview {
+            background: #ffaa0022;
+            color: var(--warning);
+        }
+
+        /* Docs Section */
+        .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .docs-link {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .docs-link:hover {
+            border-color: var(--accent);
+            background: var(--bg-tertiary);
+        }
+
+        .docs-link-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .docs-link-text h4 {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .docs-link-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 48px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 120px 0 80px;
+            }
+
+            .section {
+                padding: 64px 0;
+            }
+
+            .status-row {
+                grid-template-columns: 1fr 80px;
+            }
+
+            .status-row .status-desc {
+                display: none;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">
+                <div class="logo-icon">C</div>
+                <span>C-napse</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Home</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#status">Status</a></li>
+                <li><a href="#docs">Docs</a></li>
+                <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-badge fade-in">
+                    Technical Preview
+                </div>
+                <h1 class="fade-in delay-1">
+                    <span>C-napse</span>
+                </h1>
+                <p class="hero-subtitle fade-in delay-2">
+                    Autonomous PC intelligence. A neural agentic system that observes,
+                    reasons, and acts — transforming natural language into executed actions
+                    across your entire system.
+                </p>
+
+                <div class="install-section fade-in delay-3">
+                    <div class="install-tabs">
+                        <button class="install-tab active" data-target="windows">Windows</button>
+                        <button class="install-tab" data-target="macos">macOS</button>
+                        <button class="install-tab" data-target="linux">Linux</button>
+                    </div>
+
+                    <div class="install-box active" id="windows">
+                        <code>irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex</code>
+                        <button class="copy-btn" onclick="copyInstall('windows')">Copy</button>
+                    </div>
+
+                    <div class="install-box" id="macos">
+                        <code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code>
+                        <button class="copy-btn" onclick="copyInstall('macos')">Copy</button>
+                    </div>
+
+                    <div class="install-box" id="linux">
+                        <code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code>
+                        <button class="copy-btn" onclick="copyInstall('linux')">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture -->
+        <section class="section" id="architecture">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-label">Architecture</div>
+                    <h2 class="section-title">Cognitive Agent System</h2>
+                    <p class="section-desc">
+                        Built on a multi-agent architecture that mirrors cognitive processes —
+                        perceive, reason, plan, execute.
+                    </p>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3>Neural Routing</h3>
+                        <p>
+                            Intelligent query classification routes requests to specialized agents —
+                            shell, code, research, or automation — based on semantic understanding.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">👁️</div>
+                        <h3>Screen Perception</h3>
+                        <p>
+                            Real-time visual context through screen capture and analysis.
+                            Understands what you're working on without explicit context.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Local Execution</h3>
+                        <p>
+                            Zero-latency tool execution with direct system access.
+                            Files, processes, shell commands — all native, all instant.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">🔗</div>
+                        <h3>Adaptive Memory</h3>
+                        <p>
+                            Persistent context through vector embeddings. Learns your
+                            codebase patterns and retrieves relevant context semantically.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Cross-Device Sync</h3>
+                        <p>
+                            Seamless continuity between desktop and mobile via Telegram
+                            integration. Your AI assistant, everywhere.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">🔌</div>
+                        <h3>Provider Agnostic</h3>
+                        <p>
+                            Ollama for local inference, or connect to Anthropic, OpenAI,
+                            and more. Your models, your choice.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Status -->
+        <section class="section" id="status">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-label">Development</div>
+                    <h2 class="section-title">System Status</h2>
+                    <p class="section-desc">
+                        Current development status of C-napse components.
+                    </p>
+                </div>
+
+                <div class="status-section">
+                    <div class="status-header">
+                        <h3>Components</h3>
+                        <span class="mono" style="color: var(--text-muted); font-size: 12px;">v0.1.0</span>
+                    </div>
+                    <div class="status-table">
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">CLI Runtime</div>
+                                <div class="status-desc">Core TUI interface and command execution</div>
+                            </div>
+                            <span class="status-badge alpha">Alpha</span>
+                        </div>
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">Agent Router</div>
+                                <div class="status-desc">Multi-agent orchestration and routing</div>
+                            </div>
+                            <span class="status-badge preview">Preview</span>
+                        </div>
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">Tool System</div>
+                                <div class="status-desc">File, process, and shell operations</div>
+                            </div>
+                            <span class="status-badge stable">Stable</span>
+                        </div>
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">Screen Watcher</div>
+                                <div class="status-desc">Visual context capture and analysis</div>
+                            </div>
+                            <span class="status-badge preview">Preview</span>
+                        </div>
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">Memory System</div>
+                                <div class="status-desc">Vector embeddings and semantic retrieval</div>
+                            </div>
+                            <span class="status-badge alpha">Alpha</span>
+                        </div>
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">Telegram Bot</div>
+                                <div class="status-desc">Mobile interface and notifications</div>
+                            </div>
+                            <span class="status-badge stable">Stable</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Docs -->
+        <section class="section" id="docs">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-label">Resources</div>
+                    <h2 class="section-title">Documentation</h2>
+                    <p class="section-desc">
+                        Everything you need to get started with C-napse.
+                    </p>
+                </div>
+
+                <div class="docs-grid">
+                    <a href="./quickstart.html" class="docs-link">
+                        <div class="docs-link-icon">🚀</div>
+                        <div class="docs-link-text">
+                            <h4>Quick Start</h4>
+                            <p>Get up and running in 2 minutes</p>
+                        </div>
+                    </a>
+
+                    <a href="./configuration.html" class="docs-link">
+                        <div class="docs-link-icon">⚙️</div>
+                        <div class="docs-link-text">
+                            <h4>Configuration</h4>
+                            <p>Customize providers and settings</p>
+                        </div>
+                    </a>
+
+                    <a href="./agents.html" class="docs-link">
+                        <div class="docs-link-icon">🤖</div>
+                        <div class="docs-link-text">
+                            <h4>Agents</h4>
+                            <p>Understanding the agent system</p>
+                        </div>
+                    </a>
+
+                    <a href="./tools.html" class="docs-link">
+                        <div class="docs-link-icon">🔧</div>
+                        <div class="docs-link-text">
+                            <h4>Tools</h4>
+                            <p>Available tools and capabilities</p>
+                        </div>
+                    </a>
+
+                    <a href="./api.html" class="docs-link">
+                        <div class="docs-link-icon">📡</div>
+                        <div class="docs-link-text">
+                            <h4>API Reference</h4>
+                            <p>Server API and WebSocket protocol</p>
+                        </div>
+                    </a>
+
+                    <a href="https://github.com/projectservan8n/C-napse" class="docs-link" target="_blank">
+                        <div class="docs-link-icon">📦</div>
+                        <div class="docs-link-text">
+                            <h4>Source Code</h4>
+                            <p>View on GitHub</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>
+                Built with Rust. Open source under MIT.
+                <a href="https://github.com/projectservan8n/C-napse">GitHub</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.install-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update tabs
+                document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update content
+                const target = tab.dataset.target;
+                document.querySelectorAll('.install-box').forEach(box => box.classList.remove('active'));
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        // Copy functionality
+        function copyInstall(platform) {
+            const box = document.getElementById(platform);
+            const code = box.querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = box.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 2000);
+            });
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

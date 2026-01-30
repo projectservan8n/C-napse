@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start — C-napse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="./" class="logo">
+                <div class="logo-icon">C</div>
+                <span>C-napse</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="./">Home</a></li>
+                <li><a href="./quickstart.html" class="active">Quick Start</a></li>
+                <li><a href="./configuration.html">Config</a></li>
+                <li><a href="./agents.html">Agents</a></li>
+                <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="docs-page">
+        <div class="container">
+            <aside class="docs-sidebar">
+                <div class="sidebar-section">
+                    <h4>Getting Started</h4>
+                    <ul>
+                        <li><a href="#install" class="active">Installation</a></li>
+                        <li><a href="#first-run">First Run</a></li>
+                        <li><a href="#providers">Setup Providers</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h4>Basic Usage</h4>
+                    <ul>
+                        <li><a href="#commands">Commands</a></li>
+                        <li><a href="#tui">TUI Mode</a></li>
+                        <li><a href="#query">Query Mode</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <article class="docs-content">
+                <h1>Quick Start</h1>
+                <p class="lead">Get C-napse running on your machine in under 2 minutes.</p>
+
+                <section id="install">
+                    <h2>Installation</h2>
+                    <p>Install C-napse with a single command:</p>
+
+                    <div class="code-tabs">
+                        <button class="code-tab active" data-lang="powershell">Windows</button>
+                        <button class="code-tab" data-lang="bash">macOS / Linux</button>
+                    </div>
+
+                    <div class="code-block active" data-lang="powershell">
+                        <pre><code>irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex</code></pre>
+                    </div>
+
+                    <div class="code-block" data-lang="bash">
+                        <pre><code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code></pre>
+                    </div>
+
+                    <p>This will:</p>
+                    <ul>
+                        <li>Download the latest pre-built binary</li>
+                        <li>Add it to your PATH</li>
+                        <li>Install Ollama (if not present)</li>
+                        <li>Pull a lightweight AI model</li>
+                    </ul>
+                </section>
+
+                <section id="first-run">
+                    <h2>First Run</h2>
+                    <p>After installation, restart your terminal and run:</p>
+
+                    <div class="code-block active">
+                        <pre><code>cnapse</code></pre>
+                    </div>
+
+                    <p>This launches the interactive TUI (Terminal User Interface), similar to Claude Code.</p>
+
+                    <div class="callout">
+                        <strong>Tip:</strong> You can also use the shorter aliases <code>cn</code> or <code>c</code>.
+                    </div>
+                </section>
+
+                <section id="providers">
+                    <h2>Setup Providers</h2>
+                    <p>C-napse works with multiple AI providers. By default, it uses Ollama for local inference.</p>
+
+                    <h3>Local (Ollama)</h3>
+                    <p>Already configured during installation. To use a different model:</p>
+
+                    <div class="code-block active">
+                        <pre><code>cnapse config set inference.model qwen2.5:7b</code></pre>
+                    </div>
+
+                    <h3>Cloud Providers</h3>
+                    <p>For better quality responses, configure a cloud provider:</p>
+
+                    <div class="code-block active">
+                        <pre><code># Anthropic (Claude)
+cnapse auth set anthropic YOUR_API_KEY
+
+# OpenAI
+cnapse auth set openai YOUR_API_KEY
+
+# Set as default
+cnapse config set inference.provider anthropic</code></pre>
+                    </div>
+                </section>
+
+                <section id="commands">
+                    <h2>Commands</h2>
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th>Command</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>cnapse</code></td>
+                                <td>Start interactive TUI</td>
+                            </tr>
+                            <tr>
+                                <td><code>cnapse "query"</code></td>
+                                <td>Run a single query</td>
+                            </tr>
+                            <tr>
+                                <td><code>cnapse run</code></td>
+                                <td>Interactive mode with options</td>
+                            </tr>
+                            <tr>
+                                <td><code>cnapse serve</code></td>
+                                <td>Start API server</td>
+                            </tr>
+                            <tr>
+                                <td><code>cnapse config</code></td>
+                                <td>Manage configuration</td>
+                            </tr>
+                            <tr>
+                                <td><code>cnapse auth</code></td>
+                                <td>Manage API keys</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="tui">
+                    <h2>TUI Mode</h2>
+                    <p>The TUI provides a Claude Code-like experience:</p>
+                    <ul>
+                        <li>Type your query and press <kbd>Enter</kbd></li>
+                        <li><kbd>Ctrl+C</kbd> to exit</li>
+                        <li><kbd>Ctrl+L</kbd> to clear screen</li>
+                        <li><kbd>Up/Down</kbd> arrows for history</li>
+                    </ul>
+                </section>
+
+                <section id="query">
+                    <h2>Query Mode</h2>
+                    <p>For quick one-off queries:</p>
+
+                    <div class="code-block active">
+                        <pre><code># Ask a question
+cnapse "what files are in this folder?"
+
+# With specific provider
+cnapse -p anthropic "explain this code"
+
+# With specific agent
+cnapse -a code "refactor this function"</code></pre>
+                    </div>
+                </section>
+
+                <div class="docs-nav">
+                    <a href="./" class="docs-nav-prev">← Home</a>
+                    <a href="./configuration.html" class="docs-nav-next">Configuration →</a>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <script>
+        document.querySelectorAll('.code-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const lang = tab.dataset.lang;
+                document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.code-block').forEach(b => b.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelector(`.code-block[data-lang="${lang}"]`).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
