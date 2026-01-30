@@ -4,10 +4,495 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quick Start — C-napse</title>
+    <meta name="description" content="Get started with C-napse in minutes. Installation, setup, and your first commands.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --bg-card: #0d0d0d;
+            --border: #1a1a1a;
+            --border-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #555555;
+            --accent: #00d4ff;
+            --accent-secondary: #8b5cf6;
+            --accent-dim: #00d4ff15;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff4444;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo {
+            font-family: 'Silkscreen', cursive;
+            font-weight: 400;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .nav-links { display: flex; gap: 40px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-primary); }
+
+        /* Page Layout */
+        .docs-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 60px;
+            padding-top: 120px;
+            padding-bottom: 100px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 120px;
+            height: fit-content;
+        }
+
+        .sidebar-section {
+            margin-bottom: 32px;
+        }
+
+        .sidebar-section h4 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-section ul {
+            list-style: none;
+        }
+
+        .sidebar-section li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-left: -12px;
+        }
+
+        .sidebar-section a:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .sidebar-section a.active {
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 800px;
+        }
+
+        .main-content h1 {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content .lead {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            line-height: 1.7;
+        }
+
+        .main-content h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-top: 64px;
+            margin-bottom: 24px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-content h2:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .main-content h2 svg {
+            color: var(--accent);
+        }
+
+        .main-content h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .main-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .main-content ul, .main-content ol {
+            margin-bottom: 20px;
+            padding-left: 24px;
+            color: var(--text-secondary);
+        }
+
+        .main-content li {
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .main-content a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .main-content a:hover {
+            text-decoration: underline;
+        }
+
+        .main-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+            padding: 3px 8px;
+            border-radius: 6px;
+            color: var(--accent);
+        }
+
+        /* Step Cards */
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -12px;
+            left: 24px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            color: var(--bg-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .step-card h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .step-card p {
+            margin-bottom: 16px;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-header span {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .code-block pre {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            background: none;
+            padding: 0;
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .code-block .comment { color: var(--text-muted); }
+        .code-block .string { color: var(--success); }
+        .code-block .keyword { color: var(--accent-secondary); }
+        .code-block .function { color: var(--accent); }
+
+        /* Callout */
+        .callout {
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .callout.info {
+            background: var(--accent-dim);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .callout.warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid rgba(255, 170, 0, 0.3);
+        }
+
+        .callout.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .callout-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .callout.info .callout-icon { color: var(--accent); }
+        .callout.warning .callout-icon { color: var(--warning); }
+        .callout.success .callout-icon { color: var(--success); }
+
+        .callout-content h5 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .callout.info .callout-content h5 { color: var(--accent); }
+        .callout.warning .callout-content h5 { color: var(--warning); }
+        .callout.success .callout-content h5 { color: var(--success); }
+
+        .callout-content p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Requirements Grid */
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .requirement-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .requirement-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .requirement-text h5 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .requirement-text p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Navigation Footer */
+        .docs-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 80px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .docs-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .docs-nav a:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .docs-nav .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .docs-nav .title {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            padding: 48px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p { color: var(--text-muted); font-size: 14px; }
+        footer a { color: var(--text-secondary); text-decoration: none; }
+        footer a:hover { color: var(--accent); }
+
+        @media (max-width: 1024px) {
+            .docs-layout {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .requirements-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -18,189 +503,311 @@
             </a>
             <ul class="nav-links">
                 <li><a href="./">Home</a></li>
-                <li><a href="./quickstart.html" class="active">Quick Start</a></li>
-                <li><a href="./configuration.html">Config</a></li>
-                <li><a href="./agents.html">Agents</a></li>
+                <li><a href="./architecture.html">Architecture</a></li>
+                <li><a href="./status.html">Status</a></li>
+                <li><a href="./docs.html" class="active">Docs</a></li>
                 <li><a href="https://github.com/projectservan8n/C-napse" target="_blank">GitHub</a></li>
             </ul>
         </div>
     </nav>
 
-    <main class="docs-page">
-        <div class="container">
-            <aside class="docs-sidebar">
+    <main class="container">
+        <div class="docs-layout">
+            <aside class="sidebar">
                 <div class="sidebar-section">
                     <h4>Getting Started</h4>
                     <ul>
-                        <li><a href="#install" class="active">Installation</a></li>
-                        <li><a href="#first-run">First Run</a></li>
-                        <li><a href="#providers">Setup Providers</a></li>
+                        <li><a href="./quickstart.html" class="active">Quick Start</a></li>
+                        <li><a href="./configuration.html">Configuration</a></li>
                     </ul>
                 </div>
                 <div class="sidebar-section">
-                    <h4>Basic Usage</h4>
+                    <h4>Core Concepts</h4>
                     <ul>
-                        <li><a href="#commands">Commands</a></li>
-                        <li><a href="#tui">TUI Mode</a></li>
-                        <li><a href="#query">Query Mode</a></li>
+                        <li><a href="./agents.html">Agents</a></li>
+                        <li><a href="./tools.html">Tools</a></li>
+                        <li><a href="./architecture.html">Architecture</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h4>Reference</h4>
+                    <ul>
+                        <li><a href="./api.html">API Reference</a></li>
+                        <li><a href="./research.html">Research</a></li>
                     </ul>
                 </div>
             </aside>
 
-            <article class="docs-content">
+            <div class="main-content">
                 <h1>Quick Start</h1>
-                <p class="lead">Get C-napse running on your machine in under 2 minutes.</p>
+                <p class="lead">
+                    Get C-napse running on your system in under 2 minutes. This guide covers installation,
+                    initial configuration, and running your first autonomous task.
+                </p>
 
-                <section id="install">
-                    <h2>Installation</h2>
-                    <p>Install C-napse with a single command:</p>
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                    </svg>
+                    Requirements
+                </h2>
 
-                    <div class="code-tabs">
-                        <button class="code-tab active" data-lang="powershell">Windows</button>
-                        <button class="code-tab" data-lang="bash">macOS / Linux</button>
+                <div class="requirements-grid">
+                    <div class="requirement-card">
+                        <div class="requirement-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                        </div>
+                        <div class="requirement-text">
+                            <h5>Operating System</h5>
+                            <p>Windows 10+, macOS, Linux</p>
+                        </div>
                     </div>
+                    <div class="requirement-card">
+                        <div class="requirement-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            </svg>
+                        </div>
+                        <div class="requirement-text">
+                            <h5>Memory</h5>
+                            <p>4GB RAM minimum</p>
+                        </div>
+                    </div>
+                    <div class="requirement-card">
+                        <div class="requirement-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </div>
+                        <div class="requirement-text">
+                            <h5>Network</h5>
+                            <p>Internet for API providers</p>
+                        </div>
+                    </div>
+                    <div class="requirement-card">
+                        <div class="requirement-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
+                            </svg>
+                        </div>
+                        <div class="requirement-text">
+                            <h5>Storage</h5>
+                            <p>50MB for binaries</p>
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="code-block active" data-lang="powershell">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Installation
+                </h2>
+
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4>Run the installer</h4>
+                    <p>Open your terminal and run the appropriate command for your operating system:</p>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>PowerShell (Windows)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
                         <pre><code>irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex</code></pre>
                     </div>
 
-                    <div class="code-block" data-lang="bash">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Bash (macOS / Linux)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
                         <pre><code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code></pre>
                     </div>
+                </div>
 
-                    <p>This will:</p>
-                    <ul>
-                        <li>Download the latest pre-built binary</li>
-                        <li>Add it to your PATH</li>
-                        <li>Install Ollama (if not present)</li>
-                        <li>Pull a lightweight AI model</li>
-                    </ul>
-                </section>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4>Verify installation</h4>
+                    <p>Confirm C-napse is installed correctly by checking the version:</p>
 
-                <section id="first-run">
-                    <h2>First Run</h2>
-                    <p>After installation, restart your terminal and run:</p>
-
-                    <div class="code-block active">
-                        <pre><code>cnapse</code></pre>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Terminal</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code>cnapse --version</code></pre>
                     </div>
 
-                    <p>This launches the interactive TUI (Terminal User Interface), similar to Claude Code.</p>
-
-                    <div class="callout">
-                        <strong>Tip:</strong> You can also use the shorter aliases <code>cn</code> or <code>c</code>.
+                    <div class="callout success">
+                        <div class="callout-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div class="callout-content">
+                            <h5>Expected Output</h5>
+                            <p>You should see <code>cnapse 0.1.0</code> or similar version number.</p>
+                        </div>
                     </div>
-                </section>
+                </div>
 
-                <section id="providers">
-                    <h2>Setup Providers</h2>
-                    <p>C-napse works with multiple AI providers. By default, it uses Ollama for local inference.</p>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4>Configure your API provider</h4>
+                    <p>C-napse needs an LLM provider to function. Set up your preferred provider:</p>
 
-                    <h3>Local (Ollama)</h3>
-                    <p>Already configured during installation. To use a different model:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>config.toml</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code><span class="comment"># ~/.cnapse/config.toml</span>
 
-                    <div class="code-block active">
-                        <pre><code>cnapse config set inference.model qwen2.5:7b</code></pre>
+<span class="keyword">[llm]</span>
+<span class="function">provider</span> = <span class="string">"anthropic"</span>  <span class="comment"># or "openai", "ollama", "openrouter"</span>
+<span class="function">model</span> = <span class="string">"claude-3-5-sonnet-20241022"</span>
+
+<span class="keyword">[llm.anthropic]</span>
+<span class="function">api_key</span> = <span class="string">"sk-ant-..."</span>  <span class="comment"># Set via ANTHROPIC_API_KEY env var</span>
+
+<span class="keyword">[llm.openrouter]</span>
+<span class="function">api_key</span> = <span class="string">"sk-or-..."</span>  <span class="comment"># Set via OPENROUTER_API_KEY env var</span></code></pre>
                     </div>
 
-                    <h3>Cloud Providers</h3>
-                    <p>For better quality responses, configure a cloud provider:</p>
-
-                    <div class="code-block active">
-                        <pre><code># Anthropic (Claude)
-cnapse auth set anthropic YOUR_API_KEY
-
-# OpenAI
-cnapse auth set openai YOUR_API_KEY
-
-# Set as default
-cnapse config set inference.provider anthropic</code></pre>
+                    <div class="callout warning">
+                        <div class="callout-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <div class="callout-content">
+                            <h5>Security Note</h5>
+                            <p>Never commit API keys to version control. Use environment variables instead.</p>
+                        </div>
                     </div>
-                </section>
+                </div>
 
-                <section id="commands">
-                    <h2>Commands</h2>
-                    <table class="docs-table">
-                        <thead>
-                            <tr>
-                                <th>Command</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>cnapse</code></td>
-                                <td>Start interactive TUI</td>
-                            </tr>
-                            <tr>
-                                <td><code>cnapse "query"</code></td>
-                                <td>Run a single query</td>
-                            </tr>
-                            <tr>
-                                <td><code>cnapse run</code></td>
-                                <td>Interactive mode with options</td>
-                            </tr>
-                            <tr>
-                                <td><code>cnapse serve</code></td>
-                                <td>Start API server</td>
-                            </tr>
-                            <tr>
-                                <td><code>cnapse config</code></td>
-                                <td>Manage configuration</td>
-                            </tr>
-                            <tr>
-                                <td><code>cnapse auth</code></td>
-                                <td>Manage API keys</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Your First Task
+                </h2>
 
-                <section id="tui">
-                    <h2>TUI Mode</h2>
-                    <p>The TUI provides a Claude Code-like experience:</p>
-                    <ul>
-                        <li>Type your query and press <kbd>Enter</kbd></li>
-                        <li><kbd>Ctrl+C</kbd> to exit</li>
-                        <li><kbd>Ctrl+L</kbd> to clear screen</li>
-                        <li><kbd>Up/Down</kbd> arrows for history</li>
-                    </ul>
-                </section>
+                <p>Launch C-napse and try your first autonomous task:</p>
 
-                <section id="query">
-                    <h2>Query Mode</h2>
-                    <p>For quick one-off queries:</p>
-
-                    <div class="code-block active">
-                        <pre><code># Ask a question
-cnapse "what files are in this folder?"
-
-# With specific provider
-cnapse -p anthropic "explain this code"
-
-# With specific agent
-cnapse -a code "refactor this function"</code></pre>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Terminal</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                </section>
+                    <pre><code><span class="comment"># Start C-napse</span>
+cnapse
+
+<span class="comment"># Or start with a specific task</span>
+cnapse <span class="string">"List all files in the current directory and summarize their purpose"</span></code></pre>
+                </div>
+
+                <h3>Example Tasks</h3>
+
+                <p>Here are some things you can ask C-napse to do:</p>
+
+                <ul>
+                    <li><strong>File operations:</strong> "Create a new folder called 'projects' and organize my downloads by file type"</li>
+                    <li><strong>Code analysis:</strong> "Analyze this codebase and explain the architecture"</li>
+                    <li><strong>System tasks:</strong> "Check my system's resource usage and report on memory usage"</li>
+                    <li><strong>Research:</strong> "Search for the latest news about Rust programming and summarize the key points"</li>
+                </ul>
+
+                <div class="callout info">
+                    <div class="callout-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <div class="callout-content">
+                        <h5>Pro Tip</h5>
+                        <p>Use the <code>--verbose</code> flag to see detailed reasoning and tool usage during task execution.</p>
+                    </div>
+                </div>
+
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 20V10"></path>
+                        <path d="M12 20V4"></path>
+                        <path d="M6 20v-6"></path>
+                    </svg>
+                    Next Steps
+                </h2>
+
+                <ul>
+                    <li><a href="./configuration.html">Configure advanced settings</a> — Customize providers, memory, and agent behavior</li>
+                    <li><a href="./agents.html">Learn about agents</a> — Understand the multi-agent architecture</li>
+                    <li><a href="./tools.html">Explore available tools</a> — See all capabilities C-napse offers</li>
+                    <li><a href="./api.html">API reference</a> — Build integrations with the C-napse API</li>
+                </ul>
 
                 <div class="docs-nav">
-                    <a href="./" class="docs-nav-prev">← Home</a>
-                    <a href="./configuration.html" class="docs-nav-next">Configuration →</a>
+                    <a href="./docs.html">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        <div>
+                            <span class="label">Previous</span>
+                            <span class="title">Documentation</span>
+                        </div>
+                    </a>
+                    <a href="./configuration.html">
+                        <div>
+                            <span class="label">Next</span>
+                            <span class="title">Configuration</span>
+                        </div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
                 </div>
-            </article>
+            </div>
         </div>
     </main>
 
+    <footer>
+        <div class="container">
+            <p>Built with Rust. Open source under MIT. <a href="https://github.com/projectservan8n/C-napse">GitHub</a></p>
+        </div>
+    </footer>
+
     <script>
-        document.querySelectorAll('.code-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const lang = tab.dataset.lang;
-                document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.code-block').forEach(b => b.classList.remove('active'));
-                tab.classList.add('active');
-                document.querySelector(`.code-block[data-lang="${lang}"]`).classList.add('active');
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'Copied!';
+                btn.style.background = 'var(--success)';
+                btn.style.borderColor = 'var(--success)';
+                btn.style.color = 'var(--bg-primary)';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 2000);
             });
-        });
+        }
     </script>
 </body>
 </html>
