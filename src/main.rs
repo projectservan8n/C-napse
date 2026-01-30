@@ -65,7 +65,7 @@ async fn main() -> anyhow::Result<()> {
             cnapse::cli::commands::sync::execute(args, settings).await?;
         }
         None => {
-            // No command provided - check for direct query or start REPL
+            // No command provided - check for direct query or start TUI
             if let Some(query) = cli.query {
                 // Direct query mode
                 cnapse::cli::commands::run::execute_query(
@@ -78,14 +78,8 @@ async fn main() -> anyhow::Result<()> {
                 )
                 .await?;
             } else {
-                // Interactive REPL mode
-                cnapse::cli::commands::repl::execute(
-                    cli.provider.as_deref(),
-                    cli.output.as_deref(),
-                    !cli.no_memory,
-                    settings,
-                )
-                .await?;
+                // Interactive TUI mode (like Claude Code)
+                cnapse::tui::run().await?;
             }
         }
     }

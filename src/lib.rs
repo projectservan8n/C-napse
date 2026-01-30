@@ -15,6 +15,7 @@ pub mod server;
 pub mod sync;
 pub mod telegram;
 pub mod tools;
+pub mod tui;
 
 // Re-export commonly used items
 pub use error::{CnapseError, Result};

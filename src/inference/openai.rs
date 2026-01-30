@@ -14,11 +14,11 @@ pub struct OpenAIBackend {
 }
 
 impl OpenAIBackend {
-    pub fn new(settings: Settings) -> Self {
-        Self {
+    pub fn new(settings: Settings) -> Result<Self, CnapseError> {
+        Ok(Self {
             client: reqwest::Client::new(),
             settings,
-        }
+        })
     }
 }
 

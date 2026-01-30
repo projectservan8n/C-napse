@@ -704,6 +704,22 @@ impl Settings {
     pub fn default_toml() -> String {
         toml::to_string_pretty(&Self::default()).expect("Failed to serialize default config")
     }
+
+    /// Get the default provider name
+    pub fn get_default_provider(&self) -> &str {
+        &self.general.default_provider
+    }
+
+    /// Get the default model for the current provider
+    pub fn get_default_model(&self) -> String {
+        match self.general.default_provider.as_str() {
+            "anthropic" => self.anthropic.model.clone(),
+            "openai" => self.openai.model.clone(),
+            "openrouter" => self.openrouter.model.clone(),
+            "ollama" => self.ollama.agents.router.clone(),
+            "local" | _ => self.local.agents.router.clone(),
+        }
+    }
 }
 
 #[cfg(test)]

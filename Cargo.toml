@@ -81,6 +81,10 @@ local-ip-address = "0.6"
 # Clipboard
 arboard = "3"
 
+# TUI
+ratatui = "0.28"
+crossterm = "0.28"
+
 # Screenshots (optional)
 screenshots = "0.8"
 
@@ -101,8 +105,9 @@ mockall = "0.12"
 tokio-test = "0.4"
 
 [features]
-default = ["local-inference"]
+default = ["local-inference", "screenshots"]
 local-inference = []
+screenshots = []
 cuda = []
 metal = []
 
