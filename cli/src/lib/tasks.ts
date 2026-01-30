@@ -557,16 +557,18 @@ ${existingResult.output}`;
       const [site, ...questionParts] = params.split('|');
       const question = questionParts.join('|');
 
-      // Site-specific URLs and input selectors
-      const sites: Record<string, { url: string; waitTime: number; searchSelector?: string }> = {
-        perplexity: { url: 'https://www.perplexity.ai', waitTime: 3 },
-        chatgpt: { url: 'https://chat.openai.com', waitTime: 4 },
-        claude: { url: 'https://claude.ai', waitTime: 4 },
-        google: { url: 'https://www.google.com', waitTime: 2 },
-        bing: { url: 'https://www.bing.com', waitTime: 2 },
+      // Site-specific URLs and response wait times
+      const sites: Record<string, { url: string; loadTime: number; responseTime: number }> = {
+        perplexity: { url: 'https://www.perplexity.ai', loadTime: 3, responseTime: 10 },
+        chatgpt: { url: 'https://chat.openai.com', loadTime: 4, responseTime: 15 },
+        claude: { url: 'https://claude.ai', loadTime: 4, responseTime: 15 },
+        google: { url: 'https://www.google.com', loadTime: 2, responseTime: 3 },
+        bing: { url: 'https://www.bing.com', loadTime: 2, responseTime: 3 },
+        bard: { url: 'https://bard.google.com', loadTime: 3, responseTime: 12 },
+        copilot: { url: 'https://copilot.microsoft.com', loadTime: 3, responseTime: 12 },
       };
 
-      const siteConfig = sites[site.toLowerCase()] || { url: `https://${site}`, waitTime: 3 };
+      const siteConfig = sites[site.toLowerCase()] || { url: `https://${site}`, loadTime: 3, responseTime: 10 };
 
       // Open the site
       if (process.platform === 'win32') {
@@ -578,7 +580,7 @@ ${existingResult.output}`;
       }
 
       // Wait for page to load
-      await sleep(siteConfig.waitTime * 1000);
+      await sleep(siteConfig.loadTime * 1000);
 
       // Type the question (most sites have autofocus on search/input)
       await computer.typeText(question);
@@ -587,7 +589,59 @@ ${existingResult.output}`;
       // Press Enter to submit
       await computer.pressKey('Return');
 
-      step.result = `Asked ${site}: "${question}"`;
+      // Wait for AI to generate response
+      await sleep(siteConfig.responseTime * 1000);
+
+      // Capture multiple screenshots by scrolling to get full response
+      const extractedParts: string[] = [];
+      const maxScrolls = 5; // Maximum number of scroll captures
+
+      for (let scrollIndex = 0; scrollIndex < maxScrolls; scrollIndex++) {
+        // Capture current view
+        const screenResult = await describeScreen();
+
+        // Ask AI to extract just the response text from what it sees
+        const extractPrompt = `You are looking at screenshot ${scrollIndex + 1} of ${site}. The user asked: "${question}"
+
+Extract ONLY the AI's response/answer text visible on screen. Do NOT include:
+- The user's question
+- Any UI elements, buttons, navigation, or headers
+- Any disclaimers, suggestions, or "related questions"
+- Any "Sources" or citation links
+- Any text you already extracted (avoid duplicates)
+
+${scrollIndex > 0 ? `Previous parts already extracted:\n${extractedParts.join('\n---\n')}\n\nOnly extract NEW text that continues from where we left off.` : ''}
+
+Just give me the actual answer text, word for word as it appears. If there's no more response text visible, respond with exactly: "END_OF_RESPONSE"`;
+
+        const extractResponse = await chat([{ role: 'user', content: extractPrompt }]);
+        const extracted = extractResponse.content.trim();
+
+        // Check if we've reached the end
+        if (extracted === 'END_OF_RESPONSE' || extracted.includes('END_OF_RESPONSE')) {
+          break;
+        }
+
+        // Check for "no response" indicators
+        if (extracted.toLowerCase().includes('response not ready') ||
+            extracted.toLowerCase().includes('no response visible') ||
+            extracted.toLowerCase().includes('no additional text')) {
+          if (scrollIndex === 0) {
+            extractedParts.push('Response not ready yet or page still loading.');
+          }
+          break;
+        }
+
+        extractedParts.push(extracted);
+
+        // Scroll down to see more content
+        await computer.scrollMouse(-5); // Scroll down
+        await sleep(1000); // Wait for scroll animation
+      }
+
+      // Combine all extracted parts
+      const fullResponse = extractedParts.join('\n\n');
+      step.result = `📝 ${site.charAt(0).toUpperCase() + site.slice(1)} says:\n\n${fullResponse}`;
       break;
     }
 
