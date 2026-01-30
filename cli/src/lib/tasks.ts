@@ -7,6 +7,8 @@
 import { chat, Message } from './api.js';
 import * as computer from '../tools/computer.js';
 import { describeScreen } from './vision.js';
+import * as filesystem from '../tools/filesystem.js';
+import { runCommand } from '../tools/shell.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -185,14 +187,36 @@ Before outputting steps, THINK through these questions:
    - Typing too fast -> add small waits
 
 ## AVAILABLE ACTIONS
+
+### App Control
 - open_app: Open app via Run dialog (e.g., "open_app:notepad", "open_app:code", "open_app:chrome")
+- open_folder: Open VS Code with folder (e.g., "open_folder:E:/MyProject")
+- focus_window: Focus by title (e.g., "focus_window:Notepad")
+
+### Input
 - type_text: Type text string (e.g., "type_text:Hello World")
 - press_key: Single key (e.g., "press_key:enter", "press_key:escape", "press_key:tab")
 - key_combo: Key combination (e.g., "key_combo:control+s", "key_combo:alt+f4", "key_combo:meta+r")
 - click: Mouse click (e.g., "click:left", "click:right")
+
+### File Operations
+- read_file: Read file contents (e.g., "read_file:E:/test/index.html")
+- write_file: Write content to file (e.g., "write_file:E:/test/output.txt|Hello World")
+- list_files: List files in directory (e.g., "list_files:E:/test")
+
+### AI Coding
+- generate_code: AI generates code based on description (e.g., "generate_code:E:/test/index.html|create an HTML page with input on left, output on right")
+- edit_code: AI modifies existing code (e.g., "edit_code:E:/test/app.js|add error handling to the fetch calls")
+
+### Web Browsing
+- open_url: Open URL in default browser (e.g., "open_url:https://perplexity.ai")
+- browse_and_ask: Open AI website, type question, wait for response (e.g., "browse_and_ask:perplexity|What is the capital of France?")
+- browse_and_ask: Supports: perplexity, chatgpt, claude, google
+
+### Utility
 - wait: Wait N seconds (e.g., "wait:2" - use 1-3s for app loads)
-- focus_window: Focus by title (e.g., "focus_window:Notepad")
 - screenshot: Capture and describe screen
+- shell: Run shell command (e.g., "shell:npm install")
 ${learnedExamples}
 ## EXAMPLES WITH REASONING
 
@@ -233,6 +257,59 @@ Thinking:
 Output:
 [
   { "description": "Close active window with Alt+F4", "action": "key_combo:alt+f4" }
+]
+
+### Example 4: "open folder E:/Test in vscode and create an HTML editor"
+Thinking:
+- Goal: Open VS Code with folder, then create/edit HTML file to be an editor
+- How: Use open_folder to launch VS Code with the folder, then use AI to generate code
+- Sequence: Open folder -> List files to see what exists -> Generate/edit the HTML
+- Edge case: File might not exist yet
+
+Output:
+[
+  { "description": "Open VS Code with the Test folder", "action": "open_folder:E:/Test" },
+  { "description": "Wait for VS Code to load", "action": "wait:3" },
+  { "description": "List files in the folder", "action": "list_files:E:/Test" },
+  { "description": "Generate HTML editor code", "action": "generate_code:E:/Test/editor.html|Create an HTML page with a code editor layout: textarea input on the left side, live preview output on the right side. Include basic CSS for split layout and JavaScript to update preview on input." }
+]
+
+### Example 5: "read the config.json and add a new setting"
+Thinking:
+- Goal: Read existing file, understand it, modify it
+- How: read_file to get contents, then edit_code to modify
+- Sequence: Read first, then edit
+
+Output:
+[
+  { "description": "Read the config file", "action": "read_file:config.json" },
+  { "description": "Add new setting to config", "action": "edit_code:config.json|add a new setting called 'darkMode' with value true" }
+]
+
+### Example 6: "ask perplexity what is the best programming language"
+Thinking:
+- Goal: Open Perplexity AI in browser and ask a question
+- How: Use browse_and_ask with perplexity target
+- Sequence: Open site -> type question -> wait for response -> screenshot result
+
+Output:
+[
+  { "description": "Ask Perplexity the question", "action": "browse_and_ask:perplexity|what is the best programming language" },
+  { "description": "Wait for response to generate", "action": "wait:5" },
+  { "description": "Capture the response", "action": "screenshot" }
+]
+
+### Example 7: "search google for weather today"
+Thinking:
+- Goal: Open Google and search for something
+- How: Use browse_and_ask with google target
+- Sequence: Open Google, search, capture results
+
+Output:
+[
+  { "description": "Search Google", "action": "browse_and_ask:google|weather today" },
+  { "description": "Wait for results", "action": "wait:2" },
+  { "description": "Capture search results", "action": "screenshot" }
 ]
 
 ## YOUR TASK
@@ -348,6 +425,171 @@ async function executeStep(step: TaskStep): Promise<void> {
       await computer.focusWindow(params);
       step.result = `Focused window: ${params}`;
       break;
+
+    case 'open_folder':
+      // Open VS Code with a specific folder
+      await runCommand(`code "${params}"`, 10000);
+      step.result = `Opened VS Code with folder: ${params}`;
+      break;
+
+    case 'read_file': {
+      const readResult = await filesystem.readFile(params);
+      if (readResult.success) {
+        step.result = readResult.output;
+      } else {
+        throw new Error(readResult.error || 'Failed to read file');
+      }
+      break;
+    }
+
+    case 'write_file': {
+      // Format: write_file:path|content
+      const [filePath, ...contentParts] = params.split('|');
+      const content = contentParts.join('|');
+      const writeResult = await filesystem.writeFile(filePath, content);
+      if (writeResult.success) {
+        step.result = `Written to ${filePath}`;
+      } else {
+        throw new Error(writeResult.error || 'Failed to write file');
+      }
+      break;
+    }
+
+    case 'list_files': {
+      const listResult = await filesystem.listDir(params, false);
+      if (listResult.success) {
+        step.result = listResult.output;
+      } else {
+        throw new Error(listResult.error || 'Failed to list files');
+      }
+      break;
+    }
+
+    case 'generate_code': {
+      // Format: generate_code:path|description
+      const [codePath, ...descParts] = params.split('|');
+      const codeDescription = descParts.join('|');
+
+      // Ask AI to generate the code
+      const codePrompt = `Generate complete, working code for this request. Output ONLY the code, no explanations or markdown:
+
+Request: ${codeDescription}
+
+File: ${codePath}`;
+
+      const codeResponse = await chat([{ role: 'user', content: codePrompt }]);
+      let generatedCode = codeResponse.content;
+
+      // Strip markdown code blocks if present
+      generatedCode = generatedCode.replace(/^```[\w]*\n?/gm, '').replace(/\n?```$/gm, '').trim();
+
+      // Write the generated code to file
+      const genResult = await filesystem.writeFile(codePath, generatedCode);
+      if (genResult.success) {
+        step.result = `Generated and saved code to ${codePath}`;
+      } else {
+        throw new Error(genResult.error || 'Failed to write generated code');
+      }
+      break;
+    }
+
+    case 'edit_code': {
+      // Format: edit_code:path|instructions
+      const [editPath, ...instrParts] = params.split('|');
+      const instructions = instrParts.join('|');
+
+      // Read existing file
+      const existingResult = await filesystem.readFile(editPath);
+      if (!existingResult.success) {
+        throw new Error(`Cannot read file: ${existingResult.error}`);
+      }
+
+      // Ask AI to edit the code
+      const editPrompt = `Edit this code according to the instructions. Output ONLY the complete modified code, no explanations or markdown:
+
+Instructions: ${instructions}
+
+Current code:
+${existingResult.output}`;
+
+      const editResponse = await chat([{ role: 'user', content: editPrompt }]);
+      let editedCode = editResponse.content;
+
+      // Strip markdown code blocks if present
+      editedCode = editedCode.replace(/^```[\w]*\n?/gm, '').replace(/\n?```$/gm, '').trim();
+
+      // Write the edited code back
+      const editWriteResult = await filesystem.writeFile(editPath, editedCode);
+      if (editWriteResult.success) {
+        step.result = `Edited and saved ${editPath}`;
+      } else {
+        throw new Error(editWriteResult.error || 'Failed to write edited code');
+      }
+      break;
+    }
+
+    case 'shell': {
+      const shellResult = await runCommand(params, 30000);
+      if (shellResult.success) {
+        step.result = shellResult.output || 'Command completed';
+      } else {
+        throw new Error(shellResult.error || 'Command failed');
+      }
+      break;
+    }
+
+    case 'open_url': {
+      // Open URL in default browser
+      const url = params.startsWith('http') ? params : `https://${params}`;
+      if (process.platform === 'win32') {
+        await runCommand(`start "" "${url}"`, 5000);
+      } else if (process.platform === 'darwin') {
+        await runCommand(`open "${url}"`, 5000);
+      } else {
+        await runCommand(`xdg-open "${url}"`, 5000);
+      }
+      step.result = `Opened ${url} in browser`;
+      break;
+    }
+
+    case 'browse_and_ask': {
+      // Format: browse_and_ask:site|question
+      const [site, ...questionParts] = params.split('|');
+      const question = questionParts.join('|');
+
+      // Site-specific URLs and input selectors
+      const sites: Record<string, { url: string; waitTime: number; searchSelector?: string }> = {
+        perplexity: { url: 'https://www.perplexity.ai', waitTime: 3 },
+        chatgpt: { url: 'https://chat.openai.com', waitTime: 4 },
+        claude: { url: 'https://claude.ai', waitTime: 4 },
+        google: { url: 'https://www.google.com', waitTime: 2 },
+        bing: { url: 'https://www.bing.com', waitTime: 2 },
+      };
+
+      const siteConfig = sites[site.toLowerCase()] || { url: `https://${site}`, waitTime: 3 };
+
+      // Open the site
+      if (process.platform === 'win32') {
+        await runCommand(`start "" "${siteConfig.url}"`, 5000);
+      } else if (process.platform === 'darwin') {
+        await runCommand(`open "${siteConfig.url}"`, 5000);
+      } else {
+        await runCommand(`xdg-open "${siteConfig.url}"`, 5000);
+      }
+
+      // Wait for page to load
+      await sleep(siteConfig.waitTime * 1000);
+
+      // Type the question (most sites have autofocus on search/input)
+      await computer.typeText(question);
+      await sleep(300);
+
+      // Press Enter to submit
+      await computer.pressKey('Return');
+
+      step.result = `Asked ${site}: "${question}"`;
+      break;
+    }
 
     case 'screenshot':
       const vision = await describeScreen();

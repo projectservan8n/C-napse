@@ -23,6 +23,101 @@ export interface TelegramBotEvents {
   stopped: () => void;
 }
 
+/**
+ * Convert markdown to Telegram-safe format (MarkdownV2)
+ * Escapes special characters and converts some markdown syntax
+ */
+function formatForTelegram(text: string): { text: string; parseMode: 'MarkdownV2' | undefined } {
+  // Check if text has markdown that could be rendered
+  const hasMarkdown = /[*_`\[\]()]/.test(text);
+
+  if (!hasMarkdown) {
+    return { text, parseMode: undefined };
+  }
+
+  try {
+    // Convert to Telegram MarkdownV2 format
+    let formatted = text;
+
+    // First, escape special characters that aren't part of markdown
+    // MarkdownV2 requires escaping: _ * [ ] ( ) ~ ` > # + - = | { } . !
+    const escapeChars = ['\\', '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+
+    // Temporarily replace valid markdown with placeholders
+    const placeholders: { placeholder: string; original: string }[] = [];
+    let placeholderIndex = 0;
+
+    // Protect code blocks (```code```)
+    formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
+      const placeholder = `__CODEBLOCK_${placeholderIndex++}__`;
+      placeholders.push({ placeholder, original: '```' + code.replace(/\\/g, '\\\\') + '```' });
+      return placeholder;
+    });
+
+    // Protect inline code (`code`)
+    formatted = formatted.replace(/`([^`]+)`/g, (match, code) => {
+      const placeholder = `__INLINECODE_${placeholderIndex++}__`;
+      placeholders.push({ placeholder, original: '`' + code.replace(/\\/g, '\\\\') + '`' });
+      return placeholder;
+    });
+
+    // Protect bold (**text** or __text__)
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, (match, text) => {
+      const placeholder = `__BOLD_${placeholderIndex++}__`;
+      placeholders.push({ placeholder, original: '*' + text + '*' });
+      return placeholder;
+    });
+
+    // Protect italic (*text* or _text_) - but only single asterisks
+    formatted = formatted.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, (match, text) => {
+      const placeholder = `__ITALIC_${placeholderIndex++}__`;
+      placeholders.push({ placeholder, original: '_' + text + '_' });
+      return placeholder;
+    });
+
+    // Protect links [text](url)
+    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+      const placeholder = `__LINK_${placeholderIndex++}__`;
+      placeholders.push({ placeholder, original: '[' + text + '](' + url + ')' });
+      return placeholder;
+    });
+
+    // Now escape remaining special characters
+    for (const char of escapeChars) {
+      if (char === '\\') continue; // Skip backslash for now
+      formatted = formatted.split(char).join('\\' + char);
+    }
+
+    // Restore placeholders
+    for (const { placeholder, original } of placeholders) {
+      formatted = formatted.replace(placeholder, original);
+    }
+
+    return { text: formatted, parseMode: 'MarkdownV2' };
+  } catch {
+    // If formatting fails, return plain text
+    return { text, parseMode: undefined };
+  }
+}
+
+/**
+ * Send a message with proper formatting, falling back to plain text if markdown fails
+ */
+async function sendFormattedMessage(ctx: any, text: string): Promise<void> {
+  const { text: formatted, parseMode } = formatForTelegram(text);
+
+  try {
+    if (parseMode) {
+      await ctx.reply(formatted, { parse_mode: parseMode });
+    } else {
+      await ctx.reply(text);
+    }
+  } catch {
+    // If markdown parsing fails, send as plain text
+    await ctx.reply(text);
+  }
+}
+
 export class TelegramBotService extends EventEmitter {
   private bot: any = null;
   private isRunning = false;
@@ -252,7 +347,7 @@ export class TelegramBotService extends EventEmitter {
         // Check if this looks like a computer control request
         const computerControlResult = await this.tryComputerControl(userText);
         if (computerControlResult) {
-          await ctx.reply(computerControlResult);
+          await sendFormattedMessage(ctx, computerControlResult);
           history.push({ role: 'assistant', content: computerControlResult });
           return;
         }
@@ -276,16 +371,16 @@ export class TelegramBotService extends EventEmitter {
         // Add assistant response to history
         history.push({ role: 'assistant', content: response.content });
 
-        // Send response (split if too long for Telegram)
+        // Send response with proper formatting (split if too long for Telegram)
         const responseText = response.content || '(no response)';
         if (responseText.length > 4000) {
           // Split into chunks
           const chunks = responseText.match(/.{1,4000}/gs) || [responseText];
           for (const chunk of chunks) {
-            await ctx.reply(chunk);
+            await sendFormattedMessage(ctx, chunk);
           }
         } else {
-          await ctx.reply(responseText);
+          await sendFormattedMessage(ctx, responseText);
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';
