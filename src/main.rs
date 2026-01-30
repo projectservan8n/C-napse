@@ -3,7 +3,6 @@
 use clap::Parser;
 use cnapse::cli::{Cli, Commands};
 use cnapse::config::Settings;
-use console::style;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 #[tokio::main]
