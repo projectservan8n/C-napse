@@ -10,9 +10,11 @@ mod app;
 mod events;
 mod ui;
 mod screen_watcher;
+mod tools_executor;
 
 pub use app::TuiApp;
 pub use screen_watcher::ScreenWatcher;
+pub use tools_executor::{ToolExecutor, ToolRequest, ToolResult, parse_tool_calls, tools_description};
 
 use crate::error::Result;
 use crossterm::{

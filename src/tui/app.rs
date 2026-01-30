@@ -305,6 +305,8 @@ impl TuiApp {
     }
 
     async fn process_with_agent(&mut self, input: &str) -> Result<String> {
+        use crate::tui::{ToolExecutor, parse_tool_calls, tools_description};
+
         // Build context from recent messages
         let messages: Vec<AgentMessage> = self
             .messages
@@ -330,9 +332,19 @@ impl TuiApp {
         // Create inference request
         let backend = create_backend(&self.settings).await?;
 
+        // Build system prompt with tools
+        let system_prompt = format!(
+            "You are C-napse, a helpful AI assistant for PC automation running on the user's desktop. \
+            You can help with coding, file management, shell commands, and more. Be concise and helpful.\n\n\
+            {}\n\n\
+            When the user asks you to do something, use the appropriate tool. \
+            Always explain what you're doing before using a tool.",
+            tools_description()
+        );
+
         let mut all_messages = vec![AgentMessage {
             role: MessageRole::System,
-            content: "You are C-napse, a helpful AI assistant for PC automation. You can help with coding, file management, shell commands, and more. Be concise and helpful.".to_string(),
+            content: system_prompt,
         }];
         all_messages.extend(messages);
         all_messages.push(AgentMessage {
@@ -342,13 +354,89 @@ impl TuiApp {
 
         let request = InferenceRequest {
             model: self.settings.get_default_model(),
-            messages: all_messages,
+            messages: all_messages.clone(),
             temperature: 0.7,
             max_tokens: 2048,
             stop: vec![],
         };
 
         let response = backend.infer(request).await?;
+        let mut final_response = response.content.clone();
+
+        // Check for tool calls and execute them
+        let tool_calls = parse_tool_calls(&response.content);
+        if !tool_calls.is_empty() {
+            let executor = ToolExecutor::new();
+
+            // Update the current message to show tool calls
+            if let Some(msg) = self.messages.last_mut() {
+                for tool in &tool_calls {
+                    msg.tool_calls.push(ToolCall {
+                        name: tool.name.clone(),
+                        status: ToolStatus::Running,
+                        result: None,
+                    });
+                }
+            }
+
+            // Execute each tool
+            let mut tool_results = Vec::new();
+            for (i, tool) in tool_calls.iter().enumerate() {
+                self.status = format!("Running {}...", tool.name);
+
+                let result = executor.execute(tool).await;
+
+                // Update tool status in message
+                if let Some(msg) = self.messages.last_mut() {
+                    if let Some(tc) = msg.tool_calls.get_mut(i) {
+                        match &result {
+                            Ok(r) if r.success => {
+                                tc.status = ToolStatus::Success;
+                                tc.result = Some(r.output.clone());
+                            }
+                            Ok(r) => {
+                                tc.status = ToolStatus::Failed;
+                                tc.result = r.error.clone();
+                            }
+                            Err(e) => {
+                                tc.status = ToolStatus::Failed;
+                                tc.result = Some(e.to_string());
+                            }
+                        }
+                    }
+                }
+
+                if let Ok(r) = result {
+                    tool_results.push(format!("[{} result: {}]", tool.name,
+                        if r.success { &r.output } else { r.error.as_deref().unwrap_or("Failed") }
+                    ));
+                }
+            }
+
+            // If tools were executed, get a follow-up response with results
+            if !tool_results.is_empty() {
+                all_messages.push(AgentMessage {
+                    role: MessageRole::Assistant,
+                    content: response.content.clone(),
+                });
+                all_messages.push(AgentMessage {
+                    role: MessageRole::User,
+                    content: format!("Tool results:\n{}", tool_results.join("\n")),
+                });
+
+                let follow_up_request = InferenceRequest {
+                    model: self.settings.get_default_model(),
+                    messages: all_messages,
+                    temperature: 0.7,
+                    max_tokens: 2048,
+                    stop: vec![],
+                };
+
+                if let Ok(follow_up) = backend.infer(follow_up_request).await {
+                    final_response = format!("{}\n\n{}", response.content, follow_up.content);
+                }
+            }
+        }
 
         // Save to memory
         self.memory.add_message(
@@ -359,10 +447,10 @@ impl TuiApp {
         self.memory.add_message(
             &self.conversation_id,
             "assistant",
-            &response.content,
+            &final_response,
         )?;
 
-        Ok(response.content)
+        Ok(final_response)
     }
 
     async fn handle_command(&mut self, cmd: &str) -> Result<()> {
