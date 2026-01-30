@@ -16,30 +16,19 @@ C-napse is a modular, agentic CLI that orchestrates small, specialized AI agents
 
 ## Installation
 
-### Windows (PowerShell)
+### Windows - One Command
 
 ```powershell
 irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex
 ```
 
-Or step by step:
-```powershell
-curl -o install.ps1 https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1
-powershell -ExecutionPolicy Bypass -File install.ps1
-```
+That's it! The script will:
+1. Download the pre-built binary
+2. Add to PATH
+3. Install Ollama (if needed)
+4. Pull the AI models
 
-### Prerequisites
-
-- **Rust**: Install from https://rustup.rs or `winget install Rustlang.Rustup`
-- **Ollama**: Install from https://ollama.ai or `winget install Ollama.Ollama`
-
-### Manual Build
-
-```bash
-git clone https://github.com/projectservan8n/C-napse.git
-cd C-napse
-cargo build --release
-```
+Then restart your terminal and run `cnapse`.
 
 ## Quick Start
 

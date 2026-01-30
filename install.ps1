@@ -1,95 +1,95 @@
-# C-napse Windows Installation Script
-# Run as Administrator: powershell -ExecutionPolicy Bypass -File install.ps1
+# C-napse Windows Installer
+# One command: irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex
 
-Write-Host "================================" -ForegroundColor Cyan
-Write-Host "  C-napse Installer for Windows" -ForegroundColor Cyan
-Write-Host "================================" -ForegroundColor Cyan
+$ErrorActionPreference = "Stop"
+
 Write-Host ""
-
-# Check if running as admin
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-# Check for Rust
-if (!(Get-Command cargo -ErrorAction SilentlyContinue)) {
-    Write-Host "[!] Rust not found. Please install from https://rustup.rs" -ForegroundColor Red
-    Write-Host "    Run: winget install Rustlang.Rustup" -ForegroundColor Yellow
-    exit 1
-}
-Write-Host "[OK] Rust found" -ForegroundColor Green
-
-# Check for Ollama
-if (!(Get-Command ollama -ErrorAction SilentlyContinue)) {
-    Write-Host "[!] Ollama not found. Please install from https://ollama.ai" -ForegroundColor Yellow
-    Write-Host "    Run: winget install Ollama.Ollama" -ForegroundColor Yellow
-    Write-Host "    Continuing anyway..." -ForegroundColor Yellow
-} else {
-    Write-Host "[OK] Ollama found" -ForegroundColor Green
-}
-
-# Build release
+Write-Host "  ██████╗      ███╗   ██╗ █████╗ ██████╗ ███████╗███████╗" -ForegroundColor Cyan
+Write-Host " ██╔════╝      ████╗  ██║██╔══██╗██╔══██╗██╔════╝██╔════╝" -ForegroundColor Cyan
+Write-Host " ██║     █████╗██╔██╗ ██║███████║██████╔╝███████╗█████╗  " -ForegroundColor Cyan
+Write-Host " ██║     ╚════╝██║╚██╗██║██╔══██║██╔═══╝ ╚════██║██╔══╝  " -ForegroundColor Cyan
+Write-Host " ╚██████╗      ██║ ╚████║██║  ██║██║     ███████║███████╗" -ForegroundColor Cyan
+Write-Host "  ╚═════╝      ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝     ╚══════╝╚══════╝" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Building C-napse (this may take a few minutes)..." -ForegroundColor Cyan
-cargo build --release
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "[!] Build failed!" -ForegroundColor Red
-    exit 1
-}
-Write-Host "[OK] Build successful" -ForegroundColor Green
+Write-Host "                    Installing C-napse..." -ForegroundColor White
+Write-Host ""
 
 # Install location
 $installDir = "$env:LOCALAPPDATA\Programs\cnapse"
-Write-Host ""
-Write-Host "Installing to: $installDir" -ForegroundColor Cyan
+$exePath = "$installDir\cnapse.exe"
 
 # Create install directory
 if (!(Test-Path $installDir)) {
     New-Item -ItemType Directory -Path $installDir -Force | Out-Null
 }
 
-# Copy binaries
-Copy-Item "target\release\cnapse.exe" "$installDir\cnapse.exe" -Force
-Copy-Item "target\release\cn.exe" "$installDir\cn.exe" -Force
-Copy-Item "target\release\c.exe" "$installDir\c.exe" -Force
+# Download latest release
+Write-Host "[1/4] Downloading cnapse..." -ForegroundColor Yellow
+$releaseUrl = "https://github.com/projectservan8n/C-napse/releases/latest/download/cnapse-windows-x86_64.exe"
+try {
+    Invoke-WebRequest -Uri $releaseUrl -OutFile $exePath -UseBasicParsing
+    Write-Host "      Done" -ForegroundColor Green
+} catch {
+    Write-Host "      Release not ready yet. Building from source..." -ForegroundColor Yellow
 
-Write-Host "[OK] Binaries installed" -ForegroundColor Green
+    # Check for Rust
+    if (!(Get-Command cargo -ErrorAction SilentlyContinue)) {
+        Write-Host ""
+        Write-Host "[!] Rust not found. Installing..." -ForegroundColor Yellow
+        Invoke-WebRequest -Uri "https://win.rustup.rs/x86_64" -OutFile "$env:TEMP\rustup-init.exe"
+        Start-Process -FilePath "$env:TEMP\rustup-init.exe" -ArgumentList "-y" -Wait
+        $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
+    }
+
+    # Clone and build
+    $tempDir = "$env:TEMP\cnapse-build"
+    if (Test-Path $tempDir) { Remove-Item -Recurse -Force $tempDir }
+    git clone https://github.com/projectservan8n/C-napse.git $tempDir
+    Push-Location $tempDir
+    cargo build --release
+    Copy-Item "target\release\cnapse.exe" $exePath
+    Pop-Location
+    Remove-Item -Recurse -Force $tempDir
+    Write-Host "      Built successfully" -ForegroundColor Green
+}
 
 # Add to PATH
+Write-Host "[2/4] Adding to PATH..." -ForegroundColor Yellow
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($userPath -notlike "*$installDir*") {
     [Environment]::SetEnvironmentVariable("Path", "$userPath;$installDir", "User")
-    Write-Host "[OK] Added to PATH" -ForegroundColor Green
-    Write-Host "    NOTE: Restart your terminal for PATH changes to take effect" -ForegroundColor Yellow
+    $env:Path = "$env:Path;$installDir"
+}
+Write-Host "      Done" -ForegroundColor Green
+
+# Check for Ollama
+Write-Host "[3/4] Checking Ollama..." -ForegroundColor Yellow
+if (!(Get-Command ollama -ErrorAction SilentlyContinue)) {
+    Write-Host "      Installing Ollama..." -ForegroundColor Yellow
+    winget install Ollama.Ollama --accept-source-agreements --accept-package-agreements 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "      Please install Ollama from https://ollama.ai" -ForegroundColor Yellow
+    }
 } else {
-    Write-Host "[OK] Already in PATH" -ForegroundColor Green
+    Write-Host "      Found" -ForegroundColor Green
 }
 
-# Pull Ollama models
-Write-Host ""
-Write-Host "Pulling Ollama models (this may take a while)..." -ForegroundColor Cyan
+# Pull models
+Write-Host "[4/4] Pulling AI models (this may take a minute)..." -ForegroundColor Yellow
 if (Get-Command ollama -ErrorAction SilentlyContinue) {
-    ollama pull qwen2.5:0.5b
-    ollama pull qwen2.5-coder:1.5b
-    Write-Host "[OK] Models downloaded" -ForegroundColor Green
+    Start-Process ollama -ArgumentList "pull qwen2.5:0.5b" -NoNewWindow -Wait 2>$null
+    Write-Host "      Done" -ForegroundColor Green
 } else {
-    Write-Host "[!] Skipped - Ollama not installed" -ForegroundColor Yellow
+    Write-Host "      Skipped (install Ollama first)" -ForegroundColor Yellow
 }
 
-# Initialize config
+# Done
 Write-Host ""
-Write-Host "Initializing C-napse..." -ForegroundColor Cyan
-& "$installDir\cnapse.exe" init 2>$null
-Write-Host "[OK] Configuration created" -ForegroundColor Green
-
+Write-Host "============================================" -ForegroundColor Green
+Write-Host "  C-napse installed successfully!" -ForegroundColor Green
+Write-Host "============================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "================================" -ForegroundColor Green
-Write-Host "  Installation Complete!" -ForegroundColor Green
-Write-Host "================================" -ForegroundColor Green
+Write-Host "  Restart your terminal, then run:" -ForegroundColor White
 Write-Host ""
-Write-Host "Usage:" -ForegroundColor Cyan
-Write-Host "  c          - Launch interactive TUI" -ForegroundColor White
-Write-Host "  cn         - Launch interactive TUI" -ForegroundColor White
-Write-Host "  cnapse     - Launch interactive TUI" -ForegroundColor White
-Write-Host '  c "query"  - Quick query mode' -ForegroundColor White
+Write-Host "    cnapse" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Restart your terminal, then run: c" -ForegroundColor Yellow
