@@ -88,8 +88,8 @@ crossterm = "0.28"
 # Screenshots (optional)
 screenshots = "0.8"
 
-# Embeddings
-fastembed = "3"
+# Embeddings (optional - requires ONNX runtime)
+fastembed = { version = "3", optional = true, features = ["ort-download-binaries"] }
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["shellapi", "winuser"] }
@@ -108,6 +108,7 @@ tokio-test = "0.4"
 default = ["local-inference", "screenshots"]
 local-inference = []
 screenshots = []
+embeddings = ["fastembed"]
 cuda = []
 metal = []
 
