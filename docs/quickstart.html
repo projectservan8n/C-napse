@@ -564,7 +564,7 @@
                         </div>
                         <div class="requirement-text">
                             <h5>Operating System</h5>
-                            <p>Windows 10+, macOS, Linux</p>
+                            <p>Windows 10+ (macOS/Linux coming soon)</p>
                         </div>
                     </div>
                     <div class="requirement-card">
@@ -615,23 +615,33 @@
 
                 <div class="step-card">
                     <div class="step-number">1</div>
-                    <h4>Run the installer</h4>
-                    <p>Open your terminal and run the appropriate command for your operating system:</p>
+                    <h4>Install via npm</h4>
+                    <p>Open your terminal and run the following commands:</p>
 
                     <div class="code-block">
                         <div class="code-header">
-                            <span>PowerShell (Windows)</span>
+                            <span>Terminal</span>
                             <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                         </div>
-                        <pre><code>irm https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.ps1 | iex</code></pre>
+                        <pre><code><span class="comment"># Install C-napse globally</span>
+npm install -g @projectservan8n/cnapse
+
+<span class="comment"># Install Chromium for browser features</span>
+npx playwright install chromium</code></pre>
                     </div>
 
-                    <div class="code-block">
-                        <div class="code-header">
-                            <span>Bash (macOS / Linux)</span>
-                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <div class="callout warning">
+                        <div class="callout-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
                         </div>
-                        <pre><code>curl -fsSL https://raw.githubusercontent.com/projectservan8n/C-napse/main/install.sh | bash</code></pre>
+                        <div class="callout-content">
+                            <h5>Windows-first</h5>
+                            <p>C-napse currently supports Windows 10+. macOS and Linux support coming soon.</p>
+                        </div>
                     </div>
                 </div>
 
@@ -657,7 +667,7 @@
                         </div>
                         <div class="callout-content">
                             <h5>Expected Output</h5>
-                            <p>You should see <code>cnapse 0.1.0</code> or similar version number.</p>
+                            <p>You should see <code>cnapse 0.8.0</code> or similar version number.</p>
                         </div>
                     </div>
                 </div>
@@ -724,10 +734,12 @@ cnapse <span class="string">"List all files in the current directory and summari
                 <p>Here are some things you can ask C-napse to do:</p>
 
                 <ul>
-                    <li><strong>File operations:</strong> "Create a new folder called 'projects' and organize my downloads by file type"</li>
-                    <li><strong>Code analysis:</strong> "Analyze this codebase and explain the architecture"</li>
-                    <li><strong>System tasks:</strong> "Check my system's resource usage and report on memory usage"</li>
-                    <li><strong>Research:</strong> "Search for the latest news about Rust programming and summarize the key points"</li>
+                    <li><strong>Computer control:</strong> "open notepad and type hello world"</li>
+                    <li><strong>Web automation:</strong> "search google for best restaurants NYC"</li>
+                    <li><strong>Vision:</strong> "/screen" — take a screenshot and get AI description</li>
+                    <li><strong>Email:</strong> "send email via gmail to john@example.com about meeting"</li>
+                    <li><strong>Research:</strong> "ask perplexity what is the capital of France"</li>
+                    <li><strong>Window management:</strong> "minimize chrome" or "close notepad"</li>
                 </ul>
 
                 <div class="callout info">

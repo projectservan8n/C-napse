@@ -270,93 +270,93 @@
                     <div class="diagram">
 ┌─────────────────────────────────────────────────────────────┐
 │                      <span class="highlight">User Query</span>                            │
-│                 "list all rust files"                       │
+│           "open notepad and type hello world"               │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    <span class="highlight">Router Agent</span>                            │
-│         Classifies intent, selects specialist               │
+│                    <span class="highlight">Task Router</span>                             │
+│           Parses intent, plans multi-step tasks             │
 └─────────────────────────┬───────────────────────────────────┘
                           │
-          ┌───────────────┼───────────────┐
-          ▼               ▼               ▼
-    ┌───────────┐   ┌───────────┐   ┌───────────┐
-    │   <span class="highlight">Shell</span>   │   │   <span class="highlight">Code</span>    │   │ <span class="highlight">Research</span>  │
-    │   Agent   │   │   Agent   │   │   Agent   │
-    └─────┬─────┘   └─────┬─────┘   └─────┬─────┘
-          │               │               │
-          ▼               ▼               ▼
-    ┌─────────────────────────────────────────┐
-    │              <span class="highlight">Tool System</span>               │
-    │   Files • Shell • Process • Web         │
-    └─────────────────────────────────────────┘
+    ┌───────────┬─────────┼─────────┬───────────┐
+    ▼           ▼         ▼         ▼           ▼
+┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+│<span class="highlight">Computer</span>│ │ <span class="highlight">Browser</span>│ │  <span class="highlight">Shell</span> │ │ <span class="highlight">Vision</span> │ │<span class="highlight">Adaptive</span>│
+│ Agent  │ │ Agent  │ │ Agent  │ │ Agent  │ │ Agent  │
+└────┬───┘ └────┬───┘ └────┬───┘ └────┬───┘ └────┬───┘
+     │          │          │          │          │
+     └──────────┴──────────┴──────────┴──────────┘
+                          │
+                          ▼
+    ┌─────────────────────────────────────────────────────┐
+    │                  <span class="highlight">Tool System</span>                        │
+    │  Mouse • Keyboard • Browser • Files • Screenshots   │
+    └─────────────────────────────────────────────────────┘
                     </div>
                 </div>
 
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <div class="feature-icon">🧠</div>
-                        <h3>Neural Routing</h3>
+                        <div class="feature-icon">🖱️</div>
+                        <h3>Computer Control</h3>
                         <p>
-                            Intelligent query classification routes requests to specialized agents —
-                            shell, code, research, or automation — based on semantic understanding.
-                            The router analyzes intent, extracts context, and delegates to the most
-                            capable specialist.
+                            Full desktop automation with mouse, keyboard, and window management.
+                            Opens apps, types text, clicks buttons, manages windows — just like
+                            a human would. Control your PC with natural language commands.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">🌐</div>
+                        <h3>Browser Automation</h3>
+                        <p>
+                            Playwright-powered web automation for complex browser tasks.
+                            Search Google, interact with web apps, send emails via Gmail,
+                            create Google Sheets — all through natural language commands.
                         </p>
                     </div>
 
                     <div class="feature-card">
                         <div class="feature-icon">👁️</div>
-                        <h3>Screen Perception</h3>
+                        <h3>Vision System</h3>
                         <p>
-                            Real-time visual context through screen capture and analysis.
-                            Understands what you're working on without explicit context.
-                            Detects active applications, windows, and content to provide
-                            contextually relevant assistance.
+                            Screenshot capture with AI analysis across multiple providers.
+                            See what's on screen, understand context, and make decisions
+                            based on visual information. Supports Ollama VLMs, Claude,
+                            GPT-4 Vision, and OpenRouter.
                         </p>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
-                        <h3>Local Execution</h3>
+                        <div class="feature-icon">🤖</div>
+                        <h3>Adaptive Agent</h3>
                         <p>
-                            Zero-latency tool execution with direct system access.
-                            Files, processes, shell commands — all native, all instant.
-                            No network round-trips for local operations means
-                            sub-millisecond response times.
-                        </p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">🔗</div>
-                        <h3>Adaptive Memory</h3>
-                        <p>
-                            Persistent context through vector embeddings. Learns your
-                            codebase patterns and retrieves relevant context semantically.
-                            Memory grows smarter over time, understanding your preferences
-                            and common workflows.
+                            Gets stuck? Asks Perplexity, ChatGPT, or Claude for help.
+                            Analyzes the current UI, understands what went wrong, and
+                            tries alternative approaches. Self-correcting automation
+                            that learns from failures.
                         </p>
                     </div>
 
                     <div class="feature-card">
                         <div class="feature-icon">📱</div>
-                        <h3>Cross-Device Sync</h3>
+                        <h3>Telegram Remote</h3>
                         <p>
-                            Seamless continuity between desktop and mobile via Telegram
-                            integration. Your AI assistant, everywhere. Start a task
-                            on your phone, continue on desktop, or control your PC
-                            remotely.
+                            Control your PC from anywhere via Telegram bot. Send screenshots,
+                            execute commands, and automate tasks from your phone. Your AI
+                            assistant is always accessible, even when you're away.
                         </p>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">🔌</div>
-                        <h3>Provider Agnostic</h3>
+                        <div class="feature-icon">🧠</div>
+                        <h3>Self-Learning</h3>
                         <p>
-                            Ollama for local inference, or connect to Anthropic, OpenAI,
-                            and more. Your models, your choice. Switch providers on the
-                            fly based on task complexity or privacy requirements.
+                            Remembers successful task patterns and improves over time.
+                            The more you use it, the smarter it gets. View learned
+                            patterns with /memory and watch C-napse adapt to your
+                            workflow.
                         </p>
                     </div>
                 </div>

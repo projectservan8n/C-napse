@@ -437,27 +437,27 @@
 
                 <div class="architecture-diagram">
                     <pre>
-                    User Query
+                    User Task
                          │
                          ▼
               ┌─────────────────────┐
-              │    Router Agent     │
-              │ Classifies intent   │
-              │ Selects specialist  │
+              │    Task Router      │
+              │   Parses intent     │
+              │   Plans multi-step  │
               └──────────┬──────────┘
                          │
-         ┌───────────────┼───────────────┐
-         │               │               │
-         ▼               ▼               ▼
-    ┌─────────┐    ┌──────────┐    ┌──────────┐
-    │  Shell  │    │   Code   │    │ Research │
-    │  Agent  │    │  Agent   │    │  Agent   │
-    └─────────┘    └──────────┘    └──────────┘
-         │               │               │
-         └───────────────┴───────────────┘
+     ┌──────────┬────────┼────────┬──────────┐
+     │          │        │        │          │
+     ▼          ▼        ▼        ▼          ▼
+┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+│Computer│ │Browser │ │ Vision │ │ Shell  │ │Adaptive│
+│ Agent  │ │ Agent  │ │ Agent  │ │ Agent  │ │ Agent  │
+└────────┘ └────────┘ └────────┘ └────────┘ └────────┘
+     │          │        │        │          │
+     └──────────┴────────┴────────┴──────────┘
                          │
                          ▼
-                    Response
+                Task Completed
                     </pre>
                 </div>
 
@@ -477,28 +477,121 @@
                         <div class="agent-header">
                             <div class="agent-icon">
                                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21"></line>
                                 </svg>
                             </div>
                             <div>
-                                <h4>Router Agent</h4>
-                                <span>Query classification</span>
+                                <h4>Computer Agent</h4>
+                                <span>Desktop automation</span>
                             </div>
                         </div>
-                        <p>The brain of the system. Analyzes queries to determine intent, selects the appropriate specialist, and extracts relevant context.</p>
+                        <p>Controls your desktop like a human would. Mouse movements, keyboard input, window management, and app launching.</p>
                         <ul class="agent-capabilities">
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Intent classification
+                                Mouse and keyboard control
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Agent selection
+                                Window management
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Context extraction
+                                App launching via Run dialog
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Browser Agent</h4>
+                                <span>Web automation</span>
+                            </div>
+                        </div>
+                        <p>Playwright-powered browser automation. Navigate websites, fill forms, click buttons, and interact with web apps.</p>
+                        <ul class="agent-capabilities">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Web search (Google, etc.)
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Email via Gmail/Outlook
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Google Sheets/Docs
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Vision Agent</h4>
+                                <span>Screen analysis</span>
+                            </div>
+                        </div>
+                        <p>Captures screenshots and uses AI vision models to understand what's on screen. Supports Ollama VLMs, Claude, GPT-4 Vision.</p>
+                        <ul class="agent-capabilities">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Screenshot capture
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                AI screen description
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Continuous screen watching
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Adaptive Agent</h4>
+                                <span>Self-correcting AI</span>
+                            </div>
+                        </div>
+                        <p>Gets stuck? Asks Perplexity, ChatGPT, or Claude for help. Analyzes failures and tries alternative approaches automatically.</p>
+                        <ul class="agent-capabilities">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Ask other AIs for help
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                UI learning and analysis
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Self-correcting automation
                             </li>
                         </ul>
                     </div>
@@ -537,58 +630,27 @@
                         <div class="agent-header">
                             <div class="agent-icon">
                                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="16 18 22 12 16 6"></polyline>
-                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h4>Code Agent</h4>
-                                <span>Code assistance</span>
+                                <h4>Telegram Agent</h4>
+                                <span>Remote control</span>
                             </div>
                         </div>
-                        <p>Specializes in code understanding, generation, and modification. Your pair programmer for complex coding tasks.</p>
+                        <p>Control your PC from anywhere via Telegram. Send screenshots, execute commands, and automate tasks from your phone.</p>
                         <ul class="agent-capabilities">
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Code explanation
+                                Remote screenshots
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Bug identification
+                                Remote PC control
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Code generation
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="agent-card">
-                        <div class="agent-header">
-                            <div class="agent-icon">
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4>Research Agent</h4>
-                                <span>Information retrieval</span>
-                            </div>
-                        </div>
-                        <p>Handles information gathering and knowledge synthesis. Answers questions and explains complex concepts.</p>
-                        <ul class="agent-capabilities">
-                            <li>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Answer questions
-                            </li>
-                            <li>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Explain concepts
-                            </li>
-                            <li>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Compare technologies
+                                Mobile task execution
                             </li>
                         </ul>
                     </div>
@@ -639,38 +701,37 @@ cnapse -a research <span class="string">"what is the difference between TCP and 
                     Example Queries
                 </h2>
 
-                <h3>Shell Agent</h3>
+                <h3>Computer Control</h3>
                 <div class="code-block">
                     <div class="code-header">
-                        <span>Example queries</span>
+                        <span>Example tasks</span>
                     </div>
-                    <pre><code><span class="string">"list all files in this folder"</span>
-<span class="string">"find large files over 100MB"</span>
-<span class="string">"show running processes"</span>
-<span class="string">"what's my disk usage?"</span>
-<span class="string">"rename all .txt files to .md"</span></code></pre>
+                    <pre><code><span class="string">"open notepad and type hello world"</span>
+<span class="string">"minimize chrome"</span>
+<span class="string">"close all explorer windows"</span>
+<span class="string">"open vscode, go to folder E:\Projects"</span></code></pre>
                 </div>
 
-                <h3>Code Agent</h3>
+                <h3>Web Automation</h3>
                 <div class="code-block">
                     <div class="code-header">
-                        <span>Example queries</span>
+                        <span>Example tasks</span>
                     </div>
-                    <pre><code><span class="string">"explain what this function does"</span>
-<span class="string">"find potential bugs in this file"</span>
-<span class="string">"refactor this code to be more readable"</span>
-<span class="string">"write a test for this function"</span></code></pre>
+                    <pre><code><span class="string">"search google for best restaurants NYC"</span>
+<span class="string">"send email via gmail to john@example.com about meeting"</span>
+<span class="string">"create google sheet called Sales Report"</span>
+<span class="string">"ask perplexity what is the capital of France"</span></code></pre>
                 </div>
 
-                <h3>Research Agent</h3>
+                <h3>Vision & Adaptive</h3>
                 <div class="code-block">
                     <div class="code-header">
-                        <span>Example queries</span>
+                        <span>Example commands</span>
                     </div>
-                    <pre><code><span class="string">"what's the difference between TCP and UDP?"</span>
-<span class="string">"explain async/await in Rust"</span>
-<span class="string">"how does memory management work in Go?"</span>
-<span class="string">"compare React vs Vue for this use case"</span></code></pre>
+                    <pre><code><span class="string">/screen</span>                 <span class="comment"># Take screenshot + AI description</span>
+<span class="string">/watch</span>                  <span class="comment"># Enable continuous screen watching</span>
+<span class="string">"book a hotel on booking.com"</span>   <span class="comment"># Adaptive - asks for help if stuck</span>
+<span class="string">"I don't know how to use this app"</span>  <span class="comment"># Analyzes UI, suggests actions</span></code></pre>
                 </div>
 
                 <div class="docs-nav">

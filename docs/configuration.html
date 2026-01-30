@@ -442,16 +442,20 @@
                     Config File Location
                 </h2>
 
-                <p>C-napse stores configuration in your home directory:</p>
+                <p>C-napse stores configuration in your system's config directory:</p>
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>File Structure</span>
+                        <span>Config Locations</span>
                     </div>
-                    <pre><code>~/.cnapse/
-├── config.toml      <span class="comment"># Main settings</span>
-├── credentials.toml <span class="comment"># API keys (encrypted)</span>
-└── memory.db        <span class="comment"># Conversation memory</span></code></pre>
+                    <pre><code><span class="comment"># Windows</span>
+%APPDATA%\cnapse-nodejs\Config\config.json
+
+<span class="comment"># macOS</span>
+~/Library/Preferences/cnapse-nodejs/config.json
+
+<span class="comment"># Linux</span>
+~/.config/cnapse-nodejs/config.json</code></pre>
                 </div>
 
                 <h2>
@@ -464,39 +468,23 @@
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>~/.cnapse/config.toml</span>
+                        <span>config.json</span>
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                    <pre><code><span class="comment"># C-napse Configuration</span>
-
-<span class="keyword">[llm]</span>
-<span class="function">provider</span> = <span class="string">"ollama"</span>          <span class="comment"># Default: ollama, anthropic, openai, openrouter</span>
-<span class="function">model</span> = <span class="string">"qwen2.5:0.5b"</span>        <span class="comment"># Default model</span>
-
-<span class="keyword">[llm.ollama]</span>
-<span class="function">base_url</span> = <span class="string">"http://localhost:11434"</span>
-
-<span class="keyword">[llm.anthropic]</span>
-<span class="comment"># api_key loaded from ANTHROPIC_API_KEY env var</span>
-
-<span class="keyword">[llm.openrouter]</span>
-<span class="function">site_url</span> = <span class="string">"https://cnapse.app"</span>
-<span class="function">app_name</span> = <span class="string">"C-napse"</span>
-
-<span class="keyword">[memory]</span>
-<span class="function">enabled</span> = <span class="number">true</span>
-<span class="function">max_context_messages</span> = <span class="number">20</span>
-
-<span class="keyword">[agent]</span>
-<span class="function">max_iterations</span> = <span class="number">10</span>
-<span class="function">temperature</span> = <span class="number">0.7</span>
-<span class="function">timeout_seconds</span> = <span class="number">300</span>
-
-<span class="keyword">[tools]</span>
-<span class="function">shell_enabled</span> = <span class="number">true</span>
-<span class="function">file_enabled</span> = <span class="number">true</span>
-<span class="function">web_enabled</span> = <span class="number">true</span>
-<span class="function">screenshot_enabled</span> = <span class="number">true</span></code></pre>
+                    <pre><code>{
+  <span class="string">"provider"</span>: <span class="string">"openrouter"</span>,     <span class="comment">// ollama, anthropic, openai, openrouter</span>
+  <span class="string">"model"</span>: <span class="string">"anthropic/claude-3-5-sonnet"</span>,
+  <span class="string">"ollamaHost"</span>: <span class="string">"http://localhost:11434"</span>,
+  <span class="string">"apiKeys"</span>: {
+    <span class="string">"openrouter"</span>: <span class="string">"sk-or-..."</span>,
+    <span class="string">"anthropic"</span>: <span class="string">"sk-ant-..."</span>,
+    <span class="string">"openai"</span>: <span class="string">"sk-..."</span>
+  },
+  <span class="string">"telegram"</span>: {
+    <span class="string">"botToken"</span>: <span class="string">"your-bot-token"</span>,
+    <span class="string">"chatId"</span>: <span class="string">"your-chat-id"</span>
+  }
+}</code></pre>
                 </div>
 
                 <h2>
@@ -618,18 +606,20 @@
                         <span>Terminal</span>
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
-                    <pre><code><span class="comment"># View all settings</span>
-cnapse config list
+                    <pre><code><span class="comment"># Interactive setup wizard (recommended)</span>
+cnapse init
 
-<span class="comment"># Get a specific setting</span>
-cnapse config get llm.provider
+<span class="comment"># View current config</span>
+cnapse config show
 
-<span class="comment"># Set a value</span>
-cnapse config set llm.provider anthropic
-cnapse config set llm.model claude-3-5-sonnet-20241022
+<span class="comment"># Set provider</span>
+cnapse config set provider openrouter
+cnapse config set model anthropic/claude-3-5-sonnet
 
-<span class="comment"># Set API key securely</span>
-cnapse auth set anthropic sk-ant-...</code></pre>
+<span class="comment"># Set API keys</span>
+cnapse auth openrouter sk-or-...
+cnapse auth anthropic sk-ant-...
+cnapse auth telegram YOUR_BOT_TOKEN</code></pre>
                 </div>
 
                 <div class="callout info">

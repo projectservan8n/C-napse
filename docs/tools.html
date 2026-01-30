@@ -635,18 +635,19 @@
                         <line x1="8" y1="21" x2="16" y2="21"></line>
                         <line x1="12" y1="17" x2="12" y2="21"></line>
                     </svg>
-                    Screen Tools
+                    Computer Control Tools
                 </h2>
 
                 <div class="tool-category">
                     <div class="tool-category-header">
                         <div class="tool-category-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
                             </svg>
                         </div>
-                        <h3>Visual Perception</h3>
+                        <h3>Mouse & Keyboard</h3>
                     </div>
                     <table class="tool-table">
                         <thead>
@@ -657,12 +658,185 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>take_screenshot</td>
-                                <td>Capture the current screen</td>
+                                <td>moveMouse</td>
+                                <td>Move mouse to x, y coordinates</td>
                             </tr>
                             <tr>
-                                <td>watch_screen</td>
-                                <td>Monitor for screen changes</td>
+                                <td>clickMouse</td>
+                                <td>Click mouse button (left, right, middle)</td>
+                            </tr>
+                            <tr>
+                                <td>doubleClick</td>
+                                <td>Double click at current position</td>
+                            </tr>
+                            <tr>
+                                <td>typeText</td>
+                                <td>Type text string</td>
+                            </tr>
+                            <tr>
+                                <td>pressKey</td>
+                                <td>Press a single key</td>
+                            </tr>
+                            <tr>
+                                <td>keyCombo</td>
+                                <td>Press key combination (e.g., Ctrl+C)</td>
+                            </tr>
+                            <tr>
+                                <td>scrollMouse</td>
+                                <td>Scroll the mouse wheel</td>
+                            </tr>
+                            <tr>
+                                <td>dragMouse</td>
+                                <td>Drag from one point to another</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tool-category">
+                    <div class="tool-category-header">
+                        <div class="tool-category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="3" y1="9" x2="21" y2="9"></line>
+                                <line x1="9" y1="21" x2="9" y2="9"></line>
+                            </svg>
+                        </div>
+                        <h3>Window Management</h3>
+                    </div>
+                    <table class="tool-table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>listWindows</td>
+                                <td>List all open windows</td>
+                            </tr>
+                            <tr>
+                                <td>getActiveWindow</td>
+                                <td>Get the currently active window</td>
+                            </tr>
+                            <tr>
+                                <td>focusWindow</td>
+                                <td>Bring window to foreground by title</td>
+                            </tr>
+                            <tr>
+                                <td>minimizeWindow</td>
+                                <td>Minimize a window</td>
+                            </tr>
+                            <tr>
+                                <td>maximizeWindow</td>
+                                <td>Maximize a window</td>
+                            </tr>
+                            <tr>
+                                <td>closeWindow</td>
+                                <td>Close a window</td>
+                            </tr>
+                            <tr>
+                                <td>restoreWindow</td>
+                                <td>Restore a minimized window</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    Browser Automation Tools
+                </h2>
+
+                <div class="tool-category">
+                    <div class="tool-category-header">
+                        <div class="tool-category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </div>
+                        <h3>Playwright-Powered Web</h3>
+                    </div>
+                    <table class="tool-table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>open_url</td>
+                                <td>Navigate browser to URL</td>
+                            </tr>
+                            <tr>
+                                <td>web_search</td>
+                                <td>Search Google, Bing, etc.</td>
+                            </tr>
+                            <tr>
+                                <td>browse_and_ask</td>
+                                <td>Ask questions to Perplexity/ChatGPT</td>
+                            </tr>
+                            <tr>
+                                <td>send_email</td>
+                                <td>Send email via Gmail or Outlook</td>
+                            </tr>
+                            <tr>
+                                <td>google_sheets</td>
+                                <td>Create/edit Google Sheets</td>
+                            </tr>
+                            <tr>
+                                <td>google_docs</td>
+                                <td>Create/edit Google Docs</td>
+                            </tr>
+                            <tr>
+                                <td>research</td>
+                                <td>Multi-step web research with sources</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Vision Tools
+                </h2>
+
+                <div class="tool-category">
+                    <div class="tool-category-header">
+                        <div class="tool-category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </div>
+                        <h3>Screen Perception</h3>
+                    </div>
+                    <table class="tool-table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>takeScreenshot</td>
+                                <td>Capture screen as base64 image</td>
+                            </tr>
+                            <tr>
+                                <td>describeCurrentScreen</td>
+                                <td>Screenshot + AI description</td>
                             </tr>
                         </tbody>
                     </table>

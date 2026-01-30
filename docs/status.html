@@ -197,6 +197,18 @@
         .legend-dot.alpha { background: var(--accent); }
         .legend-dot.preview { background: var(--warning); }
 
+        .note {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 24px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-align: center;
+        }
+
         footer {
             padding: 48px 0;
             border-top: 1px solid var(--border);
@@ -244,21 +256,21 @@
                 <div class="status-section">
                     <div class="status-header">
                         <h3>Core Components</h3>
-                        <span class="status-version">v0.1.0</span>
+                        <span class="status-version">v0.8.0</span>
                     </div>
                     <div class="status-row">
                         <div>
                             <div class="status-name">CLI Runtime</div>
                             <div class="status-desc">Core TUI interface and command execution</div>
                         </div>
-                        <span class="status-badge alpha">Alpha</span>
+                        <span class="status-badge stable">Stable</span>
                     </div>
                     <div class="status-row">
                         <div>
-                            <div class="status-name">Agent Router</div>
-                            <div class="status-desc">Multi-agent orchestration and query routing</div>
+                            <div class="status-name">Task Automation</div>
+                            <div class="status-desc">Multi-step task parsing and execution</div>
                         </div>
-                        <span class="status-badge preview">Preview</span>
+                        <span class="status-badge stable">Stable</span>
                     </div>
                     <div class="status-row">
                         <div>
@@ -271,26 +283,53 @@
 
                 <div class="status-section">
                     <div class="status-header">
+                        <h3>Automation Layer</h3>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Web Automation</div>
+                            <div class="status-desc">Playwright-powered browser control</div>
+                        </div>
+                        <span class="status-badge stable">Stable</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Computer Control</div>
+                            <div class="status-desc">Mouse, keyboard, window management</div>
+                        </div>
+                        <span class="status-badge stable">Stable</span>
+                    </div>
+                    <div class="status-row">
+                        <div>
+                            <div class="status-name">Vision System</div>
+                            <div class="status-desc">Screenshot capture and AI analysis</div>
+                        </div>
+                        <span class="status-badge stable">Stable</span>
+                    </div>
+                </div>
+
+                <div class="status-section">
+                    <div class="status-header">
                         <h3>Intelligence Layer</h3>
                     </div>
                     <div class="status-row">
                         <div>
-                            <div class="status-name">Screen Watcher</div>
-                            <div class="status-desc">Visual context capture and analysis</div>
+                            <div class="status-name">Adaptive Agent</div>
+                            <div class="status-desc">Ask other AIs for help when stuck</div>
                         </div>
-                        <span class="status-badge preview">Preview</span>
+                        <span class="status-badge alpha">Alpha</span>
                     </div>
                     <div class="status-row">
                         <div>
-                            <div class="status-name">Memory System</div>
-                            <div class="status-desc">Vector embeddings and semantic retrieval</div>
+                            <div class="status-name">Self-Learning</div>
+                            <div class="status-desc">Task pattern memory and learning</div>
                         </div>
                         <span class="status-badge alpha">Alpha</span>
                     </div>
                     <div class="status-row">
                         <div>
                             <div class="status-name">Inference Backends</div>
-                            <div class="status-desc">Ollama, Anthropic, OpenAI providers</div>
+                            <div class="status-desc">Ollama, Anthropic, OpenAI, OpenRouter</div>
                         </div>
                         <span class="status-badge stable">Stable</span>
                     </div>
@@ -303,24 +342,21 @@
                     <div class="status-row">
                         <div>
                             <div class="status-name">Telegram Bot</div>
-                            <div class="status-desc">Mobile interface and notifications</div>
+                            <div class="status-desc">Remote PC control from mobile</div>
                         </div>
                         <span class="status-badge stable">Stable</span>
                     </div>
                     <div class="status-row">
                         <div>
-                            <div class="status-name">REST API</div>
-                            <div class="status-desc">HTTP endpoints for integrations</div>
+                            <div class="status-name">Interactive Help</div>
+                            <div class="status-desc">Arrow-key navigation menu</div>
                         </div>
-                        <span class="status-badge alpha">Alpha</span>
+                        <span class="status-badge stable">Stable</span>
                     </div>
-                    <div class="status-row">
-                        <div>
-                            <div class="status-name">WebSocket</div>
-                            <div class="status-desc">Real-time streaming responses</div>
-                        </div>
-                        <span class="status-badge alpha">Alpha</span>
-                    </div>
+                </div>
+
+                <div class="note">
+                    Windows-first for now. macOS/Linux support coming soon.
                 </div>
 
                 <div class="legend">
