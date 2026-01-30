@@ -3,8 +3,8 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { chat, Message } from '../lib/api.js';
-import { getScreenDescription } from '../lib/screen.js';
+import { chat, chatWithVision, Message } from '../lib/api.js';
+import { captureScreenshot } from '../lib/vision.js';
 
 export interface ChatMessage {
   id: string;
@@ -34,25 +34,11 @@ export function useChat(screenWatch: boolean = false): UseChatResult {
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const screenContextRef = useRef<string | null>(null);
+  const screenWatchRef = useRef(screenWatch);
 
-  // Screen watching effect
+  // Keep ref in sync with prop
   useEffect(() => {
-    if (!screenWatch) {
-      screenContextRef.current = null;
-      return;
-    }
-
-    const checkScreen = async () => {
-      const desc = await getScreenDescription();
-      if (desc) {
-        screenContextRef.current = desc;
-      }
-    };
-
-    checkScreen();
-    const interval = setInterval(checkScreen, 5000);
-    return () => clearInterval(interval);
+    screenWatchRef.current = screenWatch;
   }, [screenWatch]);
 
   const addSystemMessage = useCallback((content: string) => {
@@ -100,15 +86,22 @@ export function useChat(screenWatch: boolean = false): UseChatResult {
         .slice(-10)
         .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-      // Add screen context if watching
-      let finalContent = content;
-      if (screenWatch && screenContextRef.current) {
-        finalContent = `[Screen context: ${screenContextRef.current}]\n\n${content}`;
+      apiMessages.push({ role: 'user', content });
+
+      let response;
+
+      // If screen watching is enabled, capture screenshot and use vision API
+      if (screenWatchRef.current) {
+        const screenshot = await captureScreenshot();
+        if (screenshot) {
+          response = await chatWithVision(apiMessages, screenshot);
+        } else {
+          // Fallback to regular chat if screenshot fails
+          response = await chat(apiMessages);
+        }
+      } else {
+        response = await chat(apiMessages);
       }
-
-      apiMessages.push({ role: 'user', content: finalContent });
-
-      const response = await chat(apiMessages);
 
       // Update assistant message
       setMessages(prev =>
@@ -131,7 +124,7 @@ export function useChat(screenWatch: boolean = false): UseChatResult {
     } finally {
       setIsProcessing(false);
     }
-  }, [messages, isProcessing, screenWatch]);
+  }, [messages, isProcessing]);
 
   const clearMessages = useCallback(() => {
     setMessages([WELCOME_MESSAGE]);
