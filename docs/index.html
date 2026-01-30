@@ -325,10 +325,12 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 24px 28px;
+            padding: 20px 24px;
+            padding-right: 100px;
             display: none;
             position: relative;
             transition: all 0.3s ease;
+            overflow-x: auto;
         }
 
         .install-box:hover {
@@ -350,13 +352,15 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
             color: var(--text-primary);
-            word-break: break-all;
+            white-space: nowrap;
+            display: block;
         }
 
         .install-box .copy-btn {
             position: absolute;
-            top: 16px;
+            top: 50%;
             right: 16px;
+            transform: translateY(-50%);
             padding: 8px 16px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -373,7 +377,7 @@
             background: var(--accent);
             border-color: var(--accent);
             color: var(--bg-primary);
-            transform: scale(1.05);
+            transform: translateY(-50%) scale(1.05);
         }
 
         /* Scroll indicator */
