@@ -656,7 +656,7 @@ ${existingResult.output}`;
 
     case 'browse_and_ask': {
       // Format: browse_and_ask:site|question
-      // Using Playwright for reliable browser automation
+      // Uses shell to open browser + computer control for typing
       const [site, ...questionParts] = params.split('|');
       const question = questionParts.join('|');
 
@@ -665,35 +665,18 @@ ${existingResult.output}`;
       const siteLower = site.toLowerCase();
 
       if (supportedSites.includes(siteLower)) {
-        // Use Playwright's AI chat helper
-        const result = await browser.askAI(siteLower as any, question, true);
-
-        // If response seems short, try getting full response by scrolling
-        if (result.response.length < 500) {
-          const fullParts = await browser.getFullAIResponse(siteLower as any, 5);
-          if (fullParts.length > 0) {
-            step.result = `📝 ${site.charAt(0).toUpperCase() + site.slice(1)} says:\n\n${fullParts.join('\n\n')}`;
-            break;
-          }
-        }
-
+        // Use browser service to open AI chat and type question
+        const result = await browser.askAI(siteLower as any, question);
         step.result = `📝 ${site.charAt(0).toUpperCase() + site.slice(1)} says:\n\n${result.response}`;
       } else {
-        // Generic site - open and type
-        await browser.navigateTo(`https://${site}`);
-        await sleep(2000);
+        // Generic site - open and type using computer control
+        await browser.openUrl(`https://${site}`);
+        await sleep(4000);
 
-        // Try to find and fill any input
-        const page = await browser.getPage();
-        const inputs = ['textarea', 'input[type="text"]', 'input[type="search"]', '[contenteditable="true"]'];
-
-        for (const selector of inputs) {
-          if (await browser.elementExists(selector)) {
-            await browser.typeInElement(selector, question);
-            await browser.pressKey('Enter');
-            break;
-          }
-        }
+        // Type the question (assumes cursor is in input field)
+        await computer.typeText(question);
+        await sleep(300);
+        await computer.pressKey('Return');
 
         await sleep(5000);
         const pageText = await browser.getPageText();
@@ -708,21 +691,14 @@ ${existingResult.output}`;
       break;
 
     case 'web_search': {
-      // Use Playwright for reliable web search
-      const searchResults = await browser.webSearch(params, 'google');
-
-      if (searchResults.length > 0) {
-        step.result = `🔍 Search results for "${params}":\n\n${searchResults.map((r, i) => `${i + 1}. ${r}`).join('\n')}`;
-      } else {
-        // Fallback: get page text
-        const pageText = await browser.getPageText();
-        step.result = `🔍 Search results for "${params}":\n\n${pageText.slice(0, 2000)}`;
-      }
+      // Use shell to open search + vision to describe results
+      const searchResult = await browser.webSearch(params, 'google');
+      step.result = searchResult;
       break;
     }
 
     case 'send_email': {
-      // Use Playwright for reliable email sending
+      // Uses shell to open email compose + computer control
       // Format: send_email:provider|to|subject|body
       const [provider, to, subject, ...bodyParts] = params.split('|');
       const body = bodyParts.join('|');
@@ -739,24 +715,24 @@ ${existingResult.output}`;
       }
 
       if (success) {
-        step.result = `📧 Email sent via ${provider} to ${to}`;
+        step.result = `📧 Email composed via ${provider} to ${to} (check browser to confirm send)`;
       } else {
-        throw new Error(`Failed to send email via ${provider}. Make sure you're logged in.`);
+        throw new Error(`Failed to open email via ${provider}. Make sure you're logged in.`);
       }
       break;
     }
 
     case 'google_sheets': {
-      // Use Playwright for Google Sheets
+      // Uses shell to open Google Sheets + computer control for typing
       // Format: google_sheets:command|arg1|arg2...
       const [sheetCmd, ...sheetArgs] = params.split('|');
 
       switch (sheetCmd.toLowerCase()) {
         case 'new': {
           const sheetName = sheetArgs[0] || 'Untitled spreadsheet';
-          await browser.navigateTo('https://docs.google.com/spreadsheets/create');
+          await browser.openGoogleSheet();
           await sleep(5000);
-          step.result = `📊 Created Google Sheet: ${sheetName}`;
+          step.result = `📊 Opened new Google Sheet: ${sheetName}`;
           break;
         }
         case 'type': {
@@ -769,12 +745,8 @@ ${existingResult.output}`;
           break;
         }
         case 'read': {
-          const screenshot = await browser.takeScreenshot();
-          const analysis = await chat([{
-            role: 'user',
-            content: 'Describe the contents of this Google Sheet. List visible data in the cells.'
-          }]);
-          step.result = `📊 Current sheet view:\n${analysis.content}`;
+          const vision = await describeScreen();
+          step.result = `📊 Current sheet view:\n${vision.description}`;
           break;
         }
         default:
@@ -784,17 +756,16 @@ ${existingResult.output}`;
     }
 
     case 'google_docs': {
-      // Use Playwright for Google Docs
+      // Uses shell to open Google Docs + computer control for typing
       // Format: google_docs:command|arg1|arg2...
       const [docCmd, ...docArgs] = params.split('|');
 
       switch (docCmd.toLowerCase()) {
         case 'new': {
           const docName = docArgs[0] || 'Untitled document';
-          const success = await browser.googleDocsType('');
-          step.result = success
-            ? `📄 Created Google Doc: ${docName}`
-            : `📄 Could not create Google Doc`;
+          await browser.openGoogleDoc();
+          await sleep(5000);
+          step.result = `📄 Opened new Google Doc: ${docName}`;
           break;
         }
         case 'type': {
@@ -812,23 +783,18 @@ ${existingResult.output}`;
     }
 
     case 'research': {
-      // Use Playwright for multi-step research
+      // Uses shell to open search + vision to gather info
       const researchQuery = params;
 
-      // Use browser.research which handles search, clicking, gathering
+      // Use browser.research which handles search + vision
       const researchData = await browser.research(researchQuery, 3);
 
-      // Format sources
-      const sourceSummaries = researchData.sources.map((s, i) =>
-        `Source ${i + 1}: ${s.title}\n${s.content.slice(0, 500)}...`
-      ).join('\n\n');
-
-      // Ask AI to synthesize
+      // Ask AI to synthesize from vision description
       const synthesis = await chat([{
         role: 'user',
-        content: `Based on the following research gathered about "${researchQuery}", provide a comprehensive summary:
+        content: `Based on the following search results about "${researchQuery}", provide a comprehensive summary:
 
-${sourceSummaries}
+${researchData.summary}
 
 Create a well-organized summary with:
 1. Key findings
@@ -844,7 +810,7 @@ Be thorough but concise.`
     }
 
     case 'ask_llm': {
-      // Use Playwright to ask another LLM for help with a screenshot
+      // Uses shell to open LLM site + computer control to type
       // Format: ask_llm:llm_name|question
       const [llmName, ...questionParts] = params.split('|');
       const question = questionParts.join('|');
@@ -863,14 +829,10 @@ Be thorough but concise.`
         throw new Error(`Unknown LLM: ${llmName}. Supported: ${supportedLLMs.join(', ')}`);
       }
 
-      // Use Playwright's AI chat helper
-      const result = await browser.askAI(llmLower as any, fullQuestion, false);
+      // Use browser service to open and ask
+      const result = await browser.askAI(llmLower as any, fullQuestion);
 
-      // Get full response if needed
-      const fullParts = await browser.getFullAIResponse(llmLower as any, 3);
-      const finalResponse = fullParts.length > 0 ? fullParts.join('\n\n') : result.response;
-
-      step.result = `🤖 ${llmName} says:\n\n${finalResponse}`;
+      step.result = `🤖 ${llmName} says:\n\n${result.response}`;
       break;
     }
 
@@ -898,47 +860,39 @@ Be specific about locations (top-left, center, etc.) and what each element does.
     }
 
     case 'adaptive_do': {
-      // Adaptive agent using Playwright: try to accomplish something, ask LLMs if stuck
+      // Adaptive agent using computer control: try to accomplish something, ask LLMs if stuck
       const goal = params;
       const maxAttempts = 5;
       const actionHistory: string[] = [];
       let accomplished = false;
 
-      // Initialize browser
-      const page = await browser.getPage();
-
       for (let attempt = 0; attempt < maxAttempts && !accomplished; attempt++) {
-        // Take screenshot and analyze current state
-        const screenshot = await browser.takeScreenshot();
-        const currentState = await chat([{
-          role: 'user',
-          content: `Describe what you see on this screen. What app/website is it? What elements are visible?`
-        }]);
+        // Take screenshot and analyze current state using vision
+        const currentScreen = await describeScreen();
 
         // Ask our AI what to do next
         const nextAction = await chat([{
           role: 'user',
           content: `GOAL: ${goal}
 
-CURRENT SCREEN: ${currentState.content}
+CURRENT SCREEN: ${currentScreen.description}
 
 PREVIOUS ACTIONS TAKEN:
 ${actionHistory.length > 0 ? actionHistory.join('\n') : 'None yet'}
 
 Based on what you see, what's the SINGLE next action to take?
 Options:
-- click: Click element (describe CSS selector or visible text)
-- type: Type something (specify selector and text)
-- press: Press a key (specify key)
+- click: Click (will click at current mouse position)
+- type: Type something (specify text)
+- press: Press a key (specify key like Enter, Tab, Escape)
 - scroll: Scroll up/down
-- navigate: Go to URL
+- navigate: Go to URL (opens in browser)
 - done: Goal is accomplished
 - stuck: Can't figure out what to do
 
 Respond in format:
 ACTION: <action_type>
-SELECTOR: <css selector or text to find>
-VALUE: <text to type or URL>
+VALUE: <text to type, URL to navigate, or key to press>
 REASONING: <why>`
         }]);
 
@@ -946,7 +900,6 @@ REASONING: <why>`
 
         // Parse the action
         const actionMatch = actionContent.match(/ACTION:\s*(\w+)/i);
-        const selectorMatch = actionContent.match(/SELECTOR:\s*(.+?)(?:\n|$)/i);
         const valueMatch = actionContent.match(/VALUE:\s*(.+?)(?:\n|$)/i);
 
         if (!actionMatch) {
@@ -955,7 +908,6 @@ REASONING: <why>`
         }
 
         const action = actionMatch[1].toLowerCase();
-        const selector = selectorMatch?.[1]?.trim() || '';
         const value = valueMatch?.[1]?.trim() || '';
 
         if (action === 'done') {
@@ -965,44 +917,31 @@ REASONING: <why>`
         }
 
         if (action === 'stuck') {
-          // Ask Perplexity for help using Playwright
+          // Ask Perplexity for help
           actionHistory.push(`Attempt ${attempt + 1}: Got stuck, asking Perplexity for help...`);
 
           const helpRequest = `I'm trying to: ${goal}\n\nI'm stuck. What should I do next? Be specific about what to click or type.`;
-          const advice = await browser.askAI('perplexity', helpRequest, false);
+          const advice = await browser.askAI('perplexity', helpRequest);
           actionHistory.push(`Got advice: ${advice.response.slice(0, 200)}...`);
-
-          // Navigate back to continue
-          await browser.navigateTo(page.url());
           continue;
         }
 
-        // Execute the action using Playwright
+        // Execute the action using computer control
         try {
           switch (action) {
             case 'click':
-              // Try to click by selector or text
-              if (selector) {
-                const clicked = await browser.clickElement(selector);
-                if (!clicked) {
-                  // Try by text
-                  await page.getByText(selector).first().click({ timeout: 5000 });
-                }
-              }
-              actionHistory.push(`Attempt ${attempt + 1}: Clicked "${selector}"`);
+              await computer.clickMouse('left');
+              actionHistory.push(`Attempt ${attempt + 1}: Clicked`);
               break;
             case 'type':
-              if (selector && value) {
-                const typed = await browser.typeInElement(selector, value);
-                if (!typed) {
-                  await page.getByPlaceholder(selector).first().fill(value);
-                }
+              if (value) {
+                await computer.typeText(value);
               }
-              actionHistory.push(`Attempt ${attempt + 1}: Typed "${value}" in "${selector}"`);
+              actionHistory.push(`Attempt ${attempt + 1}: Typed "${value}"`);
               break;
             case 'press':
-              await browser.pressKey(value || selector);
-              actionHistory.push(`Attempt ${attempt + 1}: Pressed ${value || selector}`);
+              await computer.pressKey(value || 'Return');
+              actionHistory.push(`Attempt ${attempt + 1}: Pressed ${value || 'Enter'}`);
               break;
             case 'scroll':
               await browser.scroll(value.toLowerCase().includes('up') ? 'up' : 'down');
@@ -1010,8 +949,8 @@ REASONING: <why>`
               break;
             case 'navigate':
               const url = value.startsWith('http') ? value : `https://${value}`;
-              await browser.navigateTo(url);
-              actionHistory.push(`Attempt ${attempt + 1}: Navigated to ${url}`);
+              await browser.openUrl(url);
+              actionHistory.push(`Attempt ${attempt + 1}: Opened ${url}`);
               break;
             default:
               actionHistory.push(`Attempt ${attempt + 1}: Unknown action ${action}`);
