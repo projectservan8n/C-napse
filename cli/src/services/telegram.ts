@@ -8,6 +8,7 @@ import { describeScreen, captureScreenshot } from '../lib/vision.js';
 import { runCommand } from '../tools/shell.js';
 import { chat as chatWithAI, chatWithVision, Message } from '../lib/api.js';
 import * as computer from '../tools/computer.js';
+import { parseTask, executeTask, formatTask, Task, TaskStep } from '../lib/tasks.js';
 
 export interface TelegramMessage {
   chatId: number;
@@ -199,8 +200,14 @@ export class TelegramBotService extends EventEmitter {
         'Commands:\n' +
         '/screen - Take screenshot\n' +
         '/describe - Screenshot + AI description\n' +
-        '/run <cmd> - Execute command\n' +
+        '/task <desc> - Multi-step automation\n' +
+        '/run <cmd> - Execute shell command\n' +
         '/status - System status\n\n' +
+        'Examples:\n' +
+        '• /task open folder E:/Test and list files\n' +
+        '• /task open notepad and type hello\n' +
+        '• minimize chrome\n' +
+        '• what windows are open?\n\n' +
         `Your chat ID: ${chatId}`
       );
     });
@@ -301,6 +308,90 @@ export class TelegramBotService extends EventEmitter {
       ].join('\n');
 
       await ctx.reply(status);
+    });
+
+    // /task command - multi-step task automation
+    this.bot.command('task', async (ctx: any) => {
+      if (!this.isAllowed(ctx.chat.id)) {
+        await ctx.reply('⛔ Not authorized. Send /start first.');
+        return;
+      }
+
+      const taskDescription = ctx.message.text.replace('/task', '').trim();
+      if (!taskDescription) {
+        await ctx.reply(
+          '📋 Usage: /task <description>\n\n' +
+          'Examples:\n' +
+          '• /task open notepad and type hello\n' +
+          '• /task open folder E:/Test and list files\n' +
+          '• /task search google for weather today\n' +
+          '• /task open chrome and go to github.com'
+        );
+        return;
+      }
+
+      await ctx.reply(`🎯 Parsing task: "${taskDescription}"`);
+
+      try {
+        // Parse the task into steps
+        const task = await parseTask(taskDescription);
+
+        // Show the parsed steps
+        let stepsPreview = `📋 Task broken into ${task.steps.length} steps:\n\n`;
+        task.steps.forEach((step, i) => {
+          stepsPreview += `${i + 1}. ${step.description}\n`;
+        });
+        stepsPreview += '\n⏳ Executing...';
+        await ctx.reply(stepsPreview);
+
+        // Execute the task with progress updates
+        let lastUpdate = Date.now();
+        const updatedTask = await executeTask(task, async (t: Task, step: TaskStep) => {
+          // Send progress update (throttled to avoid spam)
+          const now = Date.now();
+          if (now - lastUpdate > 2000) { // Update every 2 seconds max
+            lastUpdate = now;
+            const stepNum = t.steps.indexOf(step) + 1;
+            const status = step.status === 'running' ? '🔄' : step.status === 'completed' ? '✅' : '❌';
+            await ctx.sendChatAction('typing');
+          }
+        });
+
+        // Send final result
+        const result = formatTask(updatedTask);
+
+        // Split if too long
+        if (result.length > 4000) {
+          const chunks = result.match(/.{1,4000}/gs) || [result];
+          for (const chunk of chunks) {
+            await sendFormattedMessage(ctx, chunk);
+          }
+        } else {
+          await sendFormattedMessage(ctx, result);
+        }
+
+        // If task had vision/screenshot steps, send a final screenshot
+        const hasScreenStep = updatedTask.steps.some(s =>
+          s.action.includes('screenshot') || s.action.includes('describe')
+        );
+        if (hasScreenStep || updatedTask.status === 'completed') {
+          try {
+            const screenshot = await captureScreenshot();
+            if (screenshot) {
+              const buffer = Buffer.from(screenshot, 'base64');
+              await ctx.replyWithPhoto({ source: buffer }, {
+                caption: updatedTask.status === 'completed'
+                  ? '✅ Task completed - current screen'
+                  : '📸 Final screen state'
+              });
+            }
+          } catch {
+            // Screenshot failed, that's ok
+          }
+        }
+      } catch (error) {
+        await ctx.reply(`❌ Task failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     });
 
     // Handle text messages - forward to AI and respond
@@ -441,11 +532,15 @@ export class TelegramBotService extends EventEmitter {
       return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
     }
 
-    // Focus/open window
-    match = lower.match(/(?:focus|open|switch to)\s+(?:the\s+)?(.+)/i);
-    if (match) {
-      const result = await computer.focusWindow(match[1].trim());
-      return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+    // Focus/open window - but NOT if it looks like a multi-step task
+    // Skip if text contains task indicators: "and", "then", "tell me", "list", "what", etc.
+    const looksLikeTask = /\b(and|then|after|tell me|list|what|show|describe|check|find|search|create|write|type\s+.+\s+in)\b/i.test(text);
+    if (!looksLikeTask) {
+      match = lower.match(/(?:focus|open|switch to)\s+(?:the\s+)?(\w+(?:\s+\w+)?)/i);
+      if (match) {
+        const result = await computer.focusWindow(match[1].trim());
+        return result.success ? `✅ ${result.output}` : `❌ ${result.error}`;
+      }
     }
 
     // Type text
