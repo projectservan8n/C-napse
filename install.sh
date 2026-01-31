@@ -25,7 +25,7 @@ echo -e "${DIM}          Your AI-powered PC automation assistant${NC}"
 echo ""
 
 # Step 1: Check Node.js
-echo -e "  ${YELLOW}○${NC} ${DIM}[1/3]${NC} Checking Node.js..."
+echo -e "  ${YELLOW}○${NC} ${DIM}[1/4]${NC} Checking Node.js..."
 
 NODE_VERSION=""
 if command -v node &> /dev/null; then
@@ -33,9 +33,9 @@ if command -v node &> /dev/null; then
 fi
 
 if [[ -n "$NODE_VERSION" ]] && [[ "$NODE_VERSION" -ge 18 ]]; then
-    echo -e "\r  ${GREEN}●${NC} ${DIM}[1/3]${NC} Node.js v$(node --version | cut -d'v' -f2)"
+    echo -e "\r  ${GREEN}●${NC} ${DIM}[1/4]${NC} Node.js v$(node --version | cut -d'v' -f2)"
 else
-    echo -e "\r  ${YELLOW}○${NC} ${DIM}[1/3]${NC} Installing Node.js..."
+    echo -e "\r  ${YELLOW}○${NC} ${DIM}[1/4]${NC} Installing Node.js..."
 
     # Detect OS for node installation
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -67,26 +67,71 @@ else
         fi
     fi
 
-    echo -e "\r  ${GREEN}●${NC} ${DIM}[1/3]${NC} Node.js installed"
+    echo -e "\r  ${GREEN}●${NC} ${DIM}[1/4]${NC} Node.js installed"
 fi
 
 # Step 2: Install C-napse via npm
-echo -e "  ${YELLOW}○${NC} ${DIM}[2/3]${NC} Installing C-napse..."
+echo -e "  ${YELLOW}○${NC} ${DIM}[2/4]${NC} Installing C-napse..."
 
 if npm install -g @projectservan8n/cnapse@latest > /dev/null 2>&1; then
-    echo -e "\r  ${GREEN}●${NC} ${DIM}[2/3]${NC} C-napse installed"
+    echo -e "\r  ${GREEN}●${NC} ${DIM}[2/4]${NC} C-napse installed"
 else
-    echo -e "\r  ${RED}✗${NC} ${DIM}[2/3]${NC} ${RED}Failed - try: npm install -g @projectservan8n/cnapse${NC}"
+    echo -e "\r  ${RED}✗${NC} ${DIM}[2/4]${NC} ${RED}Failed - try: npm install -g @projectservan8n/cnapse${NC}"
     exit 1
 fi
 
-# Step 3: Check for Ollama (optional)
-echo -e "  ${YELLOW}○${NC} ${DIM}[3/3]${NC} Checking Ollama..."
+# Step 3: Platform-specific dependencies
+echo -e "  ${YELLOW}○${NC} ${DIM}[3/4]${NC} Checking platform tools..."
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS needs cliclick for mouse control
+    if command -v cliclick &> /dev/null; then
+        echo -e "\r  ${GREEN}●${NC} ${DIM}[3/4]${NC} cliclick ready (mouse control)"
+    else
+        echo -e "\r  ${YELLOW}○${NC} ${DIM}[3/4]${NC} Installing cliclick (mouse control)..."
+        if command -v brew &> /dev/null; then
+            brew install cliclick > /dev/null 2>&1
+            echo -e "\r  ${GREEN}●${NC} ${DIM}[3/4]${NC} cliclick installed"
+        else
+            echo -e "\r  ${DIM}◌${NC} ${DIM}[3/4]${NC} ${YELLOW}cliclick not installed - run: brew install cliclick${NC}"
+        fi
+    fi
+else
+    # Linux needs xdotool and wmctrl
+    MISSING=""
+    if ! command -v xdotool &> /dev/null; then
+        MISSING="xdotool"
+    fi
+    if ! command -v wmctrl &> /dev/null; then
+        MISSING="$MISSING wmctrl"
+    fi
+
+    if [[ -z "$MISSING" ]]; then
+        echo -e "\r  ${GREEN}●${NC} ${DIM}[3/4]${NC} xdotool & wmctrl ready"
+    else
+        echo -e "\r  ${YELLOW}○${NC} ${DIM}[3/4]${NC} Installing:${MISSING}..."
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get install -y $MISSING > /dev/null 2>&1
+            echo -e "\r  ${GREEN}●${NC} ${DIM}[3/4]${NC} Platform tools installed"
+        elif command -v dnf &> /dev/null; then
+            sudo dnf install -y $MISSING > /dev/null 2>&1
+            echo -e "\r  ${GREEN}●${NC} ${DIM}[3/4]${NC} Platform tools installed"
+        elif command -v pacman &> /dev/null; then
+            sudo pacman -S --noconfirm $MISSING > /dev/null 2>&1
+            echo -e "\r  ${GREEN}●${NC} ${DIM}[3/4]${NC} Platform tools installed"
+        else
+            echo -e "\r  ${DIM}◌${NC} ${DIM}[3/4]${NC} ${YELLOW}Install manually: $MISSING${NC}"
+        fi
+    fi
+fi
+
+# Step 4: Check for Ollama (optional)
+echo -e "  ${YELLOW}○${NC} ${DIM}[4/4]${NC} Checking Ollama..."
 
 if command -v ollama &> /dev/null; then
-    echo -e "\r  ${GREEN}●${NC} ${DIM}[3/3]${NC} Ollama ready (local AI available)"
+    echo -e "\r  ${GREEN}●${NC} ${DIM}[4/4]${NC} Ollama ready (local AI available)"
 else
-    echo -e "\r  ${DIM}◌${NC} ${DIM}[3/3]${NC} ${DIM}Ollama not found (optional)${NC}"
+    echo -e "\r  ${DIM}◌${NC} ${DIM}[4/4]${NC} ${DIM}Ollama not found (optional)${NC}"
 fi
 
 # Done!
