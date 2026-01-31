@@ -124,6 +124,7 @@ export class TelegramBotService extends EventEmitter {
   private isRunning = false;
   private allowedChatIds: Set<number> = new Set();
   private chatHistory: Map<number, Message[]> = new Map();
+  private watchIntervals: Map<number, NodeJS.Timeout> = new Map();
 
   constructor() {
     super();
@@ -197,17 +198,22 @@ export class TelegramBotService extends EventEmitter {
       this.allowedChatIds.add(chatId);
       await ctx.reply(
         '🤖 C-napse connected!\n\n' +
-        'Commands:\n' +
+        '📋 Commands:\n' +
         '/screen - Take screenshot\n' +
         '/describe - Screenshot + AI description\n' +
         '/task <desc> - Multi-step automation\n' +
         '/run <cmd> - Execute shell command\n' +
         '/status - System status\n\n' +
-        'Examples:\n' +
-        '• /task open folder E:/Test and list files\n' +
+        '🤖 Autonomous Agent:\n' +
+        '/agent <goal> - Start autonomous agent\n' +
+        '/agent stop - Stop the agent\n' +
+        '/watch - Stream screen live\n' +
+        '/learn - View learned actions\n\n' +
+        '💡 Examples:\n' +
+        '• /agent open safari and search for weather\n' +
         '• /task open notepad and type hello\n' +
-        '• minimize chrome\n' +
-        '• what windows are open?\n\n' +
+        '• /watch 10 (screenshot every 10s)\n' +
+        '• minimize chrome\n\n' +
         `Your chat ID: ${chatId}`
       );
     });
@@ -298,6 +304,31 @@ export class TelegramBotService extends EventEmitter {
       }
 
       const config = getConfig();
+
+      // Get agent status if running
+      let agentStatus = 'Not running';
+      try {
+        const { getAutonomousAgent } = await import('../agents/autonomous.js');
+        const agent = getAutonomousAgent();
+        const state = agent.getState();
+        if (state.isActive) {
+          agentStatus = `Running (${state.attemptCount} attempts, goal: ${state.goal?.slice(0, 30)}...)`;
+        }
+      } catch {
+        // Agent not available
+      }
+
+      // Get learner stats
+      let learnedCount = 0;
+      try {
+        const { getLearner } = await import('../agents/learner.js');
+        const learner = getLearner();
+        const stats = learner.getStats();
+        learnedCount = stats.memorySize;
+      } catch {
+        // Learner not available
+      }
+
       const status = [
         '📊 C-napse Status',
         '',
@@ -305,9 +336,285 @@ export class TelegramBotService extends EventEmitter {
         `Model: ${config.model}`,
         `Platform: ${process.platform}`,
         `Node: ${process.version}`,
+        '',
+        '🤖 Agent Status:',
+        `  Agent: ${agentStatus}`,
+        `  Learned actions: ${learnedCount}`,
       ].join('\n');
 
       await ctx.reply(status);
+    });
+
+    // /agent command - autonomous agent control
+    this.bot.command('agent', async (ctx: any) => {
+      if (!this.isAllowed(ctx.chat.id)) {
+        await ctx.reply('⛔ Not authorized. Send /start first.');
+        return;
+      }
+
+      const args = ctx.message.text.replace('/agent', '').trim();
+
+      // Import autonomous agent
+      const { getAutonomousAgent } = await import('../agents/autonomous.js');
+      const agent = getAutonomousAgent();
+
+      if (args === 'stop') {
+        agent.stop();
+        await ctx.reply('🛑 Agent stopped');
+        return;
+      }
+
+      if (args === 'pause') {
+        agent.pause();
+        await ctx.reply('⏸️ Agent paused');
+        return;
+      }
+
+      if (args === 'resume') {
+        agent.resume();
+        await ctx.reply('▶️ Agent resumed');
+        return;
+      }
+
+      if (args === 'status') {
+        const state = agent.getState();
+        const history = agent.getHistory().slice(-5);
+
+        let statusMsg = '🤖 Agent Status\n\n';
+        statusMsg += `Goal: ${state.goal || 'None'}\n`;
+        statusMsg += `Active: ${state.isActive ? 'Yes' : 'No'}\n`;
+        statusMsg += `Attempts: ${state.attemptCount}\n`;
+        statusMsg += `Confidence: ${state.confidence}%\n`;
+        statusMsg += `Stuck count: ${state.stuckCount}\n\n`;
+
+        if (history.length > 0) {
+          statusMsg += 'Recent actions:\n';
+          history.forEach(h => {
+            statusMsg += `• ${h.action}: ${h.value?.slice(0, 30) || ''} (${h.result})\n`;
+          });
+        }
+
+        await ctx.reply(statusMsg);
+        return;
+      }
+
+      if (!args) {
+        await ctx.reply(
+          '🤖 Autonomous Agent Commands:\n\n' +
+          '/agent <goal> - Start agent with a goal\n' +
+          '/agent stop - Stop the agent\n' +
+          '/agent pause - Pause the agent\n' +
+          '/agent resume - Resume the agent\n' +
+          '/agent status - Get agent status\n\n' +
+          'Examples:\n' +
+          '• /agent open safari and search for weather\n' +
+          '• /agent compose an email in gmail to john@test.com\n' +
+          '• /agent book a flight on kayak.com from NYC to LA'
+        );
+        return;
+      }
+
+      // Start the agent with the goal
+      const goal = args;
+      await ctx.reply(`🚀 Starting agent with goal:\n"${goal}"\n\nSending updates...`);
+
+      // Set up event listeners for progress updates
+      const chatId = ctx.chat.id;
+      let lastUpdate = Date.now();
+      let screenshotCount = 0;
+
+      const onAttempt = async (data: { count: number; max: number }) => {
+        // Throttle updates
+        if (Date.now() - lastUpdate < 3000) return;
+        lastUpdate = Date.now();
+        await ctx.reply(`🔄 Attempt ${data.count}/${data.max}`);
+      };
+
+      const onDecided = async (decision: { action: string; value: string; reasoning: string }) => {
+        await ctx.reply(`💭 ${decision.action}: ${decision.value?.slice(0, 50) || ''}`);
+      };
+
+      const onCompleted = async (data: { success: boolean; attempts: number }) => {
+        const emoji = data.success ? '✅' : '❌';
+        await ctx.reply(`${emoji} Agent ${data.success ? 'completed' : 'stopped'} after ${data.attempts} attempts`);
+
+        // Send final screenshot
+        try {
+          const screenshot = await captureScreenshot();
+          if (screenshot) {
+            const buffer = Buffer.from(screenshot, 'base64');
+            await ctx.replyWithPhoto({ source: buffer }, {
+              caption: data.success ? '✅ Goal accomplished!' : '📸 Final state'
+            });
+          }
+        } catch {
+          // Ignore screenshot errors
+        }
+
+        // Clean up listeners
+        agent.off('attempt', onAttempt);
+        agent.off('decided', onDecided);
+        agent.off('completed', onCompleted);
+        agent.off('error', onError);
+      };
+
+      const onError = async (data: { error: string }) => {
+        await ctx.reply(`❌ Error: ${data.error}`);
+      };
+
+      // Send periodic screenshots (every 30 seconds)
+      const screenshotInterval = setInterval(async () => {
+        if (!agent.getState().isActive) {
+          clearInterval(screenshotInterval);
+          return;
+        }
+
+        screenshotCount++;
+        if (screenshotCount % 6 === 0) { // Every ~30 seconds (6 * 5 second checks)
+          try {
+            const screenshot = await captureScreenshot();
+            if (screenshot) {
+              const buffer = Buffer.from(screenshot, 'base64');
+              await ctx.replyWithPhoto({ source: buffer }, {
+                caption: `📸 Progress update (attempt ${agent.getState().attemptCount})`
+              });
+            }
+          } catch {
+            // Ignore
+          }
+        }
+      }, 5000);
+
+      agent.on('attempt', onAttempt);
+      agent.on('decided', onDecided);
+      agent.on('completed', onCompleted);
+      agent.on('error', onError);
+
+      // Start the agent (async)
+      agent.start(goal).then(result => {
+        clearInterval(screenshotInterval);
+      }).catch(err => {
+        clearInterval(screenshotInterval);
+        ctx.reply(`❌ Agent error: ${err.message}`);
+      });
+    });
+
+    // /watch command - screen streaming
+    this.bot.command('watch', async (ctx: any) => {
+      if (!this.isAllowed(ctx.chat.id)) {
+        await ctx.reply('⛔ Not authorized. Send /start first.');
+        return;
+      }
+
+      const args = ctx.message.text.replace('/watch', '').trim();
+      const chatId = ctx.chat.id;
+
+      // Check if already watching
+      if (args === 'stop') {
+        if (this.watchIntervals?.has(chatId)) {
+          clearInterval(this.watchIntervals.get(chatId));
+          this.watchIntervals.delete(chatId);
+          await ctx.reply('👁️ Screen streaming stopped');
+        } else {
+          await ctx.reply('Not currently streaming');
+        }
+        return;
+      }
+
+      // Parse interval (default 5 seconds)
+      const intervalSeconds = parseInt(args) || 5;
+      const intervalMs = Math.max(3000, Math.min(60000, intervalSeconds * 1000));
+
+      // Initialize watch intervals map if needed
+      if (!this.watchIntervals) {
+        this.watchIntervals = new Map();
+      }
+
+      // Stop existing stream if any
+      if (this.watchIntervals.has(chatId)) {
+        clearInterval(this.watchIntervals.get(chatId));
+      }
+
+      await ctx.reply(`👁️ Starting screen stream (every ${intervalMs / 1000}s)\nSend /watch stop to end`);
+
+      // Send first screenshot immediately
+      try {
+        const screenshot = await captureScreenshot();
+        if (screenshot) {
+          const buffer = Buffer.from(screenshot, 'base64');
+          await ctx.replyWithPhoto({ source: buffer }, { caption: '📸 Stream started' });
+        }
+      } catch {
+        // Ignore
+      }
+
+      // Start interval
+      const interval = setInterval(async () => {
+        try {
+          const screenshot = await captureScreenshot();
+          if (screenshot) {
+            const buffer = Buffer.from(screenshot, 'base64');
+            await ctx.replyWithPhoto({ source: buffer }, {
+              caption: `📸 ${new Date().toLocaleTimeString()}`
+            });
+          }
+        } catch {
+          // Ignore errors, keep streaming
+        }
+      }, intervalMs);
+
+      this.watchIntervals.set(chatId, interval);
+    });
+
+    // /learn command - view/manage learned actions
+    this.bot.command('learn', async (ctx: any) => {
+      if (!this.isAllowed(ctx.chat.id)) {
+        await ctx.reply('⛔ Not authorized. Send /start first.');
+        return;
+      }
+
+      const args = ctx.message.text.replace('/learn', '').trim();
+
+      const { getLearner } = await import('../agents/learner.js');
+      const learner = getLearner();
+      await learner.load();
+
+      if (args === 'clear') {
+        await learner.clearMemory();
+        await ctx.reply('🗑️ Learned actions cleared');
+        return;
+      }
+
+      if (args === 'stats') {
+        const stats = learner.getStats();
+        await ctx.reply(
+          '📊 Learning Stats:\n\n' +
+          `Total learned: ${stats.memorySize}\n` +
+          `Total successes: ${stats.totalSuccesses}\n` +
+          `Total attempts: ${stats.totalAttempts}\n\n` +
+          'Sources:\n' +
+          Object.entries(stats.sourceCounts)
+            .map(([source, count]) => `• ${source}: ${count}`)
+            .join('\n')
+        );
+        return;
+      }
+
+      // Show recent learned actions
+      const learned = learner.getAllLearned().slice(-10);
+      if (learned.length === 0) {
+        await ctx.reply('📚 No learned actions yet\n\nThe agent learns from successful actions and remembers them for next time.');
+        return;
+      }
+
+      let msg = '📚 Recent Learned Actions:\n\n';
+      learned.forEach((l, i) => {
+        msg += `${i + 1}. ${l.goal.slice(0, 40)}\n`;
+        msg += `   → ${l.actionType}: ${l.actionValue.slice(0, 30)}\n`;
+        msg += `   (${l.successCount}✅ ${l.failCount}❌ from ${l.source})\n\n`;
+      });
+
+      await ctx.reply(msg);
     });
 
     // /task command - multi-step task automation

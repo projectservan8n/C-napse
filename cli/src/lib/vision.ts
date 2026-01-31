@@ -252,3 +252,142 @@ async function analyzeWithOpenAI(base64Image: string, prompt: string): Promise<s
   const data = await response.json() as { choices: Array<{ message: { content: string } }> };
   return data.choices?.[0]?.message?.content || 'Unable to analyze image';
 }
+
+/**
+ * Find element coordinates on screen by description
+ * Returns approximate center coordinates where AI thinks the element is
+ */
+export async function findElementCoordinates(
+  screenshot: string,
+  description: string
+): Promise<{ x: number; y: number } | null> {
+  const config = getConfig();
+
+  const prompt = `Look at this screenshot carefully. Find the UI element described as: "${description}"
+
+Your task is to estimate the CENTER coordinates (x, y) of this element.
+
+IMPORTANT:
+- Assume the screen is approximately 1920x1080 pixels (adjust if you see indicators of different resolution)
+- Give coordinates as integers
+- If the element is clearly visible, give your best estimate
+- If you absolutely cannot find it, respond with NOT_FOUND
+
+Respond in EXACTLY this format (numbers only, no units):
+X: <number>
+Y: <number>
+
+Or if not found:
+NOT_FOUND`;
+
+  try {
+    const response = await analyzeWithVisionCustom(screenshot, config.provider, prompt);
+
+    // Parse coordinates from response
+    const xMatch = response.match(/X:\s*(\d+)/i);
+    const yMatch = response.match(/Y:\s*(\d+)/i);
+
+    if (xMatch && yMatch) {
+      return {
+        x: parseInt(xMatch[1]),
+        y: parseInt(yMatch[1]),
+      };
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Analyze with vision using a custom prompt (internal helper)
+ */
+async function analyzeWithVisionCustom(base64Image: string, provider: string, prompt: string): Promise<string> {
+  switch (provider) {
+    case 'ollama':
+      return analyzeWithOllama(base64Image, prompt);
+    case 'openrouter':
+      return analyzeWithOpenRouter(base64Image, prompt);
+    case 'anthropic':
+      return analyzeWithAnthropic(base64Image, prompt);
+    case 'openai':
+      return analyzeWithOpenAI(base64Image, prompt);
+    default:
+      throw new Error(`Vision not supported for provider: ${provider}`);
+  }
+}
+
+/**
+ * Quick hash for change detection (uses simple sampling)
+ */
+export function getScreenHash(base64Screenshot: string): string {
+  // Sample every 1000th character for quick comparison
+  let sample = '';
+  for (let i = 0; i < base64Screenshot.length; i += 1000) {
+    sample += base64Screenshot[i];
+  }
+
+  // Simple hash using character codes
+  let hash = 0;
+  for (let i = 0; i < sample.length; i++) {
+    const char = sample.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+
+  return hash.toString(16);
+}
+
+/**
+ * Compare two screenshots for significant changes
+ */
+export function screensChanged(screenshotA: string, screenshotB: string): boolean {
+  if (!screenshotA || !screenshotB) return true;
+  if (screenshotA.length !== screenshotB.length) return true;
+
+  // Quick hash comparison
+  const hashA = getScreenHash(screenshotA);
+  const hashB = getScreenHash(screenshotB);
+
+  return hashA !== hashB;
+}
+
+/**
+ * Analyze a specific region of the screen (for focused analysis)
+ */
+export async function analyzeScreenRegion(
+  screenshot: string,
+  region: { x: number; y: number; width: number; height: number },
+  question: string
+): Promise<string> {
+  const config = getConfig();
+
+  const prompt = `Look at this screenshot. Focus on the region approximately at:
+- Position: (${region.x}, ${region.y})
+- Size: ${region.width}x${region.height} pixels
+
+Question: ${question}
+
+Be specific and concise in your answer.`;
+
+  return analyzeWithVisionCustom(screenshot, config.provider, prompt);
+}
+
+/**
+ * Get current screen description with caching
+ */
+let lastDescription: { text: string; timestamp: number } | null = null;
+const DESCRIPTION_CACHE_MS = 2000;
+
+export async function getCurrentDescription(): Promise<string> {
+  const now = Date.now();
+
+  if (lastDescription && (now - lastDescription.timestamp) < DESCRIPTION_CACHE_MS) {
+    return lastDescription.text;
+  }
+
+  const result = await describeScreen();
+  lastDescription = { text: result.description, timestamp: now };
+  return result.description;
+}

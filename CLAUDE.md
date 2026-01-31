@@ -3,16 +3,24 @@
 ## Overview
 C-napse is an autonomous PC control CLI tool. It uses AI to control your computer via mouse/keyboard (nut-js), take screenshots with AI vision, and automate multi-step tasks.
 
-**Current Version:** 0.9.0
+**Current Version:** 0.10.0
 **Package:** `@projectservan8n/cnapse`
 **npm:** https://www.npmjs.com/package/@projectservan8n/cnapse
 
 ## Key Architecture
 
+### Autonomous Agent (v0.10.0)
+The agent can now:
+- Pursue goals autonomously with up to 25 attempts
+- Self-learn from successful actions (saves to `~/.cnapse/agent-memory.json`)
+- Ask multiple AI sources for help when stuck (Perplexity, Claude, ChatGPT)
+- Use human-like timing (smooth mouse, variable typing speed)
+- Stream screen to Telegram for real-time monitoring
+
 ### No Playwright (as of v0.9.0)
 Browser automation uses:
-- Shell commands to open URLs in default browser (`start "" "url"` on Windows)
-- Computer control (nut-js) for mouse/keyboard in browser
+- Shell commands to open URLs in default browser
+- Computer control (osascript on macOS, PowerShell on Windows) for mouse/keyboard
 - Vision system (screenshot + AI) to see browser content
 
 ### Core Components
@@ -29,15 +37,18 @@ cli/
 │   │   ├── api.ts          # LLM API calls (Ollama, OpenRouter, OpenAI, Anthropic)
 │   │   ├── config.ts       # Configuration management
 │   │   ├── tasks.ts        # Multi-step task automation with learning
-│   │   └── vision.ts       # Screenshot + AI description
+│   │   └── vision.ts       # Screenshot + AI description + coordinate extraction
 │   ├── tools/
-│   │   ├── computer.ts     # Mouse/keyboard/window control (nut-js)
+│   │   ├── computer.ts     # Mouse/keyboard/window control + human-like actions
 │   │   ├── filesystem.ts   # File operations
 │   │   └── shell.ts        # Command execution
 │   ├── services/
 │   │   ├── browser.ts      # Browser automation (shell + computer control)
-│   │   └── telegram.ts     # Telegram bot for remote control
+│   │   ├── telegram.ts     # Telegram bot for remote control + agent commands
+│   │   └── screen-monitor.ts  # Background screen capture with change detection
 │   └── agents/
+│       ├── autonomous.ts   # Core autonomous agent with think-observe-act loop
+│       ├── learner.ts      # Self-learning system with multi-LLM help
 │       ├── router.ts       # Routes tasks to appropriate agent
 │       └── executor.ts     # Executes agent actions
 ```
@@ -72,11 +83,22 @@ Telegram bot service with commands:
 - `/task <desc>` - Multi-step task automation
 - `/run <cmd>` - Execute shell command
 - `/status` - System info
+- `/agent <goal>` - Start autonomous agent
+- `/agent stop` - Stop the agent
+- `/watch` - Stream screen (screenshot every 5s)
+- `/learn` - View learned actions
 
 Natural language messages are processed for:
 - Window control: "minimize chrome", "close notepad"
 - Computer control: "type 'hello'"
 - Complex tasks routed to task system
+
+### autonomous.ts & learner.ts
+The autonomous agent system:
+- `AutonomousAgent` - Core think-observe-act loop
+- `AgentLearner` - Self-learning with memory persistence
+- Multi-source help when stuck (Perplexity, Claude, ChatGPT, Google)
+- Saves successful actions to `~/.cnapse/agent-memory.json`
 
 ## Development
 
@@ -127,7 +149,16 @@ await openUrl('https://google.com');  // Opens in default browser
 - Fix issues properly rather than bandaiding with "coming soon"
 - Keep it functional and working at 100%
 
-## Recent Changes (v0.9.0)
+## Recent Changes (v0.10.0)
+
+1. **Autonomous Agent** - Pursues goals with up to 25 attempts
+2. **Self-Learning** - Remembers successful actions in `~/.cnapse/agent-memory.json`
+3. **Multi-LLM Help** - Asks Perplexity, Claude, ChatGPT when stuck
+4. **Human-Like Actions** - Smooth mouse, variable typing speed
+5. **Screen Streaming** - `/watch` command for real-time Telegram updates
+6. **Enhanced adaptive_do** - More attempts, verification, learning integration
+
+## Changes (v0.9.0)
 
 1. Removed Playwright entirely (~50MB saved)
 2. Browser automation now uses shell commands + computer control

@@ -551,6 +551,225 @@ export async function getMousePosition(): Promise<ToolResult> {
   }
 }
 
+// =====================================================
+// HUMAN-LIKE ACTIONS - More natural, realistic behavior
+// =====================================================
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Move mouse smoothly with a curve (like a human would)
+ */
+export async function moveMouseSmooth(
+  targetX: number,
+  targetY: number,
+  durationMs: number = 300
+): Promise<ToolResult> {
+  try {
+    // Get current position
+    const posResult = await getMousePosition();
+    const match = posResult.output.match(/(\d+)[,\s]+(\d+)/);
+
+    let startX = 0, startY = 0;
+    if (match) {
+      startX = parseInt(match[1]);
+      startY = parseInt(match[2]);
+    }
+
+    // Calculate steps (aim for ~60fps)
+    const steps = Math.max(10, Math.ceil(durationMs / 16));
+    const stepDelay = durationMs / steps;
+
+    // Move in steps with slight curve (quadratic easing)
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      // Ease-out quadratic for natural deceleration
+      const easeT = 1 - Math.pow(1 - t, 2);
+
+      const x = Math.round(startX + (targetX - startX) * easeT);
+      const y = Math.round(startY + (targetY - startY) * easeT);
+
+      await moveMouse(x, y);
+      await sleep(stepDelay);
+    }
+
+    return ok(`Smoothly moved to (${targetX}, ${targetY})`);
+  } catch (error) {
+    return err(`Failed to move smoothly: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Type text with human-like timing (variable speed, occasional pauses)
+ */
+export async function typeTextHuman(
+  text: string,
+  wpm: number = 60
+): Promise<ToolResult> {
+  try {
+    // Average 5 characters per word
+    const baseDelayMs = 60000 / (wpm * 5);
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+
+      // Type the character
+      await typeText(char);
+
+      // Variable delay (80-120% of base)
+      const delay = baseDelayMs * (0.8 + Math.random() * 0.4);
+      await sleep(delay);
+
+      // Occasional longer pause (5% chance) - simulates thinking
+      if (Math.random() < 0.05) {
+        await sleep(200 + Math.random() * 400);
+      }
+
+      // Extra pause after punctuation (10% chance)
+      if (['.', ',', '!', '?', ';'].includes(char) && Math.random() < 0.3) {
+        await sleep(100 + Math.random() * 200);
+      }
+    }
+
+    return ok(`Typed (human-like): ${text.slice(0, 50)}${text.length > 50 ? '...' : ''}`);
+  } catch (error) {
+    return err(`Failed to type: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Click at coordinates with smooth mouse movement
+ */
+export async function clickAtSmooth(
+  x: number,
+  y: number,
+  button: 'left' | 'right' = 'left'
+): Promise<ToolResult> {
+  try {
+    await moveMouseSmooth(x, y, 200 + Math.random() * 100);
+    await sleep(50 + Math.random() * 50); // Small pause before click
+    await clickMouse(button);
+    return ok(`Clicked at (${x}, ${y})`);
+  } catch (error) {
+    return err(`Failed to click: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Find an element on screen by description and click it
+ * Uses vision AI to locate the element
+ */
+export async function findAndClick(description: string): Promise<ToolResult> {
+  try {
+    // Import vision dynamically to avoid circular deps
+    const { captureScreenshot, findElementCoordinates } = await import('../lib/vision.js');
+
+    const screenshot = await captureScreenshot();
+    if (!screenshot) {
+      return err('Failed to capture screenshot');
+    }
+
+    const coords = await findElementCoordinates(screenshot, description);
+    if (!coords) {
+      return err(`Could not find element: ${description}`);
+    }
+
+    // Move smoothly and click
+    await moveMouseSmooth(coords.x, coords.y, 250);
+    await sleep(100);
+    await clickMouse('left');
+
+    return ok(`Found and clicked: ${description} at (${coords.x}, ${coords.y})`);
+  } catch (error) {
+    return err(`Failed to find and click: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Wait for screen to change (useful after actions)
+ */
+export async function waitForScreenChange(
+  timeoutMs: number = 5000,
+  checkIntervalMs: number = 200
+): Promise<ToolResult> {
+  try {
+    const { captureScreenshot, getScreenHash } = await import('../lib/vision.js');
+
+    const initialScreen = await captureScreenshot();
+    if (!initialScreen) {
+      return err('Failed to capture initial screenshot');
+    }
+
+    const initialHash = getScreenHash(initialScreen);
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeoutMs) {
+      await sleep(checkIntervalMs);
+
+      const currentScreen = await captureScreenshot();
+      if (currentScreen) {
+        const currentHash = getScreenHash(currentScreen);
+        if (currentHash !== initialHash) {
+          return ok(`Screen changed after ${Date.now() - startTime}ms`);
+        }
+      }
+    }
+
+    return ok('Screen did not change within timeout');
+  } catch (error) {
+    return err(`Wait failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Perform a sequence of actions with human-like timing
+ */
+export async function performSequence(
+  actions: Array<{ type: string; value?: string | number }>
+): Promise<ToolResult> {
+  const results: string[] = [];
+
+  for (const action of actions) {
+    // Random delay between actions (300-800ms)
+    await sleep(300 + Math.random() * 500);
+
+    try {
+      switch (action.type) {
+        case 'click':
+          await clickMouse('left');
+          results.push('clicked');
+          break;
+        case 'type':
+          if (typeof action.value === 'string') {
+            await typeTextHuman(action.value);
+            results.push(`typed: ${action.value.slice(0, 20)}`);
+          }
+          break;
+        case 'press':
+          if (typeof action.value === 'string') {
+            await pressKey(action.value);
+            results.push(`pressed: ${action.value}`);
+          }
+          break;
+        case 'wait':
+          const waitMs = typeof action.value === 'number' ? action.value : 1000;
+          await sleep(waitMs);
+          results.push(`waited: ${waitMs}ms`);
+          break;
+        case 'scroll':
+          const amount = typeof action.value === 'number' ? action.value : -3;
+          await scrollMouse(amount);
+          results.push(`scrolled: ${amount}`);
+          break;
+      }
+    } catch (error) {
+      results.push(`failed: ${action.type}`);
+    }
+  }
+
+  return ok(`Performed sequence: ${results.join(' → ')}`);
+}
+
 /**
  * Get all computer control tools
  */
@@ -572,6 +791,13 @@ export function getComputerTools() {
     scrollMouse,
     dragMouse,
     getMousePosition,
+    // Human-like actions
+    moveMouseSmooth,
+    typeTextHuman,
+    clickAtSmooth,
+    findAndClick,
+    waitForScreenChange,
+    performSequence,
   };
 }
 

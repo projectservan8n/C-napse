@@ -860,40 +860,74 @@ Be specific about locations (top-left, center, etc.) and what each element does.
     }
 
     case 'adaptive_do': {
-      // Adaptive agent using computer control: try to accomplish something, ask LLMs if stuck
+      // Enhanced adaptive agent with learning, more attempts, and verification
       const goal = params;
-      const maxAttempts = 5;
+      const maxAttempts = 25;  // Increased from 5
       const actionHistory: string[] = [];
       let accomplished = false;
+      let stuckCount = 0;
+      const stuckThreshold = 3;
+      let lastScreenHash = '';
+
+      // Import learner for self-learning capabilities
+      const { getLearner } = await import('../agents/learner.js');
+      const learner = getLearner();
+      await learner.load();
+
+      // Check if we've solved something similar before
+      const initialScreen = await describeScreen();
+      const remembered = await learner.recall(goal, initialScreen.description);
+      if (remembered && remembered.successCount > remembered.failCount) {
+        actionHistory.push(`📚 Found remembered solution from ${remembered.source}`);
+      }
 
       for (let attempt = 0; attempt < maxAttempts && !accomplished; attempt++) {
         // Take screenshot and analyze current state using vision
         const currentScreen = await describeScreen();
+        const currentHash = currentScreen.screenshot.slice(0, 1000);
 
-        // Ask our AI what to do next
+        // Check if screen changed
+        const screenChanged = currentHash !== lastScreenHash;
+        if (!screenChanged && attempt > 0) {
+          stuckCount++;
+        } else {
+          stuckCount = Math.max(0, stuckCount - 1);
+        }
+        lastScreenHash = currentHash;
+
+        // Ask our AI what to do next (enhanced prompt)
         const nextAction = await chat([{
           role: 'user',
           content: `GOAL: ${goal}
 
 CURRENT SCREEN: ${currentScreen.description}
 
-PREVIOUS ACTIONS TAKEN:
-${actionHistory.length > 0 ? actionHistory.join('\n') : 'None yet'}
+PREVIOUS ACTIONS:
+${actionHistory.slice(-5).join('\n') || 'None yet'}
+
+ATTEMPT: ${attempt + 1}/${maxAttempts}
+STUCK COUNT: ${stuckCount} (will ask for help at ${stuckThreshold})
 
 Based on what you see, what's the SINGLE next action to take?
-Options:
-- click: Click (will click at current mouse position)
-- type: Type something (specify text)
-- press: Press a key (specify key like Enter, Tab, Escape)
-- scroll: Scroll up/down
-- navigate: Go to URL (opens in browser)
+
+Available actions:
+- click: Click at current mouse position
+- clickAt: Click at coordinates (VALUE: x,y)
+- moveTo: Move mouse to coordinates (VALUE: x,y)
+- type: Type text (VALUE: text to type)
+- press: Press a key (VALUE: Enter, Tab, Escape, etc.)
+- keyCombo: Key combination (VALUE: command+s, control+c, etc.)
+- scroll: Scroll (VALUE: up or down)
+- navigate: Open URL (VALUE: full URL)
+- wait: Wait for something to load (VALUE: seconds)
+- findClick: Find element and click it (VALUE: description of element)
 - done: Goal is accomplished
 - stuck: Can't figure out what to do
 
-Respond in format:
+Respond EXACTLY in this format:
 ACTION: <action_type>
-VALUE: <text to type, URL to navigate, or key to press>
-REASONING: <why>`
+VALUE: <parameter>
+REASONING: <brief why>`
         }]);
 
         const actionContent = nextAction.content;
@@ -903,7 +937,7 @@ REASONING: <why>`
         const valueMatch = actionContent.match(/VALUE:\s*(.+?)(?:\n|$)/i);
 
         if (!actionMatch) {
-          actionHistory.push(`Attempt ${attempt + 1}: Couldn't parse action`);
+          actionHistory.push(`[${attempt + 1}] ⚠️ Couldn't parse action`);
           continue;
         }
 
@@ -912,58 +946,149 @@ REASONING: <why>`
 
         if (action === 'done') {
           accomplished = true;
-          actionHistory.push(`Attempt ${attempt + 1}: Goal accomplished!`);
+          actionHistory.push(`[${attempt + 1}] ✅ Goal accomplished!`);
+
+          // Learn from success
+          if (actionHistory.length > 1) {
+            const lastSuccessfulAction = actionHistory[actionHistory.length - 2];
+            const actionParts = lastSuccessfulAction.match(/→ (\w+)(?:\s*"(.+)")?/);
+            if (actionParts) {
+              await learner.learn(
+                currentScreen.description.slice(0, 300),
+                goal,
+                actionParts[1],
+                actionParts[2] || '',
+                'self'
+              );
+            }
+          }
           break;
         }
 
-        if (action === 'stuck') {
-          // Ask Perplexity for help
-          actionHistory.push(`Attempt ${attempt + 1}: Got stuck, asking Perplexity for help...`);
+        if (action === 'stuck' || stuckCount >= stuckThreshold) {
+          actionHistory.push(`[${attempt + 1}] 🆘 Asking for help...`);
 
-          const helpRequest = `I'm trying to: ${goal}\n\nI'm stuck. What should I do next? Be specific about what to click or type.`;
-          const advice = await browser.askAI('perplexity', helpRequest);
-          actionHistory.push(`Got advice: ${advice.response.slice(0, 200)}...`);
+          // Get help from multiple sources
+          const suggestions = await learner.getHelp(
+            goal,
+            currentScreen.description,
+            actionHistory.slice(-3)
+          );
+
+          if (suggestions.length > 0) {
+            const suggestion = suggestions[0];
+            actionHistory.push(`💡 Got suggestion from ${suggestion.source}: ${suggestion.value.slice(0, 100)}`);
+
+            // Try to parse and execute the suggestion
+            if (suggestion.action && suggestion.action !== 'suggested') {
+              try {
+                await executeAdaptiveAction(suggestion.action, suggestion.value);
+                actionHistory.push(`[${attempt + 1}] → ${suggestion.action} "${suggestion.value.slice(0, 30)}"`);
+
+                // Learn from successful suggestion
+                await learner.learn(
+                  currentScreen.description.slice(0, 300),
+                  goal,
+                  suggestion.action,
+                  suggestion.value,
+                  suggestion.source
+                );
+                stuckCount = 0;
+              } catch (e) {
+                actionHistory.push(`[${attempt + 1}] ❌ Suggestion failed`);
+              }
+            }
+          } else {
+            actionHistory.push(`[${attempt + 1}] 😕 No helpful suggestions found`);
+          }
           continue;
         }
 
-        // Execute the action using computer control
+        // Execute the action
         try {
-          switch (action) {
-            case 'click':
-              await computer.clickMouse('left');
-              actionHistory.push(`Attempt ${attempt + 1}: Clicked`);
-              break;
-            case 'type':
-              if (value) {
-                await computer.typeText(value);
-              }
-              actionHistory.push(`Attempt ${attempt + 1}: Typed "${value}"`);
-              break;
-            case 'press':
-              await computer.pressKey(value || 'Return');
-              actionHistory.push(`Attempt ${attempt + 1}: Pressed ${value || 'Enter'}`);
-              break;
-            case 'scroll':
-              await browser.scroll(value.toLowerCase().includes('up') ? 'up' : 'down');
-              actionHistory.push(`Attempt ${attempt + 1}: Scrolled ${value || 'down'}`);
-              break;
-            case 'navigate':
-              const url = value.startsWith('http') ? value : `https://${value}`;
-              await browser.openUrl(url);
-              actionHistory.push(`Attempt ${attempt + 1}: Opened ${url}`);
-              break;
-            default:
-              actionHistory.push(`Attempt ${attempt + 1}: Unknown action ${action}`);
-          }
+          await executeAdaptiveAction(action, value);
+          actionHistory.push(`[${attempt + 1}] → ${action}${value ? ` "${value.slice(0, 40)}"` : ''}`);
         } catch (e) {
-          actionHistory.push(`Attempt ${attempt + 1}: Action failed - ${e}`);
+          actionHistory.push(`[${attempt + 1}] ❌ ${action} failed - ${e}`);
+          await learner.recordFailure(goal, action, value);
         }
 
-        await sleep(2000); // Wait for UI to update
+        // Human-like delay between actions (1-2 seconds)
+        await sleep(1000 + Math.random() * 1000);
       }
 
-      step.result = `🎯 Adaptive Agent Result:\n\nGoal: ${goal}\nAccomplished: ${accomplished ? 'Yes ✅' : 'Partial/No ❌'}\n\nAction Log:\n${actionHistory.join('\n')}`;
+      step.result = `🎯 Adaptive Agent Result:\n\nGoal: ${goal}\nAccomplished: ${accomplished ? 'Yes ✅' : 'Partial/No ❌'}\nAttempts: ${Math.min(actionHistory.length, maxAttempts)}/${maxAttempts}\n\nAction Log:\n${actionHistory.join('\n')}`;
       break;
+
+      // Helper function for executing actions
+      async function executeAdaptiveAction(action: string, value: string): Promise<void> {
+        switch (action) {
+          case 'click':
+            await computer.clickMouse('left');
+            break;
+          case 'clickat':
+          case 'clickAt': {
+            const [x, y] = value.split(',').map(n => parseInt(n.trim()));
+            if (!isNaN(x) && !isNaN(y)) {
+              await computer.moveMouse(x, y);
+              await sleep(100);
+              await computer.clickMouse('left');
+            }
+            break;
+          }
+          case 'moveto':
+          case 'moveTo': {
+            const [mx, my] = value.split(',').map(n => parseInt(n.trim()));
+            if (!isNaN(mx) && !isNaN(my)) {
+              await computer.moveMouse(mx, my);
+            }
+            break;
+          }
+          case 'type':
+            if (value) {
+              // Use human-like typing if available
+              if (computer.typeTextHuman) {
+                await computer.typeTextHuman(value, 50);
+              } else {
+                await computer.typeText(value);
+              }
+            }
+            break;
+          case 'press':
+            await computer.pressKey(value || 'Return');
+            break;
+          case 'keycombo':
+          case 'keyCombo': {
+            const keys = value.split('+').map(k => k.trim().toLowerCase());
+            await computer.keyCombo(keys);
+            break;
+          }
+          case 'scroll':
+            await browser.scroll(value.toLowerCase().includes('up') ? 'up' : 'down');
+            break;
+          case 'navigate': {
+            const navUrl = value.startsWith('http') ? value : `https://${value}`;
+            await browser.openUrl(navUrl);
+            await sleep(2000); // Wait for page load
+            break;
+          }
+          case 'wait': {
+            const seconds = parseFloat(value) || 2;
+            await sleep(seconds * 1000);
+            break;
+          }
+          case 'findclick':
+          case 'findClick':
+            if (computer.findAndClick) {
+              await computer.findAndClick(value);
+            } else {
+              throw new Error('findAndClick not available');
+            }
+            break;
+          default:
+            throw new Error(`Unknown action: ${action}`);
+        }
+      }
     }
 
     case 'chat':
