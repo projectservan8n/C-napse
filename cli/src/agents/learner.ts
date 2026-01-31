@@ -343,10 +343,10 @@ REASONING: <brief explanation>`;
       const searchQuery = `how to ${goal} step by step`;
       const result = await browser.webSearch(searchQuery);
 
-      if (result.description) {
+      if (result) {
         return {
           action: 'suggested',
-          value: result.description.slice(0, 500),
+          value: result.slice(0, 500),
           reasoning: 'From web search results',
           source: 'google',
           confidence: 0.5,

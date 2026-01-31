@@ -246,7 +246,11 @@ export async function scroll(direction: 'up' | 'down', amount = 3): Promise<void
  * Take screenshot of current screen (not just browser)
  */
 export async function takeScreenshot(): Promise<string> {
-  return await captureScreenshot();
+  const screenshot = await captureScreenshot();
+  if (!screenshot) {
+    throw new Error('Failed to capture screenshot');
+  }
+  return screenshot;
 }
 
 /**
