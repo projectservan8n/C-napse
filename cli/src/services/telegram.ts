@@ -3,7 +3,12 @@
  */
 
 import { EventEmitter } from 'events';
+import * as dns from 'dns';
 import { getConfig, getApiKey } from '../lib/config.js';
+
+// Force IPv4 to avoid IPv6 connectivity issues with Telegram API
+// Some networks have broken IPv6 routing to Telegram servers
+dns.setDefaultResultOrder('ipv4first');
 import { describeScreen, captureScreenshot } from '../lib/vision.js';
 import { runCommand } from '../tools/shell.js';
 import { chat as chatWithAI, chatWithVision, Message } from '../lib/api.js';
