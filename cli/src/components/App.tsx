@@ -8,6 +8,7 @@ import { HelpMenu } from './HelpMenu.js';
 import { ProviderSelector } from './ProviderSelector.js';
 import { getConfig } from '../lib/config.js';
 import { useChat, useVision, useTelegram, useTasks } from '../hooks/index.js';
+import { isNamedShortcut, getShortcutDisplay } from '../lib/keyboard.js';
 
 type OverlayType = 'none' | 'help' | 'provider';
 
@@ -32,26 +33,26 @@ export function App() {
     }
   });
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts - platform-flexible (Ctrl on Windows/Linux, Cmd or Ctrl on macOS)
   useInput((inputChar, key) => {
     if (overlay !== 'none') return;
 
-    if (key.ctrl && inputChar === 'c') exit();
-    if (key.ctrl && inputChar === 'l') chat.clearMessages();
-    if (key.ctrl && inputChar === 'h') setOverlay('help');
-    if (key.ctrl && inputChar === 'p') setOverlay('provider');
+    if (isNamedShortcut(inputChar, key, 'EXIT')) exit();
+    if (isNamedShortcut(inputChar, key, 'CLEAR')) chat.clearMessages();
+    if (isNamedShortcut(inputChar, key, 'HELP')) setOverlay('help');
+    if (isNamedShortcut(inputChar, key, 'PROVIDER')) setOverlay('provider');
     // Note: Ctrl+W avoided - conflicts with terminal close
-    if (key.ctrl && inputChar === 'e') {
+    if (isNamedShortcut(inputChar, key, 'SCREEN_WATCH')) {
       setScreenWatch(prev => {
         const newState = !prev;
         chat.addSystemMessage(newState
-          ? '🖥️ Screen watching enabled (Ctrl+E to toggle)'
+          ? `🖥️ Screen watching enabled (${getShortcutDisplay('SCREEN_WATCH')} to toggle)`
           : '🖥️ Screen watching disabled.'
         );
         return newState;
       });
     }
-    if (key.ctrl && inputChar === 't') {
+    if (isNamedShortcut(inputChar, key, 'TELEGRAM')) {
       handleTelegramToggle();
     }
   });

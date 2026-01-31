@@ -3,6 +3,7 @@ import React from 'react';
 import { render } from 'ink';
 import { App } from './components/App.js';
 import { setApiKey, setProvider, setModel, getConfig } from './lib/config.js';
+import { getShortcutDisplay, isMac } from './lib/keyboard.js';
 
 const args = process.argv.slice(2);
 
@@ -107,6 +108,10 @@ async function main() {
         const dim = '\x1b[2m';
         const reset = '\x1b[0m';
 
+        // Platform-aware shortcuts
+        const mod = isMac ? '⌘' : 'Ctrl';
+        const modNote = isMac ? `${dim}(Ctrl also works)${reset}` : '';
+
         console.log(`
 ${cyan}${bold}╔═══════════════════════════════════════════════════════════╗
 ║                                                               ║
@@ -146,10 +151,10 @@ ${yellow}${bold}QUICK START${reset}
   ${dim}# Add Telegram for remote control${reset}
   ${green}cnapse auth telegram YOUR_BOT_TOKEN${reset}
 
-${yellow}${bold}IN-APP SHORTCUTS${reset}
-  ${cyan}Ctrl+H${reset}  Help menu       ${cyan}Ctrl+P${reset}  Change provider
-  ${cyan}Ctrl+E${reset}  Screen watch    ${cyan}Ctrl+T${reset}  Toggle Telegram
-  ${cyan}Ctrl+L${reset}  Clear chat      ${cyan}Ctrl+C${reset}  Exit
+${yellow}${bold}IN-APP SHORTCUTS${reset} ${modNote}
+  ${cyan}${mod}+H${reset}  Help menu       ${cyan}${mod}+P${reset}  Change provider
+  ${cyan}${mod}+E${reset}  Screen watch    ${cyan}${mod}+T${reset}  Toggle Telegram
+  ${cyan}${mod}+L${reset}  Clear chat      ${cyan}${mod}+C${reset}  Exit
 
 ${dim}GitHub: https://github.com/projectservan8n/C-napse${reset}
 `);
@@ -159,7 +164,7 @@ ${dim}GitHub: https://github.com/projectservan8n/C-napse${reset}
       case 'version':
       case '--version':
       case '-v': {
-        console.log('cnapse v0.8.0');
+        console.log('cnapse v0.10.0');
         process.exit(0);
       }
 

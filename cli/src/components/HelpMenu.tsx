@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { getShortcutDisplay, getModifierDisplay } from '../lib/keyboard.js';
 
 interface MenuItem {
   command: string;
@@ -8,23 +9,26 @@ interface MenuItem {
   category: 'navigation' | 'actions' | 'settings';
 }
 
+// Build menu items with platform-appropriate shortcuts
 const MENU_ITEMS: MenuItem[] = [
   // Navigation
-  { command: '/help', shortcut: 'Ctrl+H', description: 'Show this help menu', category: 'navigation' },
-  { command: '/clear', shortcut: 'Ctrl+L', description: 'Clear chat history', category: 'navigation' },
-  { command: '/quit', shortcut: 'Ctrl+C', description: 'Exit C-napse', category: 'navigation' },
+  { command: '/help', shortcut: getShortcutDisplay('HELP'), description: 'Show this help menu', category: 'navigation' },
+  { command: '/clear', shortcut: getShortcutDisplay('CLEAR'), description: 'Clear chat history', category: 'navigation' },
+  { command: '/quit', shortcut: getShortcutDisplay('EXIT'), description: 'Exit C-napse', category: 'navigation' },
 
   // Actions
-  { command: '/screen', shortcut: 'Ctrl+S', description: 'Take screenshot and describe', category: 'actions' },
+  { command: '/screen', description: 'Take screenshot and describe', category: 'actions' },
   { command: '/task', description: 'Run multi-step task', category: 'actions' },
-  { command: '/telegram', shortcut: 'Ctrl+T', description: 'Toggle Telegram bot', category: 'actions' },
+  { command: '/agent', description: 'Start autonomous agent', category: 'actions' },
+  { command: '/telegram', shortcut: getShortcutDisplay('TELEGRAM'), description: 'Toggle Telegram bot', category: 'actions' },
   { command: '/memory', description: 'View/clear learned task patterns', category: 'actions' },
+  { command: '/learn', description: 'View self-learning memory', category: 'actions' },
 
   // Settings
   { command: '/config', description: 'Show/edit configuration', category: 'settings' },
-  { command: '/watch', shortcut: 'Ctrl+E', description: 'Toggle screen watching', category: 'settings' },
+  { command: '/watch', shortcut: getShortcutDisplay('SCREEN_WATCH'), description: 'Toggle screen watching', category: 'settings' },
   { command: '/model', description: 'Change AI model', category: 'settings' },
-  { command: '/provider', shortcut: 'Ctrl+P', description: 'Change AI provider', category: 'settings' },
+  { command: '/provider', shortcut: getShortcutDisplay('PROVIDER'), description: 'Change AI provider', category: 'settings' },
 ];
 
 interface HelpMenuProps {
