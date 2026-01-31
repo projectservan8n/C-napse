@@ -423,8 +423,8 @@
             <div class="main-content">
                 <h1>Agent System</h1>
                 <p class="lead">
-                    C-napse uses a multi-agent architecture where specialized agents handle different types
-                    of tasks. A router agent analyzes your query and delegates to the most appropriate specialist.
+                    C-napse v0.10.0 features a truly autonomous multi-agent architecture. The core Autonomous Agent
+                    uses a think-observe-act loop with up to 25 attempts, self-learning memory, and multi-LLM help when stuck.
                 </p>
 
                 <h2>
@@ -437,27 +437,35 @@
 
                 <div class="architecture-diagram">
                     <pre>
-                    User Task
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │    Task Router      │
-              │   Parses intent     │
-              │   Plans multi-step  │
-              └──────────┬──────────┘
-                         │
-     ┌──────────┬────────┼────────┬──────────┐
-     │          │        │        │          │
-     ▼          ▼        ▼        ▼          ▼
-┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
-│Computer│ │Browser │ │ Vision │ │ Shell  │ │Adaptive│
-│ Agent  │ │ Agent  │ │ Agent  │ │ Agent  │ │ Agent  │
-└────────┘ └────────┘ └────────┘ └────────┘ └────────┘
-     │          │        │        │          │
-     └──────────┴────────┴────────┴──────────┘
-                         │
-                         ▼
-                Task Completed
+                    User Task / Goal
+                           │
+                           ▼
+                ┌─────────────────────┐
+                │  Autonomous Agent   │◄──────┐
+                │  (Think-Observe-Act)│       │
+                │   Up to 25 attempts │       │
+                └──────────┬──────────┘       │
+                           │                  │
+          ┌────────────────┼────────────────┐ │
+          │                │                │ │
+          ▼                ▼                ▼ │
+    ┌──────────┐    ┌──────────┐    ┌──────────┐
+    │  Screen  │    │  Action  │    │  Learner │
+    │  Monitor │    │ Executor │    │  Memory  │
+    │  (Vision)│    │(Computer)│    │(.cnapse) │
+    └──────────┘    └──────────┘    └────┬─────┘
+          │                │             │
+          │         ┌──────┴──────┐      │
+          │         │             │      │
+          ▼         ▼             ▼      │
+    ┌────────┐ ┌────────┐  ┌──────────┐  │
+    │Browser │ │ Shell  │  │ Multi-LLM│──┘
+    │ Agent  │ │ Agent  │  │  Helper  │
+    └────────┘ └────────┘  └──────────┘
+                                │
+                    ┌───────────┼───────────┐
+                    ▼           ▼           ▼
+              Perplexity   Claude.ai   ChatGPT
                     </pre>
                 </div>
 
@@ -545,22 +553,22 @@
                             </div>
                             <div>
                                 <h4>Vision Agent</h4>
-                                <span>Screen analysis</span>
+                                <span>Screen analysis + element finding</span>
                             </div>
                         </div>
-                        <p>Captures screenshots and uses AI vision models to understand what's on screen. Supports Ollama VLMs, Claude, GPT-4 Vision.</p>
+                        <p>Captures screenshots and uses AI vision to understand what's on screen. Extracts element coordinates for clicking. Supports Ollama VLMs, Claude, GPT-4 Vision.</p>
                         <ul class="agent-capabilities">
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Screenshot capture
+                                Find element coordinates on screen
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                AI screen description
+                                Screen change detection (hash-based)
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Continuous screen watching
+                                Background screen monitor service
                             </li>
                         </ul>
                     </div>
@@ -575,23 +583,52 @@
                                 </svg>
                             </div>
                             <div>
-                                <h4>Adaptive Agent</h4>
-                                <span>Self-correcting AI</span>
+                                <h4>Autonomous Agent</h4>
+                                <span>25 attempts, self-learning</span>
                             </div>
                         </div>
-                        <p>Gets stuck? Asks Perplexity, ChatGPT, or Claude for help. Analyzes failures and tries alternative approaches automatically.</p>
+                        <p>Persistent think-observe-act loop with up to 25 attempts. Asks Perplexity, ChatGPT, or Claude.ai for help when stuck. Learns from successes.</p>
                         <ul class="agent-capabilities">
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Ask other AIs for help
+                                Multi-LLM help (Perplexity, Claude, ChatGPT)
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                UI learning and analysis
+                                Memory persistence (~/.cnapse/agent-memory.json)
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Self-correcting automation
+                                Screen change detection and verification
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Learner Agent</h4>
+                                <span>Memory & pattern recall</span>
+                            </div>
+                        </div>
+                        <p>Self-learning system that saves successful actions to persistent memory. Recalls what worked before when facing similar situations.</p>
+                        <ul class="agent-capabilities">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Save successful action patterns
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Fuzzy matching for recall
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Success/failure tracking
                             </li>
                         </ul>
                     </div>
@@ -635,22 +672,22 @@
                             </div>
                             <div>
                                 <h4>Telegram Agent</h4>
-                                <span>Remote control</span>
+                                <span>Remote + streaming</span>
                             </div>
                         </div>
-                        <p>Control your PC from anywhere via Telegram. Send screenshots, execute commands, and automate tasks from your phone.</p>
+                        <p>Control your PC from anywhere via Telegram. New commands: /agent for autonomous goals, /watch for live screen streaming, /learn for memory.</p>
                         <ul class="agent-capabilities">
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Remote screenshots
+                                /agent &lt;goal&gt; — autonomous task execution
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Remote PC control
+                                /watch — live screen streaming
                             </li>
                             <li>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Mobile task execution
+                                /learn — view learned actions
                             </li>
                         </ul>
                     </div>
@@ -723,15 +760,26 @@ cnapse -a research <span class="string">"what is the difference between TCP and 
 <span class="string">"ask perplexity what is the capital of France"</span></code></pre>
                 </div>
 
-                <h3>Vision & Adaptive</h3>
+                <h3>Vision & Autonomous Agent</h3>
                 <div class="code-block">
                     <div class="code-header">
                         <span>Example commands</span>
                     </div>
                     <pre><code><span class="string">/screen</span>                 <span class="comment"># Take screenshot + AI description</span>
-<span class="string">/watch</span>                  <span class="comment"># Enable continuous screen watching</span>
-<span class="string">"book a hotel on booking.com"</span>   <span class="comment"># Adaptive - asks for help if stuck</span>
-<span class="string">"I don't know how to use this app"</span>  <span class="comment"># Analyzes UI, suggests actions</span></code></pre>
+<span class="string">"book a hotel on booking.com"</span>   <span class="comment"># Autonomous - up to 25 attempts</span>
+<span class="string">"fill out this form"</span>           <span class="comment"># Uses vision to find and click elements</span></code></pre>
+                </div>
+
+                <h3>Telegram Commands (New in v0.10.0)</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Telegram bot</span>
+                    </div>
+                    <pre><code><span class="string">/agent open safari and search for weather</span>  <span class="comment"># Start autonomous agent</span>
+<span class="string">/agent stop</span>             <span class="comment"># Stop running agent</span>
+<span class="string">/watch</span>                  <span class="comment"># Start live screen streaming (5s interval)</span>
+<span class="string">/watch stop</span>             <span class="comment"># Stop screen streaming</span>
+<span class="string">/learn</span>                  <span class="comment"># View all learned actions from memory</span></code></pre>
                 </div>
 
                 <div class="docs-nav">

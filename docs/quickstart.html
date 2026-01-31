@@ -541,8 +541,8 @@
             <div class="main-content">
                 <h1>Quick Start</h1>
                 <p class="lead">
-                    Get C-napse running on your system in under 2 minutes. This guide covers installation,
-                    initial configuration, and running your first autonomous task.
+                    Get C-napse v0.10.0 running on your system in under 2 minutes. This guide covers installation,
+                    initial configuration, and running your first truly autonomous task with self-learning.
                 </p>
 
                 <h2>
@@ -564,7 +564,7 @@
                         </div>
                         <div class="requirement-text">
                             <h5>Operating System</h5>
-                            <p>Windows 10+ (macOS/Linux coming soon)</p>
+                            <p>Windows 10+ or macOS (Linux coming soon)</p>
                         </div>
                     </div>
                     <div class="requirement-card">
@@ -627,17 +627,17 @@
 npm install -g @projectservan8n/cnapse</code></pre>
                     </div>
 
-                    <div class="callout warning">
+                    <div class="callout info">
                         <div class="callout-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                                <line x1="12" y1="9" x2="12" y2="13"></line>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
                             </svg>
                         </div>
                         <div class="callout-content">
-                            <h5>Windows-first</h5>
-                            <p>C-napse currently supports Windows 10+. macOS and Linux support coming soon.</p>
+                            <h5>Cross-Platform</h5>
+                            <p>C-napse v0.10.0 supports Windows 10+ and macOS. Linux support coming soon. macOS requires <code>cliclick</code> (auto-installed via Homebrew).</p>
                         </div>
                     </div>
                 </div>
@@ -664,7 +664,7 @@ npm install -g @projectservan8n/cnapse</code></pre>
                         </div>
                         <div class="callout-content">
                             <h5>Expected Output</h5>
-                            <p>You should see <code>cnapse 0.8.0</code> or similar version number.</p>
+                            <p>You should see <code>cnapse 0.10.0</code> or similar version number.</p>
                         </div>
                     </div>
                 </div>
@@ -728,7 +728,7 @@ cnapse <span class="string">"List all files in the current directory and summari
 
                 <h3>Example Tasks</h3>
 
-                <p>Here are some things you can ask C-napse to do:</p>
+                <p>Here are some things you can ask C-napse to do (now with up to 25 autonomous attempts!):</p>
 
                 <ul>
                     <li><strong>Computer control:</strong> "open notepad and type hello world"</li>
@@ -737,6 +737,17 @@ cnapse <span class="string">"List all files in the current directory and summari
                     <li><strong>Email:</strong> "send email via gmail to john@example.com about meeting"</li>
                     <li><strong>Research:</strong> "ask perplexity what is the capital of France"</li>
                     <li><strong>Window management:</strong> "minimize chrome" or "close notepad"</li>
+                    <li><strong>Autonomous tasks:</strong> "book a flight on kayak.com" — agent will keep trying until done</li>
+                </ul>
+
+                <h3>Telegram Remote Control (New in v0.10.0)</h3>
+
+                <p>If you have the Telegram bot configured:</p>
+
+                <ul>
+                    <li><strong>/agent</strong> <em>&lt;goal&gt;</em> — Start autonomous agent with a goal</li>
+                    <li><strong>/watch</strong> — Start live screen streaming (screenshot every 5 seconds)</li>
+                    <li><strong>/learn</strong> — View all actions the agent has learned from memory</li>
                 </ul>
 
                 <div class="callout info">

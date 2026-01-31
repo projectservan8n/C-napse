@@ -776,9 +776,9 @@
                         <span class="gradient">C-napse</span>
                     </h1>
                     <p class="hero-subtitle">
-                        AI that sees your screen, controls your computer, and learns as it goes.
-                        Think Claude Code meets desktop automation — with vision, browser control,
-                        and the ability to ask other AIs for help when stuck.
+                        Truly autonomous AI that sees your screen, controls your computer, and gets smarter over time.
+                        Up to 25 attempts per task, asks Perplexity/Claude/ChatGPT for help when stuck,
+                        and remembers what works for next time. Human-like mouse and keyboard actions.
                     </p>
 
                     <div class="install-section">
@@ -787,7 +787,7 @@
                             <button class="copy-btn" onclick="copyInstall('npm-install')">Copy</button>
                         </div>
                         <p style="color: var(--text-muted); font-size: 13px; margin-top: 12px;">
-                            Windows-first for now. macOS/Linux support coming soon.
+                            Works on Windows and macOS. Linux support coming soon.
                         </p>
                     </div>
                 </div>
@@ -866,10 +866,10 @@
                                 <line x1="12" y1="22.08" x2="12" y2="12"></line>
                             </svg>
                         </div>
-                        <h3>Self-Learning</h3>
+                        <h3>Self-Learning Memory</h3>
                         <p>
-                            Remembers successful task patterns. The more you use it,
-                            the smarter it gets at completing similar tasks.
+                            Remembers successful actions in persistent memory (~/.cnapse/agent-memory.json).
+                            Recalls what worked before when facing similar situations.
                         </p>
                     </div>
 
@@ -884,10 +884,10 @@
                                 <path d="M16 16v4h-4"></path>
                             </svg>
                         </div>
-                        <h3>Adaptive Agent</h3>
+                        <h3>Autonomous Agent (25 Attempts)</h3>
                         <p>
-                            Gets stuck? Asks Perplexity, ChatGPT, or Claude for help.
-                            Analyzes the current screen and suggests next actions.
+                            Persistent think-observe-act loop with up to 25 attempts.
+                            Asks Perplexity, ChatGPT, or Claude.ai for help when stuck.
                         </p>
                     </div>
 
@@ -898,10 +898,10 @@
                                 <line x1="12" y1="18" x2="12.01" y2="18"></line>
                             </svg>
                         </div>
-                        <h3>Telegram Remote</h3>
+                        <h3>Telegram Remote + Streaming</h3>
                         <p>
-                            Control your PC from Telegram. Send screenshots, execute commands,
-                            and automate tasks — all from your phone.
+                            Control your PC from Telegram with /agent, /watch for live screen streaming,
+                            and /learn to view what the agent has learned.
                         </p>
                     </div>
                 </div>
@@ -922,7 +922,7 @@
                 <div class="status-section animate-on-scroll delay-1">
                     <div class="status-header">
                         <h3>Components</h3>
-                        <span class="status-version">v0.8.0</span>
+                        <span class="status-version">v0.10.0</span>
                     </div>
                     <div class="status-table">
                         <div class="status-row">
@@ -956,9 +956,23 @@
                         <div class="status-row">
                             <div>
                                 <div class="status-name">Self-Learning</div>
-                                <div class="status-desc">Task pattern memory and learning</div>
+                                <div class="status-desc">Memory persistence, multi-LLM help when stuck</div>
                             </div>
-                            <span class="status-badge alpha">Alpha</span>
+                            <span class="status-badge stable">Stable</span>
+                        </div>
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">Autonomous Agent</div>
+                                <div class="status-desc">25-attempt think-observe-act loop</div>
+                            </div>
+                            <span class="status-badge stable">Stable</span>
+                        </div>
+                        <div class="status-row">
+                            <div>
+                                <div class="status-name">Human-like Actions</div>
+                                <div class="status-desc">Smooth mouse, variable typing speed</div>
+                            </div>
+                            <span class="status-badge stable">Stable</span>
                         </div>
                         <div class="status-row">
                             <div>
