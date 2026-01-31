@@ -57,7 +57,13 @@
       "Bash(npm publish:*)",
       "Bash(npm whoami:*)",
       "Bash(gh run:*)",
-      "WebFetch(domain:www.npmjs.com)"
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(npm install:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(del \"src\\\\lib\\\\screen.ts\" \"src\\\\components\\\\Setup.tsx\" \"src\\\\components\\\\ConfigUI.tsx\" \"src\\\\tools\\\\vision.ts\")",
+      "Bash(npm version:*)"
     ]
   }
 }

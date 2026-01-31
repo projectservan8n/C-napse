@@ -7,9 +7,14 @@
  * - Email (Gmail, Outlook)
  * - Google Sheets/Docs
  * - General web browsing
+ *
+ * Uses your system Chrome with existing logins and profile!
  */
 
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
+import * as path from 'path';
+import * as os from 'os';
+import * as fs from 'fs';
 
 // Singleton browser instance
 let browser: Browser | null = null;
@@ -21,35 +26,96 @@ interface BrowserConfig {
   headless: boolean;
   slowMo: number;
   viewport: { width: number; height: number };
+  useSystemBrowser: boolean;  // Use system Chrome with your profile
 }
 
 const defaultConfig: BrowserConfig = {
   headless: false, // Show browser so user can see what's happening
   slowMo: 50,      // Slight delay for visibility
-  viewport: { width: 1280, height: 800 }
+  viewport: { width: 1280, height: 800 },
+  useSystemBrowser: true  // Default to using system Chrome
 };
 
 /**
+ * Find Chrome/Edge executable on Windows
+ */
+function findSystemBrowser(): string | null {
+  const possiblePaths = [
+    // Chrome paths
+    path.join(process.env['PROGRAMFILES'] || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    path.join(process.env['PROGRAMFILES(X86)'] || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    path.join(process.env['LOCALAPPDATA'] || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    // Edge paths (fallback)
+    path.join(process.env['PROGRAMFILES'] || '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+    path.join(process.env['PROGRAMFILES(X86)'] || '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+  ];
+
+  for (const browserPath of possiblePaths) {
+    if (fs.existsSync(browserPath)) {
+      return browserPath;
+    }
+  }
+  return null;
+}
+
+/**
+ * Get Chrome user data directory
+ */
+function getChromeUserDataDir(): string {
+  // Use a separate profile to avoid conflicts with running Chrome
+  const cnapseProfile = path.join(os.homedir(), '.cnapse', 'chrome-profile');
+
+  // Create if doesn't exist
+  if (!fs.existsSync(cnapseProfile)) {
+    fs.mkdirSync(cnapseProfile, { recursive: true });
+  }
+
+  return cnapseProfile;
+}
+
+/**
  * Initialize browser if not already running
+ * Uses system Chrome with persistent profile (keeps your logins!)
  */
 export async function initBrowser(config: Partial<BrowserConfig> = {}): Promise<Page> {
   const cfg = { ...defaultConfig, ...config };
 
-  if (!browser) {
-    browser = await chromium.launch({
-      headless: cfg.headless,
-      slowMo: cfg.slowMo,
-    });
-  }
-
   if (!context) {
-    context = await browser.newContext({
-      viewport: cfg.viewport,
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    });
+    const browserPath = cfg.useSystemBrowser ? findSystemBrowser() : null;
+    const userDataDir = getChromeUserDataDir();
+
+    if (browserPath && cfg.useSystemBrowser) {
+      // Use persistent context with system Chrome - keeps logins!
+      context = await chromium.launchPersistentContext(userDataDir, {
+        headless: cfg.headless,
+        slowMo: cfg.slowMo,
+        viewport: cfg.viewport,
+        executablePath: browserPath,
+        channel: undefined, // Don't use channel when specifying executablePath
+        args: [
+          '--disable-blink-features=AutomationControlled', // Less bot detection
+          '--no-first-run',
+          '--no-default-browser-check',
+        ]
+      });
+    } else {
+      // Fallback to bundled Chromium with persistent context
+      context = await chromium.launchPersistentContext(userDataDir, {
+        headless: cfg.headless,
+        slowMo: cfg.slowMo,
+        viewport: cfg.viewport,
+        args: [
+          '--disable-blink-features=AutomationControlled',
+        ]
+      });
+    }
   }
 
-  if (!activePage) {
+  // Get existing page or create new one
+  const pages = context.pages();
+  if (pages.length > 0) {
+    activePage = pages[0];
+  } else {
     activePage = await context.newPage();
   }
 
@@ -70,11 +136,14 @@ export async function getPage(): Promise<Page> {
  * Close browser
  */
 export async function closeBrowser(): Promise<void> {
+  if (context) {
+    await context.close();
+    context = null;
+    activePage = null;
+  }
   if (browser) {
     await browser.close();
     browser = null;
-    context = null;
-    activePage = null;
   }
 }
 
